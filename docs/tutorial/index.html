@@ -1,0 +1,2727 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../frml/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>How the Frml Verifier Works - frml</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.ce62732f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#how-the-frml-verifier-works" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="frml" class="md-header__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            frml
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              How the Frml Verifier Works
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="frml" class="md-nav__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    frml
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CODE_OF_CONDUCT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../LICENSE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How the Frml Verifier Works
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How the Frml Verifier Works
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#who-this-is-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Who this is for
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-will-get-out-of-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What you will get out of it
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-two-files-that-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The two files that matter
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The big picture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-single-idea-behind-the-verifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The single idea behind the verifier
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-z3-is-and-what-it-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What Z3 is, and what it does
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#from-is-it-valid-to-is-it-unsatisfiable" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        From "is it valid?" to "is it unsatisfiable?"
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-provers-data-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The prover's data model
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fresh-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fresh names
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-first-complete-example-abs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A first complete example: <code>abs</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A first complete example: abs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Entry
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-if" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>if</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-first-return" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The first <code>return</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-second-return" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The second <code>return</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-two-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The two checks
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#translating-expressions-to-z3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Translating expressions to Z3
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Translating expressions to Z3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Variables
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Operators
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-short-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A short example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#division-and-modulo-add-an-obligation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Division and modulo add an obligation
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requires-and-ensures" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>requires</code> and <code>ensures</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="requires and ensures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requires-is-an-assumption" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>requires</code> is an assumption
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensures-is-a-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>ensures</code> is a goal
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-clauses" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Multiple clauses
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-old" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        11. <code>old(...)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#branching-with-if" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Branching with <code>if</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assert" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>assert</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Representation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounds-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Bounds obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-equality" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array equality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loops-and-invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Loops and invariants
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Loops and invariants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-count-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>count</code> example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialization-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Initialization obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preservation-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Preservation obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Exit state
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#havoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Havoc
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#termination-with-decreases" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Termination with <code>decreases</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Termination with decreases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Before the loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-the-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        After the body
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Function calls
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Function calls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-model_call-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>model_call</code> method
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array arguments
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-recursion" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        19. Recursion
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Recursion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#at-function-entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        At function entry
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at-a-recursive-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        At a recursive call
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-strict-decrease-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The strict-decrease check
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-factorial-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>factorial</code> example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-quantifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        20. Quantifiers
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Quantifiers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-_quant_depth-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why <code>_quant_depth</code> exists
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-property-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array property example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-the-z3-check-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        21. The Z3 check loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-three-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The three outcomes
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The three outcomes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verified" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>VERIFIED</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>FAILED</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unknown" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>UNKNOWN</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-mental-model-to-keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A mental model to keep
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-structure-of-proverpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: Structure of <code>prover.py</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#who-this-is-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Who this is for
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-you-will-get-out-of-it" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What you will get out of it
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-two-files-that-matter" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The two files that matter
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-big-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The big picture
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-single-idea-behind-the-verifier" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The single idea behind the verifier
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-z3-is-and-what-it-does" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What Z3 is, and what it does
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#from-is-it-valid-to-is-it-unsatisfiable" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        From "is it valid?" to "is it unsatisfiable?"
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-provers-data-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The prover's data model
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fresh-names" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Fresh names
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-first-complete-example-abs" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A first complete example: <code>abs</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="A first complete example: abs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Entry
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-if" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>if</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-first-return" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The first <code>return</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-second-return" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The second <code>return</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-two-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The two checks
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#translating-expressions-to-z3" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Translating expressions to Z3
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Translating expressions to Z3">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Variables
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operators" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Operators
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-short-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A short example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#division-and-modulo-add-an-obligation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Division and modulo add an obligation
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#requires-and-ensures" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>requires</code> and <code>ensures</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="requires and ensures">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#requires-is-an-assumption" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>requires</code> is an assumption
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ensures-is-a-goal" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>ensures</code> is a goal
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-clauses" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Multiple clauses
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-old" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        11. <code>old(...)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#branching-with-if" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Branching with <code>if</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assert" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>assert</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Representation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounds-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Bounds obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-equality" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array equality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loops-and-invariants" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Loops and invariants
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Loops and invariants">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-count-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>count</code> example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initialization-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Initialization obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preservation-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Preservation obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exit-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Exit state
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#havoc" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Havoc
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#termination-with-decreases" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Termination with <code>decreases</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Termination with decreases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Before the loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-the-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        After the body
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Function calls
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Function calls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-model_call-method" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>model_call</code> method
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array arguments
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#19-recursion" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        19. Recursion
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="19. Recursion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#at-function-entry" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        At function entry
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#at-a-recursive-call" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        At a recursive call
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-strict-decrease-check" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The strict-decrease check
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-factorial-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>factorial</code> example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#20-quantifiers" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        20. Quantifiers
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="20. Quantifiers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-_quant_depth-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why <code>_quant_depth</code> exists
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-property-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array property example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#21-the-z3-check-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        21. The Z3 check loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-three-outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The three outcomes
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The three outcomes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verified" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>VERIFIED</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#failed" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>FAILED</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unknown" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>UNKNOWN</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-mental-model-to-keep" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A mental model to keep
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-structure-of-proverpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: Structure of <code>prover.py</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="how-the-frml-verifier-works">How the Frml Verifier Works</h1>
+<p>This tutorial walks through the verification engine in <code>frml/prover.py</code>.
+It explains, step by step, how a Frml program becomes Boolean logic that the
+Z3 solver can check, and what Z3 does with that logic.</p>
+<h2 id="who-this-is-for">Who this is for</h2>
+<ul>
+<li>You are an experienced programmer.</li>
+<li>You understand basic Boolean logic (<code>and</code>, <code>or</code>, <code>not</code>, implication).</li>
+<li>You have no prior background in formal verification.</li>
+<li>You already know what a lexer, parser, and AST are, so this tutorial skips them.</li>
+<li>You want to see the verifier, not the whole compiler.</li>
+</ul>
+<h2 id="what-you-will-get-out-of-it">What you will get out of it</h2>
+<ul>
+<li>You will understand what a "verification condition" is.</li>
+<li>You will see how contracts, loops, arrays, calls, and quantifiers become Z3 formulas.</li>
+<li>You will know what <code>unsat</code>, <code>sat</code>, and <code>unknown</code> mean for a proof.</li>
+<li>You will be able to read <code>frml/prover.py</code> and follow what each function does.</li>
+</ul>
+<h2 id="the-two-files-that-matter">The two files that matter</h2>
+<ul>
+<li><code>frml/cli.py</code> runs the verifier and prints <code>VERIFIED</code>, <code>FAILED</code>, or <code>UNKNOWN</code>.</li>
+<li><code>frml/prover.py</code> generates verification conditions and checks them with Z3.</li>
+</ul>
+<p>The rest of <code>frml/</code> (lexer, parser, typechecker, interpreter) prepares the program,
+but is not the topic here.</p>
+<h2 id="the-big-picture">The big picture</h2>
+<ul>
+<li>A Frml program is text.</li>
+<li>The lexer and parser turn the text into an AST.</li>
+<li>The typechecker rejects programs with type errors.</li>
+<li>The prover turns the AST into a list of <em>verification conditions</em>.</li>
+<li>Each verification condition is a logical claim of the form:</li>
+</ul>
+<p><code>hypotheses =&gt; goal</code></p>
+<ul>
+<li>The prover asks Z3 to confirm every verification condition.</li>
+<li>If Z3 confirms all of them, the program is <code>VERIFIED</code>.</li>
+</ul>
+<p>The pipeline is:</p>
+<p><code>source  -&gt;  AST  -&gt;  verification conditions  -&gt;  Z3  -&gt;  VERIFIED / FAILED / UNKNOWN</code></p>
+<h2 id="the-single-idea-behind-the-verifier">The single idea behind the verifier</h2>
+<ul>
+<li>A proof obligation is a claim:</li>
+</ul>
+<p><code>from these hypotheses, this goal always follows</code></p>
+<ul>
+<li>In symbols:</li>
+</ul>
+<p><code>h1 and h2 and ... and hn  =&gt;  goal</code></p>
+<ul>
+<li><code>h1 ... hn</code> are facts known at some point in the program.</li>
+<li><code>goal</code> is a fact that must hold at that point.</li>
+</ul>
+<p>Example claims from a real program:</p>
+<ul>
+<li>"knowing <code>x &gt;= 0</code>, prove <code>0 &lt;= x</code>"</li>
+<li>"knowing <code>i &lt; n</code> and <code>i &lt;= n</code>, prove <code>i + 1 &lt;= n</code>"</li>
+<li>"knowing nothing, prove <code>x &gt; x</code>" (this one is false)</li>
+</ul>
+<p>The prover's whole job is to produce claims in this shape.</p>
+<h2 id="what-z3-is-and-what-it-does">What Z3 is, and what it does</h2>
+<ul>
+<li>A formula is <em>satisfiable</em> when some assignment of values to its variables makes it true.</li>
+<li>Z3 is an SMT solver.<ul>
+<li>SMT stands for Satisfiability Modulo Theories.</li>
+</ul>
+</li>
+<li>Z3 knows the theory of integers, arrays, strings, and Boolean logic.</li>
+</ul>
+<p>Given a formula, Z3 returns one of three answers:</p>
+<ul>
+<li><code>sat</code>: a satisfying assignment exists and Z3 can show you one.</li>
+<li><code>unsat</code>: no satisfying assignment exists.</li>
+<li><code>unknown</code>: Z3 gave up or timed out.</li>
+</ul>
+<p>Example:</p>
+<p><code>formula:  x &gt; 3 and x &lt; 5
+answer:   sat          (x = 4 works)</code></p>
+<p><code>formula:  x &gt; 3 and x &lt; 4
+answer:   unsat        (no integer fits)</code></p>
+<h2 id="from-is-it-valid-to-is-it-unsatisfiable">From "is it valid?" to "is it unsatisfiable?"</h2>
+<ul>
+<li>The prover wants to prove that <code>hypotheses =&gt; goal</code> is <em>valid</em>.</li>
+<li>Valid means true for every possible assignment of the variables.</li>
+<li>Z3 does not directly check validity: it checks satisfiability using a standard trick.</li>
+<li>The two questions are connected:
+    <code>A =&gt; B</code> is valid exactly when <code>not (A =&gt; B)</code> is unsatisfiable.</li>
+<li>So the prover asks Z3:</li>
+</ul>
+<p><code>not (hypotheses =&gt; goal)</code></p>
+<ul>
+<li>If Z3 says <code>unsat</code>, then no counterexample exists, so the goal is proved.</li>
+<li>If Z3 says <code>sat</code>, it found a counterexample, so the goal is false.</li>
+<li>If Z3 says <code>unknown</code>, the proof is inconclusive.</li>
+<li>That is the entire proof mechanism.</li>
+<li>Everything else is just building the hypotheses and goals.</li>
+</ul>
+<h2 id="the-provers-data-model">The prover's data model</h2>
+<ul>
+<li>The prover tracks a program point with a <code>State</code> object.<ul>
+<li><code>State.vars</code>: symbolic values of scalar variables.</li>
+<li><code>State.arrays</code>: symbolic values of arrays.</li>
+<li><code>State.path</code>: every fact assumed to hold so far.</li>
+<li><code>State.old_vars</code>: snapshot of scalar values at function entry.</li>
+<li><code>State.old_arrays</code>: snapshot of arrays at function entry.</li>
+</ul>
+</li>
+<li>A scalar variable holds a Z3 term, not a concrete number.<ul>
+<li><code>x</code> might hold the symbolic integer <code>x!1</code>, not the number 5.</li>
+<li><code>x!1</code> means "the first fresh symbol named <code>x</code>".</li>
+</ul>
+</li>
+<li>An array is an <code>ArrayVal</code> with two parts:<ul>
+<li><code>term</code>: a Z3 <code>Array(Int, elem)</code> map from indexes to elements.</li>
+<li><code>length</code>: a separate symbolic integer for the length.</li>
+</ul>
+</li>
+<li>An <code>Obligation</code> records one claim to prove.<ul>
+<li><code>kind</code>: <code>postcondition</code>, <code>precondition</code>, <code>assert</code>, <code>bounds</code>, <code>division</code>, <code>invariant</code>, <code>termination</code>, or <code>decreases</code>.</li>
+<li><code>description</code>: human readable text of the claim.</li>
+<li><code>hyp</code>: the list of hypothesis terms.</li>
+<li><code>goal</code>: the goal term.</li>
+<li><code>line</code>, <code>col</code>: where in the source the claim came from.</li>
+</ul>
+</li>
+<li>The prover never stores concrete numbers in variables: it stores formulas about numbers.</li>
+</ul>
+<h2 id="fresh-names">Fresh names</h2>
+<ul>
+<li>The prover keeps a counter and calls <code>_fresh(name)</code>.</li>
+<li>Each call returns <code>name!N</code> with an increasing <code>N</code>.<ul>
+<li><code>x!1</code>, <code>x!2</code>, <code>x!3</code> are different symbols even though they all relate to the source variable <code>x</code>.</li>
+</ul>
+</li>
+<li>Why this matters:<ul>
+<li>When <code>x</code> is reassigned, the old <code>x!1</code> is not overwritten.</li>
+<li>The new value becomes a new symbol such as <code>x!5</code>.</li>
+<li>This keeps the symbolic execution correct.</li>
+</ul>
+</li>
+<li>Example:</li>
+</ul>
+<p><code>x = x + 1;</code></p>
+<ul>
+<li>After this statement, the state maps <code>x</code> to the term <code>x!1 + 1</code>, not to a number.</li>
+</ul>
+<h2 id="a-first-complete-example-abs">A first complete example: <code>abs</code></h2>
+<ul>
+<li>Frml program:</li>
+</ul>
+<p><code>frml
+fn abs(x: Int) -&gt; Int
+  ensures result &gt;= 0
+{
+  if x &gt;= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}</code></p>
+<ul>
+<li>Here is what the prover does, statement by statement.</li>
+</ul>
+<h3 id="entry">Entry</h3>
+<ul>
+<li>Create a fresh integer symbol <code>x!1</code> for the parameter <code>x</code>.</li>
+<li>Put it in <code>state.vars["x"]</code>.</li>
+<li>Snapshot it into <code>state.old_vars["x"]</code>.</li>
+<li>There are no <code>requires</code> clauses, so the path starts empty.</li>
+</ul>
+<h3 id="the-if">The <code>if</code></h3>
+<ul>
+<li>Evaluate the condition <code>x &gt;= 0</code> to the term <code>x!1 &gt;= 0</code>.</li>
+<li>Make two copies of the state.</li>
+<li>Then branch:<ul>
+<li><code>then_state.path</code> gets <code>x!1 &gt;= 0</code>.</li>
+<li><code>else_state.path</code> gets <code>not (x!1 &gt;= 0)</code>, which means <code>x!1 &lt; 0</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="the-first-return">The first <code>return</code></h3>
+<ul>
+<li>Evaluate <code>x</code> to <code>x!1</code>.</li>
+<li>Evaluate the <code>ensures</code> clause <code>result &gt;= 0</code> with <code>result</code> replaced by <code>x!1</code>.</li>
+<li>Emit an obligation:</li>
+</ul>
+<p><code>hypotheses:  x!1 &gt;= 0
+goal:        0 &lt;= x!1</code></p>
+<h3 id="the-second-return">The second <code>return</code></h3>
+<ul>
+<li>Evaluate <code>-x</code> to <code>-x!1</code>.</li>
+<li>Emit an obligation:</li>
+</ul>
+<p><code>hypotheses:  not (x!1 &gt;= 0)
+goal:        0 &lt;= -x!1</code></p>
+<h3 id="the-two-checks">The two checks</h3>
+<ul>
+<li>For the first obligation, Z3 is asked:</li>
+</ul>
+<p><code>not ((x!1 &gt;= 0) =&gt; (0 &lt;= x!1))</code></p>
+<ul>
+<li>There is no value of <code>x!1</code> that makes this true.<ul>
+<li>So Z3 returns <code>unsat</code>.</li>
+<li>The obligation is <code>VERIFIED</code>.</li>
+</ul>
+</li>
+<li>For the second obligation:</li>
+</ul>
+<p><code>not ((x!1 &lt; 0) =&gt; (0 &lt;= -x!1))</code></p>
+<ul>
+<li>Again <code>unsat</code>.<ul>
+<li>The program is <code>VERIFIED</code>.</li>
+</ul>
+</li>
+<li>That is the whole verifier in miniature: build hypotheses, build a goal, ask Z3.</li>
+</ul>
+<h2 id="translating-expressions-to-z3">Translating expressions to Z3</h2>
+<p>The <code>eval_expr</code> method maps each Frml expression node to a Z3 term.</p>
+<h3 id="literals">Literals</h3>
+<ul>
+<li><code>42</code> becomes <code>z3.IntVal(42)</code>.</li>
+<li><code>true</code> becomes <code>z3.BoolVal(True)</code>.</li>
+<li><code>"hi"</code> becomes <code>z3.StringVal("hi")</code>.</li>
+</ul>
+<h3 id="variables">Variables</h3>
+<ul>
+<li><code>x</code> becomes the term currently stored in <code>state.vars["x"]</code>.</li>
+<li><code>result</code> becomes the current return value term, only inside an <code>ensures</code> clause.</li>
+</ul>
+<h3 id="operators">Operators</h3>
+<ul>
+<li><code>a and b</code> becomes <code>z3.And(a, b)</code>.</li>
+<li><code>a or b</code> becomes <code>z3.Or(a, b)</code>.</li>
+<li><code>a =&gt; b</code> becomes <code>z3.Implies(a, b)</code>.</li>
+<li><code>!a</code> becomes <code>z3.Not(a)</code>.</li>
+<li><code>a + b</code>, <code>a - b</code>, <code>a * b</code> become the matching Z3 operations.</li>
+<li><code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code> become Z3 comparison terms.</li>
+<li><code>a == b</code> and <code>a != b</code> become equality and its negation.</li>
+</ul>
+<h3 id="a-short-example">A short example</h3>
+<ul>
+<li>Frml: <code>0 &lt;= i and i &lt; n</code></li>
+<li>
+<p>Z3: <code>And(0 &lt;= i, i &lt; n)</code></p>
+</li>
+<li>
+<p>The prover does not compute the expression.</p>
+</li>
+<li>It builds a formula describing the expression.</li>
+</ul>
+<h2 id="division-and-modulo-add-an-obligation">Division and modulo add an obligation</h2>
+<ul>
+<li>Division by zero is undefined.</li>
+<li>The verifier turns it into another proof obligation.</li>
+<li>When the prover evaluates <code>a / b</code> or <code>a % b</code>, it first emits:</li>
+</ul>
+<p><code>hypotheses:  current path
+goal:        b != 0</code></p>
+<ul>
+<li>Then it returns the Z3 division or modulo term.</li>
+<li>Example:</li>
+</ul>
+<p><code>frml
+fn safe_divide(a: Int, b: Int) -&gt; Int
+  requires b != 0
+{
+  return a / b;
+}</code></p>
+<ul>
+<li>The <code>requires</code> clause puts <code>b!1 != 0</code> into the path.</li>
+<li>The <code>return a / b</code> emits an obligation <code>b!1 != 0</code>.</li>
+<li>The path already contains that fact, so Z3 proves it immediately.</li>
+</ul>
+<h2 id="requires-and-ensures"><code>requires</code> and <code>ensures</code></h2>
+<ul>
+<li>Contracts are the source of most hypotheses and goals.</li>
+</ul>
+<h3 id="requires-is-an-assumption"><code>requires</code> is an assumption</h3>
+<ul>
+<li>At function entry, every <code>requires</code> clause is evaluated.</li>
+<li>The result is appended to the path.</li>
+<li>Later obligations may assume it.</li>
+</ul>
+<h3 id="ensures-is-a-goal"><code>ensures</code> is a goal</h3>
+<ul>
+<li>At every <code>return</code>, every <code>ensures</code> clause is evaluated.</li>
+<li>The <code>result</code> placeholder is replaced by the returned expression.</li>
+<li>The result becomes a goal, checked against the current path.</li>
+</ul>
+<h3 id="multiple-clauses">Multiple clauses</h3>
+<ul>
+<li>Multiple <code>requires</code> clauses are and'ed, one fact per clause in the path.</li>
+<li>Multiple <code>ensures</code> clauses produce one obligation per clause.</li>
+<li>Example:</li>
+</ul>
+<p><code>frml
+fn max(a: Int, b: Int) -&gt; Int
+  ensures result &gt;= a
+  ensures result &gt;= b
+  ensures result == a or result == b
+{
+  if a &gt;= b {
+    return a;
+  } else {
+    return b;
+  }
+}</code></p>
+<ul>
+<li>The <code>if</code> produces two end states…</li>
+<li>…and there are three <code>ensures</code> clauses…</li>
+<li>…so there are six postcondition obligations (three per branch):<ul>
+<li>Then branch goals: <code>a &gt;= a</code>, <code>a &gt;= b</code>, <code>a == a or a == b</code>.</li>
+<li>Else branch goals: <code>b &gt;= a</code>, <code>b &gt;= b</code>, <code>b == a or b == b</code>.</li>
+</ul>
+</li>
+<li>Each is proved with the appropriate branch condition in the path.</li>
+</ul>
+<h2 id="11-old">11. <code>old(...)</code></h2>
+<ul>
+<li><code>old(e)</code> means "the value of <code>e</code> at the moment the function was entered".</li>
+<li>The prover snapshots parameters at entry into <code>old_vars</code> and <code>old_arrays</code>.</li>
+<li>Inside an <code>ensures</code> clause, <code>old(x)</code> reads that snapshot, not the current value.</li>
+<li>Example:</li>
+</ul>
+<p><code>frml
+fn increment_first(a: Array&lt;Int&gt;)
+  requires length(a) &gt; 0
+  ensures a[0] == old(a[0]) + 1
+{
+  a[0] = a[0] + 1;
+}</code></p>
+<ul>
+<li>At entry, <code>a</code> is a fresh array symbol <code>a!1</code> with some length.<ul>
+<li><code>old_arrays["a"]</code> keeps that original <code>a!1</code>.</li>
+</ul>
+</li>
+<li>After the assignment, <code>state.arrays["a"]</code> is the updated array.<ul>
+<li><code>a[0]</code> in the postcondition reads the updated array.</li>
+<li><code>old(a[0])</code> reads the original <code>a!1</code>.</li>
+</ul>
+</li>
+<li>The emitted postcondition goal looks like:</li>
+</ul>
+<p><code>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1</code></p>
+<ul>
+<li>Both sides simplify to the same value, so Z3 proves it.</li>
+</ul>
+<h2 id="branching-with-if">Branching with <code>if</code></h2>
+<ul>
+<li>A conditional statement forks the symbolic execution.</li>
+<li>The condition is evaluated once.</li>
+<li>The <code>then</code> branch continues with the condition added to the path.</li>
+<li>The <code>else</code> branch continues with <code>not condition</code> added to the path.<ul>
+<li>If there is no <code>else</code>, the fall-through branch still gets <code>not condition</code>.</li>
+</ul>
+</li>
+<li>The prover tracks a <em>list</em> of states, one per path through the code.</li>
+<li>Example:</li>
+</ul>
+<p><code>frml
+if x &gt;= 0 {
+  return x;
+} else {
+  return -x;
+}</code></p>
+<ul>
+<li>After the <code>if</code>, there are two states:<ul>
+<li>State 1 path: <code>x &gt;= 0</code>.</li>
+<li>State 2 path: <code>not (x &gt;= 0)</code>.</li>
+</ul>
+</li>
+<li>Each <code>return</code> is checked independently against its own path.</li>
+</ul>
+<h2 id="assert"><code>assert</code></h2>
+<ul>
+<li>An <code>assert</code> statement produces a goal from the current path.</li>
+</ul>
+<p><code>frml
+assert 1 &lt; 2;</code></p>
+<ul>
+<li>Evaluate the condition.</li>
+<li>Emit an obligation with the current path as hypotheses and the condition as goal.</li>
+<li>If Z3 proves it, execution continues with the fact now guaranteed.</li>
+</ul>
+<blockquote>
+<p>The prover does not add the assertion to the path after checking
+because &gt; <code>assert</code> is a check, not an assumption.
+The programmer asserts what should already be true,
+so the verifier must prove it from what came before.</p>
+</blockquote>
+<h2 id="arrays">Arrays</h2>
+<p>Arrays need more machinery than integers.</p>
+<h3 id="representation">Representation</h3>
+<ul>
+<li>An array is a Z3 <code>Array(Int, elem)</code> plus a length.<ul>
+<li>The array maps integer indexes to element values.</li>
+<li>The length is a separate symbolic integer.</li>
+</ul>
+</li>
+<li><code>length(a)</code> returns <code>arr.length</code>, the symbolic length.</li>
+<li><code>a[i]</code> becomes <code>z3.Select(arr.term, i)</code>.<ul>
+<li>Also emits a bounds obligation <code>0 &lt;= i and i &lt; length(a)</code>.</li>
+</ul>
+</li>
+<li><code>a[i] = v</code> becomes <code>z3.Store(arr.term, i, v)</code>, a new array.<ul>
+<li>Also emits a bounds obligation for <code>i</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="array-literals">Array literals</h3>
+<ul>
+<li><code>[3, 4]</code> becomes a chain of <code>Store</code> operations:</li>
+</ul>
+<p><code>Store(Store(fresh_array, 0, 3), 1, 4)</code></p>
+<ul>
+<li>Its length is the literal <code>2</code>.</li>
+</ul>
+<h3 id="bounds-obligations">Bounds obligations</h3>
+<ul>
+<li>Every array read and write produces:</li>
+</ul>
+<p><code>hypotheses:  current path
+goal:        0 &lt;= i and i &lt; length(a)</code></p>
+<ul>
+<li>Example from <code>increment_first</code>:</li>
+</ul>
+<p><code>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)</code></p>
+<h3 id="array-equality">Array equality</h3>
+<ul>
+<li>Frml <code>a == b</code> on two arrays is not a single Z3 equality.<ul>
+<li>The lengths must be equal.</li>
+<li>Every element in range must be equal.</li>
+</ul>
+</li>
+<li>The prover builds:</li>
+</ul>
+<p><code>length(a) == length(b)
+and
+forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]</code></p>
+<ul>
+<li>This is why array equality is defined by a quantified formula.</li>
+</ul>
+<h2 id="loops-and-invariants">Loops and invariants</h2>
+<ul>
+<li>Loops are the hardest part of verification, because a loop runs an unknown number of times.</li>
+<li>The prover cannot execute the loop symbolically "until it ends", so it uses invariants.</li>
+<li>A loop invariant is a fact that is true:<ul>
+<li>before the first iteration…</li>
+<li>…after every iteration…</li>
+<li>…and therefore after the loop ends.</li>
+</ul>
+</li>
+</ul>
+<h3 id="the-count-example">The <code>count</code> example</h3>
+<p>```frml
+fn count(n: Int) -&gt; Int
+  requires n &gt;= 0
+  ensures result == n
+{
+  let i: Int = 0;</p>
+<p>while i &lt; n
+    invariant 0 &lt;= i
+    invariant i &lt;= n
+    decreases n - i
+  {
+    i = i + 1;
+  }</p>
+<p>return i;
+}
+```</p>
+<ul>
+<li>Verifying <code>count</code> emits seven obligations in total:<ul>
+<li>Two initialization.</li>
+<li>Two preservation.</li>
+<li>Two termination.</li>
+<li>One final postcondition.</li>
+</ul>
+</li>
+</ul>
+<h3 id="initialization-obligations">Initialization obligations</h3>
+<ul>
+<li>Before the first iteration, each invariant must hold.<ul>
+<li><code>0 &lt;= i</code> with <code>i = 0</code> becomes <code>0 &lt;= 0</code>.</li>
+<li><code>i &lt;= n</code> with <code>i = 0</code> becomes <code>0 &lt;= n</code>, proved from <code>requires n &gt;= 0</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="preservation-obligations">Preservation obligations</h3>
+<ul>
+<li>Assume the invariants and the loop condition, run the body, and prove the invariants again.<ul>
+<li>Run <code>i = i + 1</code> to get <code>i = 0 + 1</code>.</li>
+<li><code>0 &lt;= i</code> becomes <code>0 &lt;= 0 + 1</code>.</li>
+<li><code>i &lt;= n</code> becomes <code>0 + 1 &lt;= n</code>, proved from <code>i &lt; n</code> and <code>i &lt;= n</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="exit-state">Exit state</h3>
+<ul>
+<li>After the loop, the prover does not know how many iterations ran.<ul>
+<li>It <em>havocs</em> every variable the loop body assigns.</li>
+<li>A havoced variable becomes a fresh symbol.</li>
+<li>It then assumes the invariants and <code>not condition</code>.</li>
+</ul>
+</li>
+<li>For <code>count</code>, after the loop:<ul>
+<li><code>i</code> becomes a fresh symbol.</li>
+<li>The path gains <code>0 &lt;= i</code>, <code>i &lt;= n</code>, and <code>not (i &lt; n)</code>, so <code>i &gt;= n</code>.</li>
+<li>Together these force <code>i == n</code>.</li>
+</ul>
+</li>
+<li>The final <code>return i</code> then proves <code>ensures result == n</code>.</li>
+</ul>
+<h2 id="havoc">Havoc</h2>
+<ul>
+<li>Havoc is how the prover forgets what a loop did to a variable.<ul>
+<li>Scan the loop body for assigned scalar names and array names.</li>
+<li>For each assigned scalar, replace its term with a fresh symbol of the same sort.</li>
+<li>For each assigned array, replace its term with a fresh array, keeping the same length.</li>
+</ul>
+</li>
+<li>Why this is sound:<ul>
+<li>The loop may run any number of times.</li>
+<li>We cannot know the exact final value of an assigned variable.</li>
+<li>We only know what the invariant tells us about it.</li>
+</ul>
+</li>
+<li>The invariant is what survives the havoc.<ul>
+<li>It is the only bridge from before the loop to after it.</li>
+</ul>
+</li>
+</ul>
+<h2 id="termination-with-decreases">Termination with <code>decreases</code></h2>
+<ul>
+<li>A <code>decreases</code> clause proves a loop terminates.</li>
+<li>Two obligations are emitted.</li>
+</ul>
+<h3 id="before-the-loop">Before the loop</h3>
+<ul>
+<li>The measure must be non-negative:</li>
+</ul>
+<p><code>decreases &gt;= 0</code></p>
+<h3 id="after-the-body">After the body</h3>
+<ul>
+<li>The measure must strictly decrease:</li>
+</ul>
+<p><code>new_decreases &lt; old_decreases</code></p>
+<ul>
+<li>For <code>count</code>, the measure is <code>n - i</code>.<ul>
+<li>Entry: <code>n - 0 &gt;= 0</code>.</li>
+<li>After body: <code>n - (0 + 1) &lt; n - 0</code>.</li>
+</ul>
+</li>
+<li>Both are proved from the path facts.</li>
+</ul>
+<h2 id="function-calls">Function calls</h2>
+<ul>
+<li>When one function calls another, the prover uses the callee's contract.</li>
+</ul>
+<h3 id="the-model_call-method">The <code>model_call</code> method</h3>
+<ul>
+<li>For a call <code>f(args)</code>:<ul>
+<li>Prove the callee's <code>requires</code> clauses under the caller's current path.</li>
+<li>For arrays the callee may write, create a fresh post-array.</li>
+<li>For read-only arrays and scalars, keep the caller's values.</li>
+<li>For the return value, create a fresh result symbol.</li>
+<li>Assume the callee's <code>ensures</code> clauses.</li>
+<li>Add those assumptions to the caller's path.</li>
+</ul>
+</li>
+<li>The caller never sees the callee's body.</li>
+<li>It only sees the callee's contract.</li>
+</ul>
+<h3 id="example">Example</h3>
+<p>```frml
+fn inc(x: Int) -&gt; Int
+  requires x &gt;= 0
+  ensures result == x + 1
+{ return x + 1; }</p>
+<p>fn main() -&gt; Int
+{
+  return inc(41);
+}
+```</p>
+<ul>
+<li>For the call <code>inc(41)</code>:<ul>
+<li>Emit a precondition obligation: <code>41 &gt;= 0</code>.</li>
+<li>Create a fresh result <code>inc_result!N</code>.</li>
+<li>Assume <code>inc_result!N == 41 + 1</code>.</li>
+<li><code>main</code> returns that result, and the postcondition is proved.</li>
+</ul>
+</li>
+</ul>
+<h3 id="array-arguments">Array arguments</h3>
+<ul>
+<li>A callee may mutate an array argument.<ul>
+<li><code>written_params</code> tracks which array parameters a function writes.</li>
+<li>A written array gets a fresh post-array.</li>
+<li>A read-only array keeps the caller's array unchanged.</li>
+</ul>
+</li>
+<li>After the call, the caller's array argument is updated to the callee's post-array.</li>
+</ul>
+<h2 id="19-recursion">19. Recursion</h2>
+<ul>
+<li>Recursive functions need a <code>decreases</code> clause.</li>
+</ul>
+<h3 id="at-function-entry">At function entry</h3>
+<ul>
+<li>Emit <code>decreases &gt;= 0</code>.</li>
+<li>For <code>factorial</code>, that is <code>n &gt;= 0</code>, proved from <code>requires n &gt;= 0</code>.</li>
+</ul>
+<h3 id="at-a-recursive-call">At a recursive call</h3>
+<ul>
+<li>The callee's <code>requires</code> clauses are proved at the call site.</li>
+<li>For <code>factorial(n - 1)</code>, the prover proves <code>n - 1 &gt;= 0</code>.</li>
+</ul>
+<h3 id="the-strict-decrease-check">The strict-decrease check</h3>
+<ul>
+<li><code>model_call</code> emits <code>decreases_at_call &lt; decreases_at_entry</code> for a self-call.</li>
+<li>This applies to statement calls and to whole-right-hand-side calls with array arguments.</li>
+<li>For scalar self-calls inside expressions,
+    the current implementation proves the callee's precondition
+    but does not emit the strict-decrease obligation.</li>
+</ul>
+<h3 id="the-factorial-example">The <code>factorial</code> example</h3>
+<p><code>frml
+fn factorial(n: Int) -&gt; Int
+  requires n &gt;= 0
+  ensures result &gt;= 1
+  decreases n
+{
+  if n == 0 {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+}</code></p>
+<ul>
+<li>The prover emits four obligations:<ul>
+<li><code>n &gt;= 0</code> for the entry <code>decreases n &gt;= 0</code>.</li>
+<li><code>1 &gt;= 1</code> for the base-case postcondition.</li>
+<li><code>n - 1 &gt;= 0</code> for the recursive call's precondition.</li>
+<li><code>n * factorial_result &gt;= 1</code> for the recursive postcondition.</li>
+</ul>
+</li>
+</ul>
+<h2 id="20-quantifiers">20. Quantifiers</h2>
+<ul>
+<li>Frml supports <code>forall</code> and <code>exists</code> in specifications.</li>
+</ul>
+<p><code>frml
+forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0</code></p>
+<ul>
+<li>The prover translates these to Z3 quantifiers.<ul>
+<li><code>forall</code> becomes <code>z3.ForAll([var], body)</code>.</li>
+<li><code>exists</code> becomes <code>z3.Exists([var], body)</code>.</li>
+<li>The quantified variable becomes a fresh symbol.</li>
+<li>The body is evaluated with that variable added to the state.</li>
+</ul>
+</li>
+</ul>
+<h3 id="why-_quant_depth-exists">Why <code>_quant_depth</code> exists</h3>
+<ul>
+<li>Bounds and division obligations are statements about "this program point".</li>
+<li>Inside a quantifier body there is no single program point.</li>
+<li>So the prover skips bounds and division obligations while <code>_quant_depth &gt; 0</code>.</li>
+<li>The quantified formula itself is still a term, and Z3 reasons about it directly.</li>
+</ul>
+<h3 id="array-property-example">Array property example</h3>
+<p><code>frml
+ensures
+  result ==
+    (forall i: Int ::
+      0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0)</code></p>
+<ul>
+<li>The <code>ensures</code> goal is a Z3 term:</li>
+</ul>
+<p><code>result == ForAll(i, Implies(And(0 &lt;= i, i &lt; len), a[i] &gt;= 0))</code></p>
+<ul>
+<li>Z3 knows how to decide quantified integer formulas like this one.</li>
+</ul>
+<h2 id="21-the-z3-check-loop">21. The Z3 check loop</h2>
+<ul>
+<li>The <code>check_obligations</code> function is where Z3 is actually called.</li>
+</ul>
+<p>```python
+solver = z3.Solver()
+solver.set(timeout=timeout_ms)</p>
+<p>for ob in obligations:
+    solver.push()
+    hyp = z3.And(*ob.hyp) if ob.hyp else z3.BoolVal(True)
+    solver.add(z3.Not(z3.Implies(hyp, ob.goal)))
+    result = solver.check()</p>
+<pre><code>if result == z3.unsat:
+    -&gt; VERIFIED
+elif result == z3.sat:
+    -&gt; FAILED with the counterexample model
+else:
+    -&gt; UNKNOWN
+
+solver.pop()
+</code></pre>
+<p>```</p>
+<ul>
+<li>Each obligation gets a fresh solver context via <code>push</code> and <code>pop</code>.</li>
+<li>The empty hypothesis list becomes <code>True</code>.</li>
+<li>Z3 is asked to satisfy <code>not (hyp =&gt; goal)</code>.</li>
+<li><code>unsat</code> means the claim holds.</li>
+<li><code>sat</code> means a counterexample exists.</li>
+<li>Anything else is <code>unknown</code>.</li>
+</ul>
+<h2 id="the-three-outcomes">The three outcomes</h2>
+<h3 id="verified"><code>VERIFIED</code></h3>
+<ul>
+<li>Z3 found no counterexample.</li>
+<li>The claim is valid.</li>
+<li>Every obligation in the program reached this result.</li>
+</ul>
+<h3 id="failed"><code>FAILED</code></h3>
+<ul>
+<li>Z3 found a counterexample model.</li>
+<li>The claim is false for some inputs.</li>
+<li>The CLI prints the obligation kind and description.</li>
+<li>Example:</li>
+</ul>
+<p><code>frml
+fn bad(x: Int) -&gt; Int
+  ensures result &gt; x
+{
+  return x;
+}</code></p>
+<ul>
+<li>The obligation is:</li>
+</ul>
+<p><code>hypotheses:  (none)
+goal:        x!1 &gt; x!1</code></p>
+<ul>
+<li>Z3 finds any value making <code>not (x &gt; x)</code> true, which is every value, so <code>FAILED</code>.</li>
+</ul>
+<h3 id="unknown"><code>UNKNOWN</code></h3>
+<ul>
+<li>Z3 timed out or gave up.</li>
+<li>The verifier does not pretend the claim is proved.</li>
+<li>The program is not silently accepted.</li>
+<li>The verifier never reports <code>VERIFIED</code> for a program it could not prove.</li>
+</ul>
+<h2 id="a-mental-model-to-keep">A mental model to keep</h2>
+<ul>
+<li>The prover runs the program with formulas, not numbers.</li>
+<li>A variable is a symbol, not a value.</li>
+<li>The path is a list of facts known to be true.</li>
+<li>A contract clause is either an assumption or a goal.</li>
+<li>A loop invariant is a fact that survives an unknown number of iterations.</li>
+<li>Every obligation is <code>hypotheses =&gt; goal</code>.</li>
+<li>Z3 proves the obligation by showing the negation has no solution.</li>
+</ul>
+<h2 id="appendix-structure-of-proverpy">Appendix: Structure of <code>prover.py</code></h2>
+<ul>
+<li><code>ArrayVal</code>: an array term plus its length.</li>
+<li><code>State</code>: the symbolic program state.</li>
+<li><code>Obligation</code>: one verification condition.</li>
+<li><code>ProverResult</code>: all obligations for one function.</li>
+<li><code>CheckOutcome</code>: the Z3 result for one obligation.</li>
+<li>Methods on <code>Prover</code>:<ul>
+<li><code>verify</code>: loops over functions and collects obligations.</li>
+<li><code>verify_function</code>: sets up entry state, snapshots <code>old</code>, runs the body.</li>
+<li><code>exec_stmts</code> and <code>exec_stmt</code>: symbolic execution of statements.</li>
+<li><code>exec_while</code>: invariant initialization, preservation, termination, and exit.</li>
+<li><code>model_call</code>: uses a callee's contract at a call site.</li>
+<li><code>eval_expr</code>: translates one expression into a Z3 term.</li>
+<li><code>_emit</code>: records one obligation.</li>
+<li><code>_fresh</code>: makes a fresh symbol name.</li>
+</ul>
+</li>
+<li>Module-level functions:<ul>
+<li><code>check_obligations</code>: runs the Z3 loop.</li>
+<li><code>verify_program</code>: the entry point from the CLI.</li>
+</ul>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":[],"search":"../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+    
+  </body>
+</html>

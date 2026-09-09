@@ -17,7 +17,7 @@ from .typechecker import TypeChecker
 DEFAULT_TIMEOUT_MS = 10_000
 
 
-def main(argv):
+def main(argv=None):
     argv = list(sys.argv[1:] if argv is None else argv)
     if not argv:
         print(__doc__.strip(), file=sys.stderr)

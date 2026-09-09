@@ -44,4 +44,4 @@ build-backend = "hatchling.build"
 path = "frml/__init__.py"
 
 [project.scripts]
-frml = "frml.clui:main"
+frml = "frml.cli:main"
