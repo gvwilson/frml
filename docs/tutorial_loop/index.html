@@ -1,0 +1,1164 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../tutorial_basic/">
+      
+      
+        <link rel="next" href="../tutorial_array/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>The Loop Level: Scalar Loops - frml</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.ce62732f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-loop-level-scalar-loops" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="frml" class="md-header__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            frml
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              The Loop Level: Scalar Loops
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="frml" class="md-nav__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    frml
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How the Frml Verifier Works
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Basic Level: Scalars, No Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Loop Level: Scalar Loops
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Loop Level: Scalar Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-loop-level-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the <code>loop</code> level adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-checking-a-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Type checking a loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-loops-are-the-hard-part" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why loops are the hard part
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-count-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>count</code> example
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initialization-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Initialization obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preservation-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Preservation obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#havoc-for-scalars" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Havoc for scalars
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exit-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Exit state
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#termination-with-decreases" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Termination with <code>decreases</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Termination with decreases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Before the loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-the-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        After the body
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-broken-loop-invariant" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A broken loop invariant
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-structure-of-prover_looppy" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: structure of <code>prover_loop.py</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_array/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Array Level: Fixed-Size Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_builtin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Builtin Level: I/O and Resizable Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Complete Level: The Full Language
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-loop-level-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the <code>loop</code> level adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-checking-a-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Type checking a loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#why-loops-are-the-hard-part" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why loops are the hard part
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-count-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The <code>count</code> example
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#initialization-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Initialization obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preservation-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Preservation obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#havoc-for-scalars" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Havoc for scalars
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#exit-state" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Exit state
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#termination-with-decreases" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Termination with <code>decreases</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Termination with decreases">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#before-the-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Before the loop
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-the-body" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        After the body
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-broken-loop-invariant" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        A broken loop invariant
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-structure-of-prover_looppy" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: structure of <code>prover_loop.py</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="the-loop-level-scalar-loops">The Loop Level: Scalar Loops<a class="headerlink" href="#the-loop-level-scalar-loops" title="Permanent link">&para;</a></h1>
+<p>This tutorial explains how Frml checks and validates programs at the <code>loop</code>
+level: everything from the <a href="../tutorial_basic/">basic level</a>, plus <code>while</code>
+loops with invariants and termination measures. The <code>loop</code> level still has no
+arrays and no built-in functions, so loops here only ever modify scalar
+variables (<code>Int</code>, <code>Bool</code>, and <code>String</code>).</p>
+<p>Two files implement the level:</p>
+<ul>
+<li><code>frml/typechecker_loop.py</code> type-checks loop syntax.</li>
+<li><code>frml/prover_loop.py</code> generates verification conditions for scalar loops.</li>
+</ul>
+<p>Start with the <a href="../tutorial_intro/">intro</a> and the
+<a href="../tutorial_basic/">basic tutorial</a> if you have not already read them; this
+page assumes the machinery described there.</p>
+<h2 id="what-the-loop-level-adds">What the <code>loop</code> level adds<a class="headerlink" href="#what-the-loop-level-adds" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The parser already knows how to build a <code>while</code> statement.</li>
+<li>The level checker allows <code>while</code> but still rejects arrays and built-ins.</li>
+<li>The loop type checker adds one visitor: <code>visit_StmtWhile</code>.</li>
+<li>The loop prover adds the same visitor and the logic that turns a loop into
+    obligations.</li>
+</ul>
+<p>A minimal loop program:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn main() -&gt; Int
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  let i: Int = 0;
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  while i &lt; 3
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    invariant 0 &lt;= i
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>    invariant i &lt;= 3
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    decreases 3 - i
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  {
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>    i = i + 1;
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  }
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>  return i;
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>}
+</span></code></pre></div>
+<p>Loop-level programs are checked by selecting the level explicitly:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>frml<span class="w"> </span>check<span class="w"> </span>--level<span class="w"> </span>loop<span class="w"> </span>examples/loop/count.frml
+</span></code></pre></div>
+<h2 id="type-checking-a-loop">Type checking a loop<a class="headerlink" href="#type-checking-a-loop" title="Permanent link">&para;</a></h2>
+<p><code>visit_StmtWhile</code> checks four things:</p>
+<ol>
+<li>The loop condition must have type <code>Bool</code>.</li>
+<li>Every <code>invariant</code> must have type <code>Bool</code>.</li>
+<li>The <code>decreases</code> expression, when present, must have type <code>Int</code>.</li>
+<li>The loop body is type-checked in a fresh scope.</li>
+</ol>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_StmtWhile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span><span class="n">stmt</span><span class="o">.</span><span class="n">cond</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">BOOL</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">in_spec</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="k">for</span> <span class="n">inv</span> <span class="ow">in</span> <span class="n">stmt</span><span class="o">.</span><span class="n">invariants</span><span class="p">:</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span><span class="n">inv</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">BOOL</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="k">if</span> <span class="n">stmt</span><span class="o">.</span><span class="n">decreases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                <span class="n">stmt</span><span class="o">.</span><span class="n">decreases</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">INT</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>            <span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">finally</span><span class="p">:</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">in_spec</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_push_scope</span><span class="p">()</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stmt</span><span class="o">.</span><span class="n">body</span><span class="p">:</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">check_stmt</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_pop_scope</span><span class="p">()</span>
+</span></code></pre></div>
+<ul>
+<li>The <code>in_spec</code> flag is set while checking the loop's specifications, just as
+    the basic checker does for <code>requires</code>, <code>ensures</code>, and <code>decreases</code> clauses.
+    It has no effect on scalar loops, but the loop checker keeps the pattern so
+    the <code>array</code>, <code>builtin</code>, and <code>complete</code> levels inherit the same behavior for
+    array built-ins.</li>
+<li>The body gets its own scope, so variables declared inside the loop do not
+    leak out of it.</li>
+</ul>
+<h2 id="why-loops-are-the-hard-part">Why loops are the hard part<a class="headerlink" href="#why-loops-are-the-hard-part" title="Permanent link">&para;</a></h2>
+<ul>
+<li>A loop runs an unknown number of times.</li>
+<li>The prover cannot execute the loop symbolically "until it ends".</li>
+<li>It therefore reasons about the loop <em>inductively</em>, using invariants.</li>
+<li>A loop invariant is a fact that is true:<ul>
+<li>before the first iteration, and</li>
+<li>after every iteration.</li>
+</ul>
+</li>
+<li>If both hold, the invariant is also true immediately after the loop exits.</li>
+</ul>
+<p>The prover generates one obligation for each of those two moments, plus a
+post-loop exit state for whatever code follows the loop.</p>
+<h2 id="the-count-example">The <code>count</code> example<a class="headerlink" href="#the-count-example" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>fn count(n: Int) -&gt; Int
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  requires n &gt;= 0
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  ensures result == n
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>{
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  let i: Int = 0;
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  while i &lt; n
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    invariant 0 &lt;= i
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    invariant i &lt;= n
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    decreases n - i
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>  {
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    i = i + 1;
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>  }
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>  return i;
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>}
+</span></code></pre></div>
+<ul>
+<li>Verifying <code>count</code> emits seven obligations:<ul>
+<li>Two initialization.</li>
+<li>Two preservation.</li>
+<li>Two termination.</li>
+<li>One final postcondition.</li>
+</ul>
+</li>
+</ul>
+<p>The loop prover follows the same shape as the array-, builtin-, and
+complete-level loop provers, but its state has only scalar variables, so it
+never has to havoc array contents or lengths.</p>
+<h2 id="initialization-obligations">Initialization obligations<a class="headerlink" href="#initialization-obligations" title="Permanent link">&para;</a></h2>
+<p>Before the first iteration, every invariant must hold:</p>
+<ul>
+<li><code>0 &lt;= i</code> with <code>i = 0</code> becomes <code>0 &lt;= 0</code>.</li>
+<li><code>i &lt;= n</code> with <code>i = 0</code> becomes <code>0 &lt;= n</code>, proved from <code>requires n &gt;= 0</code>.</li>
+</ul>
+<p>The prover evaluates each invariant in the state that reaches the <code>while</code> and
+emits:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>hypotheses:  current path
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>goal:        invariant
+</span></code></pre></div>
+<h2 id="preservation-obligations">Preservation obligations<a class="headerlink" href="#preservation-obligations" title="Permanent link">&para;</a></h2>
+<p>This is the inductive step. It checks an <em>arbitrary</em> loop iteration, not just
+the first one:</p>
+<ol>
+<li><strong>Havoc</strong> every scalar variable the loop body assigns.<ul>
+<li><code>i</code> becomes a fresh, unknown symbol such as <code>i!2</code>.</li>
+<li>This forgets whatever value <code>i</code> had on entry, so the check is about an
+    arbitrary iteration.</li>
+</ul>
+</li>
+<li><strong>Assume</strong> the invariants and the loop condition:
+    <code>0 &lt;= i</code>, <code>i &lt;= n</code>, and <code>i &lt; n</code>.</li>
+<li><strong>Run</strong> the loop body once symbolically:
+    <code>i = i + 1</code> becomes <code>i + 1</code>.</li>
+<li><strong>Prove</strong> each invariant again for the after-body value.</li>
+</ol>
+<p>For <code>count</code>, the two preservation obligations are:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>(0 &lt;= i and i &lt;= n and i &lt; n) =&gt; 0 &lt;= i + 1
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>(0 &lt;= i and i &lt;= n and i &lt; n) =&gt; i + 1 &lt;= n
+</span></code></pre></div>
+<p>The second one uses <code>i &lt; n</code> to prove <code>i + 1 &lt;= n</code>.</p>
+<h2 id="havoc-for-scalars">Havoc for scalars<a class="headerlink" href="#havoc-for-scalars" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Havoc is how the prover forgets what a loop did to a variable.</li>
+<li>The loop prover scans the loop body for scalar assignments.</li>
+<li>A <code>ScalarWriterCollector</code> walks the body and records every name that appears
+    on the left of an assignment, including assignments inside nested <code>if</code> and
+    <code>while</code> statements.</li>
+<li>It deliberately ignores <code>let</code> declarations inside the loop body: those names
+    are local to a single iteration and do not exist before the loop.</li>
+<li>Each recorded name that already exists in the state is replaced with a fresh
+    symbol of the same sort:</li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_fresh_from_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>    <span class="k">if</span> <span class="n">z3</span><span class="o">.</span><span class="n">is_bool</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">if</span> <span class="n">z3</span><span class="o">.</span><span class="n">is_string</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+</span></code></pre></div>
+<p>Why this is sound:</p>
+<ul>
+<li>The loop may run any number of times.</li>
+<li>We cannot know the exact final value of an assigned variable.</li>
+<li>We only know what the invariant tells us about it.</li>
+<li>The invariant is the only bridge from before the loop to after it.</li>
+</ul>
+<h2 id="exit-state">Exit state<a class="headerlink" href="#exit-state" title="Permanent link">&para;</a></h2>
+<p>After the loop, the prover must continue with a state that satisfies the
+invariant and the negated loop condition:</p>
+<ol>
+<li>Havoc the modified variables again.</li>
+<li>Assume the invariants.</li>
+<li>Assume <code>not condition</code>.</li>
+</ol>
+<p>For <code>count</code>, after the loop:</p>
+<ul>
+<li><code>i</code> becomes a fresh symbol such as <code>i!3</code>.</li>
+<li>The path gains <code>0 &lt;= i</code>, <code>i &lt;= n</code>, and <code>not (i &lt; n)</code>, so <code>i &gt;= n</code>.</li>
+<li>Together these force <code>i == n</code>.</li>
+<li>The following <code>return i</code> proves <code>ensures result == n</code>.</li>
+</ul>
+<p>The body's final value is deliberately <em>not</em> connected to the exit value; the
+invariant is the only information that survives.</p>
+<h2 id="termination-with-decreases">Termination with <code>decreases</code><a class="headerlink" href="#termination-with-decreases" title="Permanent link">&para;</a></h2>
+<p>A <code>decreases</code> clause proves that a loop terminates. It produces two
+obligations:</p>
+<h3 id="before-the-loop">Before the loop<a class="headerlink" href="#before-the-loop" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The measure must be non-negative:</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>decreases &gt;= 0
+</span></code></pre></div>
+<h3 id="after-the-body">After the body<a class="headerlink" href="#after-the-body" title="Permanent link">&para;</a></h3>
+<ul>
+<li>The measure must strictly decrease:</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>new_decreases &lt; old_decreases
+</span></code></pre></div>
+<p>For <code>count</code>, the measure is <code>n - i</code>:</p>
+<ul>
+<li>Entry: <code>n - 0 &gt;= 0</code>, proved from <code>requires n &gt;= 0</code>.</li>
+<li>After the body, with the havoced <code>i</code> and the invariant/condition facts
+    assumed: <code>n - (i + 1) &lt; n - i</code>, which simplifies to <code>-1 &lt; 0</code>.</li>
+</ul>
+<p>The strict-decrease check uses the same havoced <code>i</code> as the preservation check.</p>
+<p>A loop without <code>decreases</code> is still accepted; the verifier then proves partial
+correctness only. It cannot prove the loop terminates.</p>
+<h2 id="a-broken-loop-invariant">A broken loop invariant<a class="headerlink" href="#a-broken-loop-invariant" title="Permanent link">&para;</a></h2>
+<p>A loop invariant must hold before the first iteration <em>and</em> survive every
+execution of the loop body. The example below survives the first iteration but
+not the second.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>fn bad() -&gt; Bool
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>{
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>  let i: Int = 0;
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  while i &lt; 3
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    invariant i &lt;= 2
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  {
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    i = i + 1;
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>  }
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>  return true;
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>}
+</span></code></pre></div>
+<ul>
+<li>The initialization obligation is <code>0 &lt;= 2</code>, which holds.</li>
+<li>The preservation obligation is built exactly like the preservation step in
+    <code>count</code>:<ul>
+<li>Havoc <code>i</code> into an arbitrary fresh symbol.</li>
+<li>Assume the invariant <code>i &lt;= 2</code> and the loop condition <code>i &lt; 3</code>.</li>
+<li>Run the body <code>i = i + 1</code> once, giving the after-body value <code>i + 1</code>.</li>
+<li>Prove <code>i + 1 &lt;= 2</code>.</li>
+</ul>
+</li>
+</ul>
+<p>That gives the obligation:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>(i &lt;= 2 and i &lt; 3) =&gt; i + 1 &lt;= 2
+</span></code></pre></div>
+<ul>
+<li>Z3 finds a counterexample: <code>i = 2</code>.<ul>
+<li><code>2 &lt;= 2</code> is true, so the invariant holds <em>before</em> the iteration.</li>
+<li><code>2 &lt; 3</code> is true, so the loop condition says to run another iteration.</li>
+<li><code>2 + 1 &lt;= 2</code> is false, so the invariant is broken <em>after</em> the iteration.</li>
+</ul>
+</li>
+<li>The prover does not iterate the loop from <code>0</code> to <code>3</code>. The preservation check
+    symbolically executes the body once on an arbitrary <code>i</code>, and the
+    counterexample <code>i = 2</code> picks the arbitrary iteration where that one step
+    breaks the invariant.</li>
+<li>The correct upper bound is <code>i &lt;= 3</code>, because <code>i</code> reaches <code>3</code> before the loop
+    exits.</li>
+</ul>
+<h2 id="appendix-structure-of-prover_looppy">Appendix: structure of <code>prover_loop.py</code><a class="headerlink" href="#appendix-structure-of-prover_looppy" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>ScalarWriterCollector</code>: records the scalar names a loop body assigns.</li>
+<li><code>Prover</code>: subclasses the <code>basic</code> prover and adds:<ul>
+<li><code>visit_StmtWhile</code>: dispatches a loop statement to <code>exec_while</code>.</li>
+<li><code>exec_while</code>: initialization, preservation, termination, and exit.</li>
+<li><code>_havoc_loop_vars</code>: replaces assigned scalars with fresh symbols.</li>
+<li><code>_fresh_from_term</code>: makes a fresh symbol of the same Z3 sort.</li>
+</ul>
+</li>
+<li>Module-level functions:<ul>
+<li><code>verify_program</code>: the entry point from the CLI.</li>
+<li>The Z3 check loop (<code>check_obligations</code>) is shared with the other levels
+    and lives in <code>frml/prover_complete.py</code>.</li>
+</ul>
+</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":[],"search":"../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+    
+  </body>
+</html>

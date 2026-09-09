@@ -1,0 +1,33 @@
+fn all_nonnegative(a: Array<Int>) -> Bool
+  ensures
+    result ==
+      (forall i: Int ::
+        0 <= i and i < length(a) => a[i] >= 0)
+{
+  let i: Int = 0;
+
+  while i < length(a)
+    invariant 0 <= i
+    invariant i <= length(a)
+    invariant forall j: Int :: 0 <= j and j < i => a[j] >= 0
+    decreases length(a) - i
+  {
+    if a[i] < 0 {
+      return false;
+    }
+
+    i = i + 1;
+  }
+
+  return true;
+}
+
+fn main() -> Int
+{
+  let xs: Array<Int> = [1, 2, 3];
+  if all_nonnegative(xs) {
+    return 0;
+  } else {
+    return 1;
+  }
+}

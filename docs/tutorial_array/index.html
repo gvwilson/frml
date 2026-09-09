@@ -1,0 +1,1486 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../tutorial_loop/">
+      
+      
+        <link rel="next" href="../tutorial_builtin/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>The Array Level: Fixed-Size Arrays - frml</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.ce62732f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-array-level-fixed-size-arrays" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="frml" class="md-header__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            frml
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              The Array Level: Fixed-Size Arrays
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="frml" class="md-nav__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    frml
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How the Frml Verifier Works
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Basic Level: Scalars, No Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Loop Level: Scalar Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Array Level: Fixed-Size Arrays
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Array Level: Fixed-Size Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-array-level-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the <code>array</code> level adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-checking-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Type checking arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type checking arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#array-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array access
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array assignment
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-declarations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array declarations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array returns
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#length" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>length(...)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-provers-array-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The prover's array model
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The prover&#x27;s array model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Representation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-literals_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-and-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Access and assignment
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounds-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Bounds obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-equality" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array equality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#old-with-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>old(...)</code> with arrays
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loops-and-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Loops and arrays
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-calls-with-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Function calls with arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Function calls with arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#array-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array arguments
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-returns_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array returns
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quantifiers-over-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Quantifiers over arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quantifiers over arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-_quant_depth-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why <code>_quant_depth</code> exists
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-property-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array property example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-structure-of-the-array-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: structure of the array level
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_builtin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Builtin Level: I/O and Resizable Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Complete Level: The Full Language
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-array-level-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the <code>array</code> level adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#type-checking-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Type checking arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Type checking arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#array-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array access
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-literals" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array assignment
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-declarations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array declarations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array returns
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#length" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>length(...)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-provers-array-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The prover's array model
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The prover&#x27;s array model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#representation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Representation
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-literals_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array literals
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#access-and-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Access and assignment
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounds-obligations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Bounds obligations
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-equality" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array equality
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#old-with-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>old(...)</code> with arrays
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loops-and-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Loops and arrays
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#function-calls-with-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Function calls with arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Function calls with arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#array-arguments" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array arguments
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-returns_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array returns
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#quantifiers-over-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Quantifiers over arrays
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Quantifiers over arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#why-_quant_depth-exists" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Why <code>_quant_depth</code> exists
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-property-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array property example
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-structure-of-the-array-level" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: structure of the array level
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="the-array-level-fixed-size-arrays">The Array Level: Fixed-Size Arrays<a class="headerlink" href="#the-array-level-fixed-size-arrays" title="Permanent link">&para;</a></h1>
+<p>This tutorial explains how Frml checks and validates programs at the <code>array</code>
+level: everything from the <a href="../tutorial_loop/">loop level</a>, plus fixed-size
+arrays. The <code>array</code> level has no built-in functions, so arrays can only be
+created from array literals or array-returning function calls; <code>push</code> and
+<code>pop</code> are left to the <a href="../tutorial_builtin/">builtin level</a>.</p>
+<p>Two files implement the level:</p>
+<ul>
+<li><code>frml/typechecker_array.py</code> type-checks array syntax.</li>
+<li><code>frml/prover_array.py</code> generates verification conditions for fixed-size
+    arrays.</li>
+</ul>
+<p>Start with the <a href="../tutorial_intro/">intro</a>, the
+<a href="../tutorial_basic/">basic tutorial</a>, and the
+<a href="../tutorial_loop/">loop tutorial</a> if you have not already read them; this page
+assumes the machinery described there.</p>
+<h2 id="what-the-array-level-adds">What the <code>array</code> level adds<a class="headerlink" href="#what-the-array-level-adds" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The parser already knows how to build array types, literals, access,
+    <code>length(...)</code>, and array assignment.</li>
+<li>The level checker allows arrays but still rejects built-in functions.</li>
+<li>The array type checker adds the array visitors to the loop type checker.</li>
+<li>The array prover adds a symbolic array store and array-aware obligations to
+    the loop prover.</li>
+</ul>
+<p>A minimal array program:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn main() -&gt; Int
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  let a: Array&lt;Int&gt; = [2, 3, 5];
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  assert a[2] == 5;
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  return length(a);
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>}
+</span></code></pre></div>
+<p>Array-level programs are checked by selecting the level explicitly:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>frml<span class="w"> </span>check<span class="w"> </span>--level<span class="w"> </span>array<span class="w"> </span>examples/complete/array_return.frml
+</span></code></pre></div>
+<p>The fixed-size array examples still live in <code>examples/complete/</code> for now; they
+do not use <code>push</code>/<code>pop</code> or I/O, so they also verify at the <code>array</code> level.</p>
+<h2 id="type-checking-arrays">Type checking arrays<a class="headerlink" href="#type-checking-arrays" title="Permanent link">&para;</a></h2>
+<p>The array type checker subclasses the loop type checker and adds visitors for
+the array syntax.  Everything scalar and every <code>while</code> loop is checked exactly
+as before; the new visitors only handle array nodes.</p>
+<h3 id="array-access">Array access<a class="headerlink" href="#array-access" title="Permanent link">&para;</a></h3>
+<p><code>visit_ExprArrayAccess</code> checks two things:</p>
+<ol>
+<li>The expression being indexed must have an array type.</li>
+<li>The index must have type <code>Int</code>.</li>
+</ol>
+<p>It then returns the array's element type.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_ExprArrayAccess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">arr</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">)</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">_failif</span><span class="p">(</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="ow">not</span> <span class="n">arr</span><span class="o">.</span><span class="n">is_array</span><span class="p">(),</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="n">FrmlTypeError</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="sa">f</span><span class="s2">"array access expects an array but found </span><span class="si">{</span><span class="n">arr</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="n">expr</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="p">)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">idx</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="n">_failif</span><span class="p">(</span><span class="n">idx</span> <span class="o">!=</span> <span class="n">INT</span><span class="p">,</span> <span class="n">FrmlTypeError</span><span class="p">,</span> <span class="s2">"array index must have type Int"</span><span class="p">,</span> <span class="n">expr</span><span class="o">.</span><span class="n">pos</span><span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">return</span> <span class="n">arr</span><span class="o">.</span><span class="n">elem</span>
+</span></code></pre></div>
+<h3 id="array-literals">Array literals<a class="headerlink" href="#array-literals" title="Permanent link">&para;</a></h3>
+<p><code>visit_ExprArrayLiteral</code> requires every element to be a scalar (<code>Int</code>, <code>Bool</code>,
+or <code>String</code>) and all elements to have the same type.  It returns <code>Array&lt;T&gt;</code>
+for that element type.</p>
+<p>An empty literal <code>[]</code> has no elements from which to infer <code>T</code>, so it is only
+accepted when the expected type is already known from the surrounding <code>let</code>
+declaration, parameter type, or return type.</p>
+<h3 id="array-assignment">Array assignment<a class="headerlink" href="#array-assignment" title="Permanent link">&para;</a></h3>
+<p><code>visit_StmtArrayAssign</code> checks <code>a[i] = v</code>:</p>
+<ul>
+<li><code>a</code> must have an array type.</li>
+<li><code>i</code> must have type <code>Int</code>.</li>
+<li><code>v</code> must have the array's element type.</li>
+</ul>
+<h3 id="array-declarations">Array declarations<a class="headerlink" href="#array-declarations" title="Permanent link">&para;</a></h3>
+<p>Scalar <code>let</code> declarations are inherited unchanged.  For an array declaration
+the checker requires the initializer to be either:</p>
+<ul>
+<li>an array literal, or</li>
+<li>a call to a function that returns an array.</li>
+</ul>
+<p>Array-to-array assignment such as <code>let b: Array&lt;Int&gt; = a;</code> is rejected.  Frml
+treats arrays as references, and allowing that form would create two names for
+one array; the language avoids that aliasing.</p>
+<h3 id="array-returns">Array returns<a class="headerlink" href="#array-returns" title="Permanent link">&para;</a></h3>
+<p>A function may return an array, but the checker rejects returning an array
+<em>parameter</em> directly.  Returning a literal, a function-local array, or a call
+that returns an array is fine.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_StmtReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">_failif</span><span class="p">(</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>        <span class="ow">and</span> <span class="n">ret</span><span class="o">.</span><span class="n">is_array</span><span class="p">()</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="ow">and</span> <span class="n">stmt</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">variable_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_params</span><span class="p">,</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="n">FrmlTypeError</span><span class="p">,</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="s2">"cannot return an array parameter (arrays are references)"</span><span class="p">,</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="n">stmt</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="p">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">visit_StmtReturn</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="length"><code>length(...)</code><a class="headerlink" href="#length" title="Permanent link">&para;</a></h3>
+<p><code>visit_ExprLength</code> requires its argument to be an array and returns <code>Int</code>.</p>
+<h2 id="the-provers-array-model">The prover's array model<a class="headerlink" href="#the-provers-array-model" title="Permanent link">&para;</a></h2>
+<p>Arrays need more machinery than integers.</p>
+<h3 id="representation">Representation<a class="headerlink" href="#representation" title="Permanent link">&para;</a></h3>
+<ul>
+<li>An array is a Z3 <code>Array(Int, elem)</code> plus a length.<ul>
+<li>The array maps integer indexes to element values.</li>
+<li>The length is a separate symbolic integer.</li>
+</ul>
+</li>
+<li>The prover stores an array as an <code>ArrayVal</code>, which pairs the Z3 array term
+    with its length.</li>
+<li><code>State.arrays</code> maps array variable names to <code>ArrayVal</code> values.</li>
+<li><code>State.old_arrays</code> is the snapshot of those values at function entry.</li>
+</ul>
+<h3 id="array-literals_1">Array literals<a class="headerlink" href="#array-literals_1" title="Permanent link">&para;</a></h3>
+<p><code>[3, 4]</code> becomes a chain of <code>Store</code> operations:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Store(Store(fresh_array, 0, 3), 1, 4)
+</span></code></pre></div>
+<p>Its length is the literal <code>2</code>.  An empty literal produces a fresh array over
+the expected element sort with length <code>0</code>.</p>
+<h3 id="access-and-assignment">Access and assignment<a class="headerlink" href="#access-and-assignment" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>a[i]</code> becomes <code>z3.Select(arr.term, i)</code>.<ul>
+<li>It also emits a bounds obligation <code>0 &lt;= i and i &lt; length(a)</code>.</li>
+</ul>
+</li>
+<li><code>a[i] = v</code> becomes <code>z3.Store(arr.term, i, v)</code>, a new array.<ul>
+<li>It also emits a bounds obligation for <code>i</code>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="bounds-obligations">Bounds obligations<a class="headerlink" href="#bounds-obligations" title="Permanent link">&para;</a></h3>
+<p>Every array read and write produces:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>hypotheses:  current path
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>goal:        0 &lt;= i and i &lt; length(a)
+</span></code></pre></div>
+<p>Example from <code>increment_first</code>:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)
+</span></code></pre></div>
+<h3 id="array-equality">Array equality<a class="headerlink" href="#array-equality" title="Permanent link">&para;</a></h3>
+<p>Frml <code>a == b</code> on two arrays is not a single Z3 equality:</p>
+<ul>
+<li>The lengths must be equal.</li>
+<li>Every element in range must be equal.</li>
+</ul>
+<p>The prover builds:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>length(a) == length(b)
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>and
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
+</span></code></pre></div>
+<p>This is why array equality is defined by a quantified formula.</p>
+<h2 id="old-with-arrays"><code>old(...)</code> with arrays<a class="headerlink" href="#old-with-arrays" title="Permanent link">&para;</a></h2>
+<p><code>old(e)</code> means "the value of <code>e</code> at the moment the function was entered".  The
+prover snapshots parameters at entry into <code>old_vars</code> and <code>old_arrays</code>.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>fn increment_first(a: Array&lt;Int&gt;)
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  requires length(a) &gt; 0
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  ensures a[0] == old(a[0]) + 1
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>{
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  a[0] = a[0] + 1;
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>}
+</span></code></pre></div>
+<ul>
+<li>At entry, <code>a</code> is a fresh array symbol <code>a!1</code> with some length.<ul>
+<li><code>old_arrays["a"]</code> keeps that original <code>a!1</code>.</li>
+</ul>
+</li>
+<li>After the assignment, <code>state.arrays["a"]</code> is the updated array.<ul>
+<li><code>a[0]</code> in the postcondition reads the updated array.</li>
+<li><code>old(a[0])</code> reads the original <code>a!1</code>.</li>
+</ul>
+</li>
+<li>The emitted postcondition goal looks like:</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
+</span></code></pre></div>
+<ul>
+<li>Both sides simplify to the same value, so Z3 proves it.</li>
+</ul>
+<h2 id="loops-and-arrays">Loops and arrays<a class="headerlink" href="#loops-and-arrays" title="Permanent link">&para;</a></h2>
+<p>The array level inherits loop verification from the loop level.  The only
+difference is that havoc must also account for arrays.</p>
+<ul>
+<li>Havoc is how the prover forgets what a loop did to a variable.</li>
+<li>An assigned scalar becomes a fresh symbol of the same sort.</li>
+<li>An assigned array becomes a fresh array over the same index and element
+    sorts, keeping its length.</li>
+<li>At the <code>array</code> level, lengths never change inside a loop because there is no
+    <code>push</code> or <code>pop</code>.</li>
+</ul>
+<p>For a loop body that writes <code>a[i]</code>, the prover havocs the <em>contents</em> of <code>a</code>
+while preserving <code>length(a)</code>.  This keeps the induction sound: the inductive
+step does not silently assume which elements were already updated.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>while i &lt; length(a)
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  invariant forall j: Int :: 0 &lt;= j and j &lt; i =&gt; a[j] &gt;= 0
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>{
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  a[i] = a[i] + 1;
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  i = i + 1;
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>}
+</span></code></pre></div>
+<ul>
+<li>After havoc, <code>a</code> is a fresh array with the same length.</li>
+<li>The invariant is the only bridge from before the loop to after it.</li>
+</ul>
+<h2 id="function-calls-with-arrays">Function calls with arrays<a class="headerlink" href="#function-calls-with-arrays" title="Permanent link">&para;</a></h2>
+<p>When one function calls another, the prover uses the callee's contract.</p>
+<h3 id="array-arguments">Array arguments<a class="headerlink" href="#array-arguments" title="Permanent link">&para;</a></h3>
+<p>A callee may mutate an array argument:</p>
+<ul>
+<li><code>written_params</code> tracks which array parameters a function writes.</li>
+<li>A written array gets a fresh post-array.</li>
+<li>A read-only array keeps the caller's array unchanged.</li>
+<li>After the call, the caller's array argument is updated to the callee's
+    post-array.</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>fn increment_first(a: Array&lt;Int&gt;)
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  requires length(a) &gt; 0
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  ensures a[0] == old(a[0]) + 1
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>{
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>  a[0] = a[0] + 1;
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>}
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>fn main() -&gt; Int
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>{
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>  let xs: Array&lt;Int&gt; = [5];
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>  increment_first(xs);
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>  if xs[0] == 6 { return 0; } else { return 1; }
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>}
+</span></code></pre></div>
+<ul>
+<li><code>increment_first</code> writes <code>a[0]</code>, so <code>a</code> is in <code>written_params</code>.</li>
+<li>At the call <code>increment_first(xs)</code>:<ul>
+<li>The precondition <code>length(a) &gt; 0</code> becomes <code>length(xs) &gt; 0</code>, which Z3
+    proves from <code>xs = [5]</code> (length <code>1</code>).</li>
+<li>The prover creates a fresh post-array <code>a_post!N</code> with the same length.</li>
+<li>It assumes the postcondition <code>a_post!N[0] == xs[0] + 1</code>.</li>
+<li>It rebinds <code>xs</code> to <code>a_post!N</code>.</li>
+</ul>
+</li>
+<li>The later check <code>xs[0] == 6</code> uses that assumed relationship, so it holds.</li>
+</ul>
+<h3 id="array-returns_1">Array returns<a class="headerlink" href="#array-returns_1" title="Permanent link">&para;</a></h3>
+<p>A function may return an array, but only a <em>fresh</em> one:</p>
+<ul>
+<li>an array literal,</li>
+<li>a call to another array-returning function, or</li>
+<li>a function-local array variable.</li>
+</ul>
+<p>Returning an array parameter is rejected by the type checker, as described
+above.</p>
+<p>At a call site, the returned array is a fresh <code>ArrayVal</code> with an unknown
+<code>length &gt;= 0</code>, exactly like any other result.  The callee's <code>ensures</code> are
+assumed, and the well-formedness obligations inside them (array bounds,
+non-zero divisors) are suppressed:</p>
+<ul>
+<li>They are part of what is being assumed, not something the caller proves.</li>
+</ul>
+<p>For example:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>fn first_primes() -&gt; Array&lt;Int&gt;
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>  ensures length(result) == 4
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>  ensures result[0] == 2
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>  ensures result[3] == 7
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>{
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>  return [2, 3, 5, 7];
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>}
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>fn main() -&gt; Int
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>{
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>  let primes: Array&lt;Int&gt; = first_primes();
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>  assert primes[3] == 7;
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>  return 0;
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>}
+</span></code></pre></div>
+<ul>
+<li>At the call, <code>primes</code> becomes a fresh array whose length is constrained by
+    <code>ensures length(result) == 4</code>.</li>
+<li>The later <code>primes[3]</code> is therefore in bounds, and its value is <code>7</code> by the
+    second <code>ensures</code>.</li>
+</ul>
+<h2 id="quantifiers-over-arrays">Quantifiers over arrays<a class="headerlink" href="#quantifiers-over-arrays" title="Permanent link">&para;</a></h2>
+<h3 id="why-_quant_depth-exists">Why <code>_quant_depth</code> exists<a class="headerlink" href="#why-_quant_depth-exists" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Consider evaluating the body <code>0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0</code>
+    inside <code>forall i: Int :: ...</code>.</li>
+<li>Normally, <code>a[i]</code> emits a bounds obligation <code>0 &lt;= i and i &lt; length(a)</code>,
+    because an out-of-bounds array read is a proof obligation at that program
+    point.</li>
+<li>Inside a quantifier there is no single program point: <code>i</code> is a bound
+    variable that ranges over <em>all</em> integers, including ones for which
+    <code>0 &lt;= i and i &lt; length(a)</code> is false.</li>
+<li>Emitting the bounds obligation there would ask Z3 to prove
+    <code>0 &lt;= i and i &lt; length(a)</code> for an unconstrained <code>i</code>, which is false, so the
+    verifier would wrongly reject the formula.</li>
+<li>The bounds are instead part of the quantified formula's own hypothesis: the
+    implication only requires <code>a[i]</code> to be well-defined when its left side is
+    true.</li>
+<li>The prover therefore increments <code>_quant_depth</code> while it evaluates a
+    quantified body.  Array accesses and divisions inside that body skip their
+    bounds/division obligations while <code>_quant_depth &gt; 0</code>.</li>
+<li>The quantified body is still built as a Z3 term, and Z3 reasons about the
+    whole <code>ForAll</code>/<code>Exists</code> formula directly.</li>
+</ul>
+<h3 id="array-property-example">Array property example<a class="headerlink" href="#array-property-example" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ensures
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  result ==
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    (forall i: Int ::
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>      0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0)
+</span></code></pre></div>
+<ul>
+<li>The <code>ensures</code> goal is a Z3 term:</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>result == ForAll(i, Implies(And(0 &lt;= i, i &lt; len), a[i] &gt;= 0))
+</span></code></pre></div>
+<ul>
+<li>Z3 knows how to decide quantified integer formulas like this one.</li>
+</ul>
+<h2 id="appendix-structure-of-the-array-level">Appendix: structure of the array level<a class="headerlink" href="#appendix-structure-of-the-array-level" title="Permanent link">&para;</a></h2>
+<ul>
+<li><code>typechecker_array.py</code> subclasses the loop type checker and adds:<ul>
+<li><code>visit_StmtArrayAssign</code>: array element assignment.</li>
+<li><code>visit_StmtLet</code>: array declarations from literals or array calls.</li>
+<li><code>visit_StmtReturn</code>: rejects returning array parameters.</li>
+<li><code>visit_ExprArrayAccess</code>: array reads.</li>
+<li><code>visit_ExprArrayLiteral</code>: array literals.</li>
+<li><code>visit_ExprLength</code>: <code>length(...)</code>.</li>
+<li><code>_is_array_valued_call</code>: recognizes calls that return arrays.</li>
+</ul>
+</li>
+<li><code>prover_array.py</code> reuses the full-language prover's array machinery and
+    rejects built-ins if they are encountered directly; the level checker
+    normally prevents them from reaching the prover.  The array machinery it
+    inherits adds:<ul>
+<li><code>ArrayVal</code>: an array term plus its length, stored in <code>State.arrays</code>.</li>
+<li><code>State.old_arrays</code>: the snapshot of arrays at function entry.</li>
+<li><code>exec_while</code>: loop verification with array-aware havoc.</li>
+<li><code>written_params</code>: tracks which array parameters a function writes.</li>
+</ul>
+</li>
+<li>The Z3 check loop (<code>check_obligations</code>) is shared with the other levels and
+    lives in <code>frml/prover_complete.py</code>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":[],"search":"../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+    
+  </body>
+</html>

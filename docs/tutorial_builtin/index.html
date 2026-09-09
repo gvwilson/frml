@@ -1,0 +1,968 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../tutorial_array/">
+      
+      
+        <link rel="next" href="../tutorial_complete/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>The Builtin Level: I/O and Resizable Arrays - frml</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="../assets/stylesheets/modern/main.ce62732f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#the-builtin-level-io-and-resizable-arrays" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="./.." title="frml" class="md-header__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            frml
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              The Builtin Level: I/O and Resizable Arrays
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="./.." title="frml" class="md-nav__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    frml
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How the Frml Verifier Works
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Basic Level: Scalars, No Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Loop Level: Scalar Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_array/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Array Level: Fixed-Size Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Builtin Level: I/O and Resizable Arrays
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="././" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Builtin Level: I/O and Resizable Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-builtin-level-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the <code>builtin</code> level adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Built-in functions
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Built-in functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-checking-built-ins" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Type checking built-ins
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verifying-built-ins" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Verifying built-ins
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#push-and-pop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>push</code> and <code>pop</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="push and pop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pusharray-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>push(array, value)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poparray" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>pop(array)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resizing-in-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Resizing in loops
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resizing-across-function-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Resizing across function calls
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-what-the-builtin-prover-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: what the builtin prover adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Complete Level: The Full Language
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-the-builtin-level-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        What the <code>builtin</code> level adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#built-in-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Built-in functions
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Built-in functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#type-checking-built-ins" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Type checking built-ins
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verifying-built-ins" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Verifying built-ins
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#push-and-pop" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>push</code> and <code>pop</code>
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="push and pop">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pusharray-value" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>push(array, value)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#poparray" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>pop(array)</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resizing-in-loops" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Resizing in loops
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resizing-across-function-calls" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Resizing across function calls
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#appendix-what-the-builtin-prover-adds" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Appendix: what the builtin prover adds
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="the-builtin-level-io-and-resizable-arrays">The Builtin Level: I/O and Resizable Arrays<a class="headerlink" href="#the-builtin-level-io-and-resizable-arrays" title="Permanent link">&para;</a></h1>
+<p>This tutorial covers the features the <code>builtin</code> level adds on top of the
+<a href="../tutorial_array/">array level</a>: the I/O built-ins and <code>push</code>/<code>pop</code>. Fixed-size
+arrays and <code>while</code> loops are explained in the
+<a href="../tutorial_array/">array tutorial</a> and the
+<a href="../tutorial_loop/">loop tutorial</a>; this page assumes the machinery described
+there.</p>
+<p>Two files implement the level:</p>
+<ul>
+<li><code>frml/typechecker_builtin.py</code> type-checks the built-in functions.</li>
+<li><code>frml/prover_builtin.py</code> models the built-ins and resizable arrays.</li>
+</ul>
+<p>Start with the <a href="../tutorial_intro/">intro</a>, the
+<a href="../tutorial_basic/">basic tutorial</a>, the
+<a href="../tutorial_loop/">loop tutorial</a>, and the
+<a href="../tutorial_array/">array tutorial</a> if you have not already read them.</p>
+<h2 id="what-the-builtin-level-adds">What the <code>builtin</code> level adds<a class="headerlink" href="#what-the-builtin-level-adds" title="Permanent link">&para;</a></h2>
+<ul>
+<li>The level checker allows the built-in functions.</li>
+<li>The builtin type checker resolves the built-in signatures and the
+    polymorphic <code>push</code>/<code>pop</code> signatures.</li>
+<li>The builtin prover models I/O as uninterpreted values and models
+    <code>push</code>/<code>pop</code> as array resize operations.</li>
+</ul>
+<p>A minimal builtin program:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn main() -&gt; Int
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  let a: Array&lt;Int&gt; = [1];
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  push(a, 2);
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  assert length(a) == 2;
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  return 0;
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>}
+</span></code></pre></div>
+<p>Builtin-level programs are selected by passing the level explicitly.  The
+<code>push</code>/<code>pop</code> walk-through is a runtime example rather than a static-check one,
+so run it instead of checking it:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>frml<span class="w"> </span>run<span class="w"> </span>--level<span class="w"> </span><span class="nb">builtin</span><span class="w"> </span>examples/complete/push_pop.frml
+</span></code></pre></div>
+<p>The builtin examples still live in <code>examples/complete/</code> for now.</p>
+<h2 id="built-in-functions">Built-in functions<a class="headerlink" href="#built-in-functions" title="Permanent link">&para;</a></h2>
+<p>Frml's built-ins are listed in <code>frml/builtins.py</code>:</p>
+<ul>
+<li><code>read(path: String) -&gt; String</code> returns the contents of a file.</li>
+<li><code>write(path: String, text: String)</code> writes text to a file.</li>
+<li><code>print(text: String)</code> writes text to standard output.</li>
+<li><code>split(text: String, sep: String) -&gt; Array&lt;String&gt;</code> splits text on a
+    separator.</li>
+<li><code>args() -&gt; Array&lt;String&gt;</code> returns the command-line arguments.</li>
+<li><code>push(array, value)</code> appends a value to an array.</li>
+<li><code>pop(array) -&gt; value</code> removes and returns the last element.</li>
+</ul>
+<h3 id="type-checking-built-ins">Type checking built-ins<a class="headerlink" href="#type-checking-built-ins" title="Permanent link">&para;</a></h3>
+<p><code>TypeChecker.check_call</code> first looks the name up in <code>BUILTINS</code>.  For a
+non-polymorphic built-in it checks the argument count and each argument type
+against the recorded signature, then checks that a value-returning built-in is
+not used as a statement.  The same path is reached whether the built-in
+appears as a statement or as an expression.</p>
+<p><code>push</code> and <code>pop</code> are marked <code>poly=True</code> because their signatures depend on the
+element type of the array argument.  <code>_check_poly_builtin</code> resolves them:</p>
+<ul>
+<li><code>push(a, v)</code> requires <code>a</code> to be an array variable and <code>v</code> to have <code>a</code>'s
+    element type; it is a procedure, so it returns no value.</li>
+<li><code>pop(a)</code> requires <code>a</code> to be an array variable, returns <code>a</code>'s element type,
+    and cannot be used as a statement.</li>
+</ul>
+<p>Both are also rejected inside specifications, because a specification must
+describe a function without mutating arrays.</p>
+<h3 id="verifying-built-ins">Verifying built-ins<a class="headerlink" href="#verifying-built-ins" title="Permanent link">&para;</a></h3>
+<p>The prover models most built-ins as uninterpreted values:</p>
+<ul>
+<li><code>read</code> becomes a fresh string.</li>
+<li><code>split</code> and <code>args</code> become fresh arrays of strings.</li>
+<li><code>print</code> and <code>write</code> evaluate their arguments and then have no further
+    effect.</li>
+</ul>
+<p>The verifier can therefore prove nothing about a built-in's contents, which is
+sound: file contents and command-line arguments are external to the program.</p>
+<h2 id="push-and-pop"><code>push</code> and <code>pop</code><a class="headerlink" href="#push-and-pop" title="Permanent link">&para;</a></h2>
+<p><code>push</code> and <code>pop</code> are the only built-ins that mutate a program array, so the
+prover treats them specially.</p>
+<h3 id="pusharray-value"><code>push(array, value)</code><a class="headerlink" href="#pusharray-value" title="Permanent link">&para;</a></h3>
+<p>The prover models <code>push(a, v)</code> as appending <code>v</code> at the current length:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>a = Store(a, length(a), v)
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>length(a) = length(a) + 1
+</span></code></pre></div>
+<p>There is no bounds obligation: appending is always legal.  The array variable
+is rebound to the new <code>ArrayVal</code>.</p>
+<h3 id="poparray"><code>pop(array)</code><a class="headerlink" href="#poparray" title="Permanent link">&para;</a></h3>
+<p>The prover models <code>pop(a)</code> as removing the last element:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>result = a[length(a) - 1]
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>length(a) = length(a) - 1
+</span></code></pre></div>
+<p>Unlike <code>push</code>, <code>pop</code> emits an obligation that the array is non-empty:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>hypotheses:  current path
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>goal:        0 &lt; length(a)
+</span></code></pre></div>
+<p>Popping an empty array is therefore a failed verification condition rather
+than a runtime error.</p>
+<h3 id="resizing-in-loops">Resizing in loops<a class="headerlink" href="#resizing-in-loops" title="Permanent link">&para;</a></h3>
+<p>A loop that calls <code>push</code> or <code>pop</code> changes an array's length, so loop havoc must
+forget both the contents and the length:</p>
+<ul>
+<li>A scalar assignment havocs the scalar's value.</li>
+<li>A fixed-size array assignment havocs the array's contents but keeps its
+    length.</li>
+<li>An array changed by <code>push</code> or <code>pop</code> havocs the contents <em>and</em> the length.</li>
+</ul>
+<p>This is the same induction soundness argument as in the loop and array
+tutorials: the invariant is the only information that survives the havoc.</p>
+<h3 id="resizing-across-function-calls">Resizing across function calls<a class="headerlink" href="#resizing-across-function-calls" title="Permanent link">&para;</a></h3>
+<p>The builtin prover also tracks which array parameters a callee resizes:</p>
+<ul>
+<li><code>written_params</code> contains array parameters the callee writes.</li>
+<li><code>resized_params</code> is the subset of <code>written_params</code> that the callee resizes
+    with <code>push</code> or <code>pop</code>.</li>
+<li>At a call site, a written-but-not-resized array parameter gets a fresh
+    post-array with the same length.</li>
+<li>A resized array parameter gets a fresh post-array with a fresh, unknown
+    length, and the prover assumes that length is non-negative.</li>
+</ul>
+<h2 id="appendix-what-the-builtin-prover-adds">Appendix: what the builtin prover adds<a class="headerlink" href="#appendix-what-the-builtin-prover-adds" title="Permanent link">&para;</a></h2>
+<p>On top of the array prover's machinery, the builtin prover adds:</p>
+<ul>
+<li><code>_eval_builtin_call</code>: models I/O and array-producing built-ins as
+    uninterpreted values.</li>
+<li><code>_exec_push</code>: models <code>push</code> as <code>Store</code> plus an incremented length.</li>
+<li><code>_eval_pop</code>: models <code>pop</code> as <code>Select</code> plus a decremented length, with a
+    non-empty obligation.</li>
+<li><code>resized_params</code>: tracks array parameters resized by <code>push</code>/<code>pop</code>.</li>
+<li><code>EffectCollector.resized</code>: collects the arrays a loop body resizes, so loop
+    havoc can also refresh their lengths.</li>
+<li>The shared Z3 check loop (<code>check_obligations</code>), which the <code>basic</code>, <code>loop</code>,
+    <code>array</code>, and <code>complete</code> provers also reuse.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":"..","features":[],"search":"../assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+    
+  </body>
+</html>

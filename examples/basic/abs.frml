@@ -1,0 +1,14 @@
+fn abs(x: Int) -> Int
+  ensures result >= 0
+{
+  if x >= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}
+
+fn main() -> Int
+{
+  return abs(-7);
+}

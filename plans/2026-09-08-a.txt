@@ -1,0 +1,2492 @@
+# Tiny — A Minimal Contract-Based Verification Language
+
+Implement a small programming language called **Tiny** for teaching formal verification to beginners.
+
+The language should feel like a simplified combination of Python and Dafny:
+
+- ordinary imperative programming;
+- statically typed;
+- functions with `requires` and `ensures`;
+- `assert` statements;
+- `while` loops with `invariant`;
+- recursive functions;
+- automatic verification using SMT solving;
+- no interactive proof tactics.
+
+The implementation must have three major components:
+
+1. **Parser** — converts source code into an AST and reports syntax errors.
+2. **Runtime/interpreter** — executes valid programs concretely.
+3. **Prover** — translates specifications and programs into verification conditions and sends them to Z3.
+
+The language is intentionally small. Do not add language features that are not specified here.
+
+---
+
+# 1. Source-file structure
+
+A source file consists of zero or more function declarations.
+
+```
+program ::= function*
+```
+
+Example:
+
+```
+fn max(a: Int, b: Int) -> Int
+  ensures result >= a
+  ensures result >= b
+{
+  if a >= b {
+    return a;
+  } else {
+    return b;
+  }
+}
+```
+
+There are no classes, modules, imports, global variables, macros, or namespaces.
+
+A program may contain functions in any order.
+
+---
+
+# 2. Lexical syntax
+
+Whitespace is insignificant except for separating tokens.
+
+Comments begin with `//` and continue to the end of the line.
+
+Example:
+
+```
+// This is a comment.
+```
+
+Identifiers:
+
+```
+identifier ::= letter (letter | digit | "_")*
+```
+
+Letters are ASCII `A-Z` and `a-z`.
+
+Digits are `0-9`.
+
+Identifiers are case-sensitive.
+
+Examples:
+
+```
+x
+counter
+my_array
+foo2
+```
+
+Reserved keywords:
+
+```
+fn
+let
+if
+else
+while
+return
+assert
+requires
+ensures
+invariant
+decreases
+true
+false
+Int
+Bool
+Array
+old
+result
+forall
+exists
+```
+
+The following are operators:
+
+```
++
+-
+*
+/
+%
+==
+!=
+<
+<=
+>
+>=
+&&
+||
+!
+=
+[
+]
+(
+)
+{
+}
+,
+:
+;
+```
+
+---
+
+# 3. Types
+
+Tiny has exactly three built-in types:
+
+```
+Int
+Bool
+Array<T>
+```
+
+where `T` must be either `Int` or `Bool`.
+
+Therefore the legal array types are:
+
+```
+Array<Int>
+Array<Bool>
+```
+
+Nested arrays are not allowed.
+
+There is no `String`, `Float`, `Char`, object type, tuple type, option type, set type, map type, or user-defined type.
+
+## 3.1 Int
+
+`Int` represents mathematical unbounded integers.
+
+This is important:
+
+```
+Int
+```
+
+must NOT have machine-integer overflow semantics.
+
+For example:
+
+```
+let x: Int = 999999999999999999999999;
+```
+
+is legal.
+
+The runtime should use arbitrary-precision integers.
+
+Z3 should represent `Int` using mathematical integer arithmetic.
+
+## 3.2 Bool
+
+The values are:
+
+```
+true
+false
+```
+
+## 3.3 Array
+
+Arrays are mutable, zero-indexed, finite sequences.
+
+Example:
+
+```
+let a: Array<Int> = [1, 2, 3];
+```
+
+An array has:
+
+- a fixed length;
+- mutable elements;
+- indices from `0` through `length - 1`.
+
+The length cannot be changed after creation.
+
+---
+
+# 4. Literals
+
+Integer literal:
+
+```
+integer ::= digit+
+```
+
+Examples:
+
+```
+0
+1
+42
+123456
+```
+
+Boolean literals:
+
+```
+true
+false
+```
+
+Array literals:
+
+```
+[ expression, expression, ... ]
+```
+
+All elements must have the same type.
+
+Examples:
+
+```
+[1, 2, 3]
+[true, false, true]
+```
+
+The empty array is legal only when its type can be inferred from context.
+
+For example:
+
+```
+let a: Array<Int> = [];
+```
+
+---
+
+# 5. Functions
+
+Function declaration:
+
+```
+fn NAME(PARAMETERS) -> TYPE
+  CONTRACTS
+{
+  STATEMENTS
+}
+```
+
+Parameters:
+
+```
+parameter ::= identifier ":" type
+```
+
+Example:
+
+```
+fn square(x: Int) -> Int
+{
+  return x * x;
+}
+```
+
+A function must have exactly one return type.
+
+There is no `void`.
+
+If a function does not return on every possible path, this is a compile-time error.
+
+---
+
+# 6. Contracts
+
+A function may have zero or more `requires` clauses and zero or more `ensures` clauses.
+
+```
+requires expression
+ensures expression
+```
+
+They occur between the function signature and `{`.
+
+Example:
+
+```
+fn divide(a: Int, b: Int) -> Int
+  requires b != 0
+  ensures result * b == a
+{
+  return a / b;
+}
+```
+
+## 6.1 Preconditions
+
+A `requires` expression is a condition that the caller promises to satisfy.
+
+At runtime, calling a function whose precondition is false is a contract violation.
+
+During verification, every precondition is assumed true when proving the function body.
+
+Multiple `requires` clauses are implicitly ANDed.
+
+These are equivalent:
+
+```
+requires x >= 0
+requires x < 10
+```
+
+and:
+
+```
+requires x >= 0 && x < 10
+```
+
+## 6.2 Postconditions
+
+An `ensures` expression describes what must be true after the function returns.
+
+Inside an `ensures` clause:
+
+```
+result
+```
+
+refers to the function's return value.
+
+Example:
+
+```
+fn abs(x: Int) -> Int
+  ensures result >= 0
+{
+  if x >= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}
+```
+
+Multiple `ensures` clauses are implicitly ANDed.
+
+---
+
+# 7. `old`
+
+Inside an `ensures` clause, `old(expression)` refers to the value of the expression at function entry.
+
+Example:
+
+```
+fn increment(a: Array<Int>)
+  ensures a[0] == old(a[0]) + 1
+{
+  a[0] = a[0] + 1;
+}
+```
+
+`old` is only legal inside postconditions.
+
+It is illegal in ordinary expressions, `requires`, loop invariants, and `assert` statements.
+
+For scalar values:
+
+```
+old(x)
+```
+
+means the entry value of `x`.
+
+For arrays:
+
+```
+old(a[i])
+```
+
+means the value of element `i` at function entry.
+
+The implementation must snapshot the initial state for verification and runtime contract checking.
+
+---
+
+# 8. Statements
+
+The statement grammar is:
+
+```
+statement ::=
+    variable_declaration
+  | assignment
+  | array_assignment
+  | if_statement
+  | while_statement
+  | return_statement
+  | assert_statement
+```
+
+Statements end with `;`, except compound statements (`if` and `while`).
+
+---
+
+# 9. Local variables
+
+Syntax:
+
+```
+let NAME: TYPE = expression;
+```
+
+Example:
+
+```
+let x: Int = 10;
+let done: Bool = false;
+let a: Array<Int> = [1, 2, 3];
+```
+
+Variables are immutable by default after declaration? No: Tiny variables are mutable.
+
+Thus:
+
+```
+let x: Int = 1;
+x = 2;
+```
+
+is legal.
+
+A variable must be declared before it is used.
+
+A variable may not be declared twice in the same lexical scope.
+
+Variables are lexically scoped.
+
+---
+
+# 10. Assignment
+
+Scalar assignment:
+
+```
+NAME = expression;
+```
+
+Example:
+
+```
+x = x + 1;
+```
+
+The expression must have the variable's type.
+
+---
+
+# 11. Array access and mutation
+
+Array read:
+
+```
+expression[expression]
+```
+
+Example:
+
+```
+x = a[i];
+```
+
+Array write:
+
+```
+expression[expression] = expression;
+```
+
+Example:
+
+```
+a[i] = 0;
+```
+
+The array expression must have type `Array<T>`.
+
+The index must have type `Int`.
+
+The assigned value must have the array's element type.
+
+At runtime, accessing an index outside:
+
+```
+0 <= index < length(array)
+```
+
+is a runtime error.
+
+During verification, the prover must generate a proof obligation establishing that every array access is in bounds.
+
+---
+
+# 12. Array length
+
+The built-in function:
+
+```
+length(a)
+```
+
+returns an `Int`.
+
+Example:
+
+```
+let n: Int = length(a);
+```
+
+`length` may be used in specifications.
+
+The length of an array never changes.
+
+---
+
+# 13. Conditional statements
+
+Syntax:
+
+```
+if expression {
+  statements
+} else {
+  statements
+}
+```
+
+The condition must have type `Bool`.
+
+The `else` branch is optional.
+
+Example:
+
+```
+if x > 0 {
+  x = x - 1;
+}
+```
+
+Example:
+
+```
+if x > y {
+  return x;
+} else {
+  return y;
+}
+```
+
+---
+
+# 14. While loops
+
+Syntax:
+
+```
+while expression
+  invariant expression
+  invariant expression
+{
+  statements
+}
+```
+
+The `invariant` clauses are optional syntactically, but a loop without an invariant is permitted only if the prover can establish correctness without one.
+
+Example:
+
+```
+while i < n
+  invariant 0 <= i
+  invariant i <= n
+{
+  i = i + 1;
+}
+```
+
+Multiple invariants are implicitly ANDed.
+
+A loop invariant must be true:
+
+1. before the first iteration;
+2. after every execution of the loop body.
+
+The prover must generate verification conditions for both.
+
+---
+
+# 15. Loop invariants
+
+A loop invariant has the syntax:
+
+```
+invariant expression
+```
+
+The expression must have type `Bool`.
+
+Example:
+
+```
+while i < length(a)
+  invariant 0 <= i
+  invariant i <= length(a)
+{
+  i = i + 1;
+}
+```
+
+For verification, prove:
+
+```
+Precondition => invariant
+```
+
+and:
+
+```
+invariant && loop_condition
+&& body
+=> invariant_after_body
+```
+
+The invariant is assumed when verifying the loop body.
+
+After the loop, the prover may assume:
+
+```
+invariant && !loop_condition
+```
+
+---
+
+# 16. Termination
+
+Every `while` loop is assumed to terminate unless it has an explicit `decreases` clause.
+
+Syntax:
+
+```
+while condition
+  invariant expression
+  decreases expression
+{
+  ...
+}
+```
+
+The `decreases` expression must have type `Int`.
+
+Example:
+
+```
+while i < n
+  invariant 0 <= i
+  invariant i <= n
+  decreases n - i
+{
+  i = i + 1;
+}
+```
+
+The termination condition is:
+
+```
+decreases >= 0
+```
+
+before every iteration, and after executing the body:
+
+```
+new_decreases < old_decreases
+```
+
+The prover must prove both.
+
+If a loop has no `decreases` clause, the implementation may use a conservative built-in termination checker for simple loops. Otherwise it should report:
+
+```
+termination cannot be proved
+```
+
+rather than silently accepting a potentially nonterminating loop.
+
+---
+
+# 17. Return
+
+Syntax:
+
+```
+return expression;
+```
+
+The expression must have the function's declared return type.
+
+Example:
+
+```
+return x + 1;
+```
+
+A function must return on all paths.
+
+For verification, when a return occurs, all `ensures` clauses must be proven with `result` replaced by the returned expression.
+
+---
+
+# 18. Assertions
+
+Syntax:
+
+```
+assert expression;
+```
+
+The expression must have type `Bool`.
+
+Example:
+
+```
+assert x >= 0;
+```
+
+The prover must prove the assertion at that program point.
+
+If it cannot, verification fails.
+
+At runtime, a failed assertion produces a runtime verification error.
+
+---
+
+# 19. Expressions
+
+Expression grammar, from lowest to highest precedence:
+
+```
+expression ::= logical_or
+
+logical_or ::= logical_and ("||" logical_and)*
+
+logical_and ::= equality ("&&" equality)*
+
+equality ::= comparison (("==" | "!=") comparison)*
+
+comparison ::= addition (("<" | "<=" | ">" | ">=") addition)*
+
+addition ::= multiplication (("+" | "-") multiplication)*
+
+multiplication ::= unary (("*" | "/" | "%") unary)*
+
+unary ::= ("!" | "-") unary
+        | primary
+
+primary ::= integer
+          | "true"
+          | "false"
+          | identifier
+          | "old" "(" expression ")"
+          | "length" "(" expression ")"
+          | function_call
+          | array_access
+          | array_literal
+          | "(" expression ")"
+```
+
+ Function calls:
+
+```
+identifier "(" arguments ")"
+```
+
+ Arguments are comma-separated expressions.
+
+ Example:
+
+```
+max(x, y)
+```
+
+ Array access:
+
+```
+expression "[" expression "]"
+```
+
+---
+
+ # 20. Operator semantics
+
+ Integer operators:
+
+```
++
+-
+*
+/
+%
+<
+<=
+>
+>=
+==
+!=
+```
+
+ Boolean operators:
+
+```
+&&
+||
+!
+==
+!=
+```
+
+ `&&` and `||` use short-circuit evaluation.
+
+ Integer division `/` uses mathematical integer division.
+
+ The implementation must define division consistently. Use Euclidean/floor-style integer division compatible with Z3's integer division semantics.
+
+ Division by zero is a runtime error and a verification obligation.
+
+ Modulo `%` has the same divisor restriction: divisor must not be zero.
+
+---
+
+ # 21. Equality
+
+ `==` and `!=` are available for values of the same type.
+
+ Examples:
+
+```
+x == y
+a[i] == 0
+x != 10
+```
+
+ Arrays may be compared for equality.
+
+ Two arrays are equal iff:
+
+ 1. they have equal lengths; and
+2. every corresponding element is equal.
+
+ The prover should encode array equality using Z3 arrays plus length information.
+
+---
+
+ # 22. Function calls
+
+ Functions can call other functions.
+
+ Example:
+
+```
+fn double(x: Int) -> Int
+{
+  return x + x;
+}
+
+fn quadruple(x: Int) -> Int
+{
+  return double(double(x));
+}
+```
+
+ When verifying a function call:
+
+```
+f(args)
+```
+
+ the caller must prove the callee's `requires` clauses.
+
+ The callee's `ensures` clauses may then be assumed.
+
+ The implementation should use the function's contract rather than expanding its body for ordinary calls.
+
+---
+
+ # 23. Recursive functions
+
+ Functions may recursively call themselves.
+
+ Example:
+
+```
+fn factorial(n: Int) -> Int
+  requires n >= 0
+  ensures result >= 1
+  decreases n
+{
+  if n == 0 {
+    return 1;
+  } else {
+    return n * factorial(n - 1);
+  }
+}
+```
+
+ Recursive functions must have a `decreases` clause:
+
+```
+decreases expression
+```
+
+ The decreases expression must be an `Int`.
+
+ It must be nonnegative and strictly decrease on every recursive call.
+
+ For every recursive call, the prover must establish:
+
+```
+new_decreases < old_decreases
+```
+
+ The implementation may initially restrict recursive calls to direct self-recursion.
+
+ Mutual recursion is not required.
+
+---
+
+ # 24. Quantifiers
+
+ Tiny supports two quantifiers:
+
+```
+forall
+exists
+```
+
+ Syntax:
+
+```
+forall NAME: TYPE :: expression
+exists NAME: TYPE :: expression
+```
+
+ Examples:
+
+```
+forall i: Int :: 0 <= i && i < length(a) => a[i] >= 0
+```
+
+ and:
+
+```
+exists i: Int :: 0 <= i && i < length(a) && a[i] == x
+```
+
+ The quantified variable is scoped only inside the quantifier body.
+
+ Quantifiers are primarily intended for specifications.
+
+ Example:
+
+```
+fn all_nonnegative(a: Array<Int>) -> Bool
+  ensures result ==
+    (forall i: Int :: 0 <= i && i < length(a) => a[i] >= 0)
+{
+  ...
+}
+```
+
+ The implementation should translate quantifiers directly to Z3 quantifiers.
+
+ For beginner friendliness, the runtime does not need to execute arbitrary quantified expressions. Quantified expressions are primarily verification expressions.
+
+---
+
+ # 25. Quantifier typing
+
+ For:
+
+```
+forall i: Int :: P
+```
+
+ `P` must have type `Bool`.
+
+ For:
+
+```
+exists i: Int :: P
+```
+
+ `P` must have type `Bool`.
+
+ Quantification over `Array<T>` is not allowed.
+
+ Only `Int` and `Bool` variables may be quantified.
+
+---
+
+ # 26. Operator precedence
+
+ Highest precedence first:
+
+```
+1.  array indexing / function calls
+2.  unary ! and -
+3.  * / %
+4.  + -
+5.  < <= > >=
+6.  == !=
+7.  &&
+8.  ||
+```
+
+ Thus:
+
+```
+a + b * c
+```
+
+ means:
+
+```
+a + (b * c)
+```
+
+ and:
+
+```
+x < y && y < z
+```
+
+ means:
+
+```
+(x < y) && (y < z)
+```
+
+---
+
+ # 27. Type checking
+
+ Tiny is statically typed.
+
+ The compiler must reject:
+
+```
+1 + true
+```
+
+```
+x && 3
+```
+
+```
+a[true]
+```
+
+```
+a = 10
+```
+
+ when `a` is an array.
+
+ The compiler must also reject:
+
+ - unknown variables;
+- unknown functions;
+- wrong number of function arguments;
+- incorrect argument types;
+- incorrect return types;
+- duplicate local declarations;
+- invalid `old` usage;
+- invalid quantifier types;
+- invalid array element types.
+
+---
+
+ # 28. Variable scope
+
+ Each function has a top-level lexical scope.
+
+ Each `{ ... }` introduces a nested lexical scope.
+
+ Variables declared in an outer scope are visible in nested scopes.
+
+ Variables declared in a nested scope are not visible outside it.
+
+ Example:
+
+```
+if x > 0 {
+  let y: Int = 10;
+  x = y;
+}
+
+// y is not available here.
+```
+
+ A declaration may shadow an outer variable only if the implementation chooses to support shadowing. Preferably, reject shadowing to keep the language simple.
+
+---
+
+ # 29. Mutability and aliases
+
+ Arrays are reference-like mutable values.
+
+ Example:
+
+```
+let a: Array<Int> = [1, 2, 3];
+let b: Array<Int> = a;
+
+b[0] = 10;
+```
+
+ After this:
+
+```
+a[0] == 10
+```
+
+ is true.
+
+ Thus assignment of an array variable creates an alias, not a copy.
+
+ However, for the first implementation, it is acceptable to reject array-to-array assignment and array parameters may be treated as references.
+
+ The simplest recommended implementation model is:
+
+ - scalar variables contain values;
+- array variables contain references to mutable arrays;
+- function parameters for arrays pass references;
+- arrays have fixed length.
+
+---
+
+ # 30. Built-in functions
+
+ Tiny has exactly one required built-in function:
+
+```
+length(a: Array<T>) -> Int
+```
+
+ No other built-ins are required.
+
+ The implementation may provide debugging functions outside the Tiny language, but they must not be part of the verification semantics.
+
+---
+
+ # 31. Verification model
+
+ The prover should use **weakest-precondition / verification-condition generation** rather than executing the program symbolically.
+
+ The basic model is:
+
+```
+program
+    ↓
+AST
+    ↓
+type checking
+    ↓
+verification-condition generation
+    ↓
+SMT formulas
+    ↓
+Z3
+```
+
+ The user should not have to write proofs manually.
+
+ The prover should report:
+
+```
+VERIFIED
+```
+
+ when all obligations are proved.
+
+ If an obligation cannot be proved, report:
+
+```
+FAILED
+```
+
+ and identify:
+
+ - source location;
+- kind of obligation;
+- relevant assertion/invariant/contract.
+
+ Example:
+
+```
+FAILED: line 12
+Postcondition may not hold:
+    result >= 0
+```
+
+ If Z3 returns `unknown`, report:
+
+```
+UNKNOWN
+```
+
+ Do not report `VERIFIED`.
+
+---
+
+ # 32. Verification of a function
+
+ To verify:
+
+```
+fn f(parameters) -> T
+  requires P
+  ensures Q
+{
+  body
+}
+```
+
+ the prover starts with:
+
+```
+P
+```
+
+ as an assumption.
+
+ It symbolically executes the body.
+
+ At every `assert A`, it must prove:
+
+```
+current_state => A
+```
+
+ At every array access:
+
+```
+a[i]
+```
+
+ it must prove:
+
+```
+0 <= i
+i < length(a)
+```
+
+ At every division:
+
+```
+x / y
+```
+
+ it must prove:
+
+```
+y != 0
+```
+
+ At every function call:
+
+```
+g(args)
+```
+
+ it must prove the callee's preconditions.
+
+ At every return, it must prove every postcondition.
+
+---
+
+ # 33. Verification of assignments
+
+ For:
+
+```
+x = E;
+```
+
+ symbolically update the state so that the new value of `x` is `E`.
+
+ For:
+
+```
+a[i] = E;
+```
+
+ update the symbolic array using a `store` operation.
+
+ Conceptually:
+
+```
+a' = store(a, i, E)
+```
+
+ All other array indices remain unchanged.
+
+---
+
+ # 34. Verification of `if`
+
+ For:
+
+```
+if C {
+  S1
+} else {
+  S2
+}
+```
+
+ verify both paths separately:
+
+```
+state && C
+```
+
+ through `S1`, and:
+
+```
+state && !C
+```
+
+ through `S2`.
+
+ The resulting states are merged using symbolic conditional expressions (`ite`) or equivalent SSA/path-condition machinery.
+
+---
+
+ # 35. Verification of `while`
+
+ For:
+
+```
+while C
+  invariant I
+{
+  B
+}
+```
+
+ generate these obligations.
+
+ ### Initialization
+
+ Prove:
+
+```
+current_state => I
+```
+
+ ### Preservation
+
+ Assume:
+
+```
+I && C
+```
+
+ and verify the body.
+
+ After the body, prove:
+
+```
+I
+```
+
+ ### Exit
+
+ After the loop, the state satisfies:
+
+```
+I && !C
+```
+
+ The loop body must not be symbolically unrolled indefinitely.
+
+ The invariant is the abstraction used to summarize the loop.
+
+---
+
+ # 36. Verification of `while` termination
+
+ For:
+
+```
+while C
+  invariant I
+  decreases D
+{
+  B
+}
+```
+
+ prove:
+
+```
+I && C => D >= 0
+```
+
+ and after the body:
+
+```
+D_after < D_before
+```
+
+ The decreases expression is evaluated at the beginning and end of each iteration.
+
+---
+
+ # 37. Verification of recursion
+
+ For:
+
+```
+fn f(x: Int)
+  decreases D
+{
+  ...
+  f(E);
+}
+```
+
+ the recursive call must satisfy:
+
+```
+D(E) < D(x)
+```
+
+ and:
+
+```
+D(x) >= 0
+```
+
+ The verifier should use the function's own contract as the specification of the recursive call.
+
+ This permits standard inductive verification.
+
+---
+
+ # 38. Pure expressions
+
+ Expressions have no side effects.
+
+ The only side effects in Tiny are:
+
+ - variable assignment;
+- array element assignment.
+
+ Function calls must be treated as potentially modifying their array arguments.
+
+ A function call used inside an expression therefore needs an explicit symbolic state transition.
+
+ To keep the implementation simple, the first implementation may enforce:
+
+ **A function call cannot occur inside another expression if the function has array parameters.**
+
+ Thus:
+
+```
+x = abs(x);
+```
+
+ is fine.
+
+ But:
+
+```
+x = f(a) + g(a);
+```
+
+ may be rejected if `f` or `g` can mutate `a`.
+
+ Pure functions over scalar arguments are always allowed in expressions.
+
+---
+
+ # 39. Function purity
+
+ A function is considered scalar-pure if:
+
+ - it has no `Array<T>` parameters;
+- it does not mutate any array.
+
+ Scalar-pure functions may safely appear inside expressions and specifications.
+
+ Functions that accept arrays may mutate them.
+
+ For the first implementation, specifications should only call scalar-pure functions.
+
+ This restriction is intentional and keeps SMT translation manageable.
+
+---
+
+ # 40. Specification restrictions
+
+ Expressions appearing in:
+
+```
+requires
+ensures
+invariant
+decreases
+assert
+```
+
+ must be side-effect free.
+
+ They may contain:
+
+ - literals;
+- variables;
+- arithmetic;
+- comparisons;
+- Boolean operators;
+- array reads;
+- `length`;
+- scalar-pure function calls;
+- quantifiers;
+- `old` where permitted.
+
+ They may not contain assignments or mutation.
+
+---
+
+ # 41. `old` semantics
+
+ At function entry, the verifier creates a snapshot:
+
+```
+old_state
+```
+
+ For each scalar:
+
+```
+old(x)
+```
+
+ refers to the initial value.
+
+ For each array:
+
+```
+old(a[i])
+```
+
+ refers to the initial array value at index `i`.
+
+ Conceptually, an initial array is represented as a separate immutable symbolic array:
+
+```
+a_old
+```
+
+ and:
+
+```
+old(a[i])
+```
+
+ becomes:
+
+```
+select(a_old, i)
+```
+
+---
+
+ # 42. Array encoding in Z3
+
+ Represent each Tiny array as:
+
+```
+Z3 Array(Int, ElementSort)
+```
+
+ and separately track its fixed length.
+
+ For example:
+
+```
+Array<Int>
+```
+
+ becomes:
+
+```
+Array(Int, Int)
+```
+
+ and:
+
+```
+Array<Bool>
+```
+
+ becomes:
+
+```
+Array(Int, Bool)
+```
+
+ The length is a separate symbolic integer.
+
+ Array access:
+
+```
+a[i]
+```
+
+ becomes:
+
+```
+select(a, i)
+```
+
+ Array mutation:
+
+```
+a[i] = v
+```
+
+ becomes:
+
+```
+a := store(a, i, v)
+```
+
+ The verifier must separately prove:
+
+```
+0 <= i < length(a)
+```
+
+---
+
+ # 43. Array equality in Z3
+
+ For:
+
+```
+a == b
+```
+
+ require:
+
+```
+length(a) == length(b)
+```
+
+ and:
+
+```
+forall i:
+  0 <= i < length(a) =>
+    select(a, i) == select(b, i)
+```
+
+ This encoding is logically correct even though the underlying Z3 arrays are infinite maps.
+
+ Only the valid finite range is semantically relevant.
+
+---
+
+ # 44. Runtime semantics
+
+ The interpreter executes functions concretely.
+
+ The runtime must enforce:
+
+ - type correctness;
+- array bounds;
+- division-by-zero checks;
+- assertions;
+- function preconditions;
+- function postconditions;
+- loop termination checks where practical.
+
+ For a function call:
+
+ 1. evaluate arguments;
+2. check `requires`;
+3. save the entry state;
+4. execute the body;
+5. check `ensures`;
+6. return the result.
+
+ A failed runtime condition should produce a useful error containing source location.
+
+ Example:
+
+```
+Runtime verification error at line 14:
+assertion failed:
+    x >= 0
+```
+
+---
+
+ # 45. Runtime handling of `old`
+
+ Before entering a function, save a deep immutable snapshot of all array arguments and scalar arguments.
+
+ `old(a[i])` during postcondition checking reads from this snapshot.
+
+ The snapshot must not change when the function mutates the live array.
+
+---
+
+ # 46. Verification errors
+
+ The implementation should distinguish at least these errors:
+
+```
+SyntaxError
+TypeError
+NameError
+ContractError
+VerificationError
+RuntimeError
+TerminationError
+```
+
+ Examples:
+
+```
+TypeError:
+expected Bool but found Int
+```
+
+```
+VerificationError:
+cannot prove postcondition:
+    result >= 0
+```
+
+```
+ContractError:
+precondition violated:
+    x >= 0
+```
+
+---
+
+ # 47. Example: absolute value
+
+ This program should verify:
+
+```
+fn abs(x: Int) -> Int
+  ensures result >= 0
+{
+  if x >= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}
+```
+
+---
+
+ # 48. Example: maximum
+
+```
+fn max(a: Int, b: Int) -> Int
+  ensures result >= a
+  ensures result >= b
+  ensures result == a || result == b
+{
+  if a >= b {
+    return a;
+  } else {
+    return b;
+  }
+}
+```
+
+---
+
+ # 49. Example: counting loop
+
+```
+fn count_to(n: Int) -> Int
+  requires n >= 0
+  ensures result == n
+{
+  let i: Int = 0;
+
+  while i < n
+    invariant 0 <= i
+    invariant i <= n
+    decreases n - i
+  {
+    i = i + 1;
+  }
+
+  return i;
+}
+```
+
+ The verifier must prove:
+
+ 1. `0 <= 0`;
+2. `0 <= n`;
+3. invariant preservation;
+4. termination;
+5. after the loop, `i == n`.
+
+---
+
+ # 50. Example: array sum
+
+ The language does not need a built-in `sum`; users can define it.
+
+```
+fn sum(a: Array<Int>) -> Int
+  ensures
+    result ==
+      (forall i: Int ::
+        0 <= i && i < length(a) => a[i] >= 0)
+{
+  let i: Int = 0;
+  let total: Int = 0;
+
+  while i < length(a)
+    invariant 0 <= i
+    invariant i <= length(a)
+    decreases length(a) - i
+  {
+    total = total + a[i];
+    i = i + 1;
+  }
+
+  return total;
+}
+```
+
+ This particular postcondition is intentionally not a mathematically correct specification of the sum; the implementation should not special-case it. The language only checks what the user writes.
+
+---
+
+ # 51. Example: proving an array property
+
+```
+fn all_nonnegative(a: Array<Int>) -> Bool
+  ensures
+    result ==
+      (forall i: Int ::
+        0 <= i && i < length(a) => a[i] >= 0)
+{
+  let i: Int = 0;
+
+  while i < length(a)
+    invariant 0 <= i
+    invariant i <= length(a)
+    decreases length(a) - i
+  {
+    if a[i] < 0 {
+      return false;
+    }
+
+    i = i + 1;
+  }
+
+  return true;
+}
+```
+
+---
+
+ # 52. Example: mutation and `old`
+
+```
+fn increment_first(a: Array<Int>)
+  requires length(a) > 0
+  ensures a[0] == old(a[0]) + 1
+{
+  a[0] = a[0] + 1;
+}
+```
+
+ The prover must establish the postcondition using the initial array state.
+
+---
+
+ # 53. Example: failing verification
+
+ This should fail:
+
+```
+fn bad(x: Int) -> Int
+  ensures result > x
+{
+  return x;
+}
+```
+
+ The prover should report that:
+
+```
+x > x
+```
+
+ cannot be proven.
+
+---
+
+ # 54. Example: precondition
+
+```
+fn safe_divide(a: Int, b: Int) -> Int
+  requires b != 0
+{
+  return a / b;
+}
+```
+
+ The prover knows:
+
+```
+b != 0
+```
+
+ inside the function and therefore can safely translate the division.
+
+ A caller:
+
+```
+safe_divide(10, 0)
+```
+
+ must be rejected because the precondition is false.
+
+---
+
+ # 55. Entry point
+
+ The language should recognize a function named:
+
+```
+main
+```
+
+ as the optional executable entry point.
+
+ Example:
+
+```
+fn main() -> Int
+{
+  return 0;
+}
+```
+
+ `main` must take no parameters.
+
+ The return value is the process exit code.
+
+ A program containing no `main` may still be verified as a library of functions.
+
+---
+
+ # 56. Command-line interface
+
+ The reference implementation should expose:
+
+```
+tiny check file.tiny
+```
+
+ to parse, type-check, and verify.
+
+ Success:
+
+```
+VERIFIED
+```
+
+ Failure:
+
+```
+FAILED
+```
+
+ Execute:
+
+```
+tiny run file.tiny
+```
+
+ Verify and then execute:
+
+```
+tiny verify-run file.tiny
+```
+
+ The implementation should never execute a program that failed static type checking.
+
+---
+
+ # 57. Source locations
+
+ Every AST node should contain:
+
+```
+file
+line
+column
+```
+
+ or an equivalent source span.
+
+ All compiler and verifier errors should refer to source locations whenever possible.
+
+ For example:
+
+```
+file.tiny:17:5:
+cannot prove loop invariant:
+    0 <= i
+```
+
+---
+
+ # 58. AST design
+
+ The AST should contain at least:
+
+```
+Program
+FunctionDecl
+Parameter
+Type
+
+Stmt
+  LetStmt
+  AssignStmt
+  ArrayAssignStmt
+  IfStmt
+  WhileStmt
+  ReturnStmt
+  AssertStmt
+
+Expr
+  IntLiteral
+  BoolLiteral
+  Variable
+  BinaryExpr
+  UnaryExpr
+  CallExpr
+  ArrayAccessExpr
+  ArrayLiteralExpr
+  LengthExpr
+  OldExpr
+  QuantifierExpr
+
+Contract
+  Requires
+  Ensures
+  Invariant
+  Decreases
+```
+
+ Each node should contain source location information.
+
+---
+
+ # 59. Compiler pipeline
+
+ Implement the compiler in these stages:
+
+```
+source
+  ↓
+lexer
+  ↓
+parser
+  ↓
+AST
+  ↓
+name resolution
+  ↓
+type checker
+  ↓
+verification-condition generator
+  ↓
+Z3
+```
+
+ The runtime uses:
+
+```
+source
+  ↓
+lexer
+  ↓
+parser
+  ↓
+AST
+  ↓
+interpreter
+```
+
+---
+
+ # 60. SSA recommendation
+
+ For the prover, internally convert imperative code into SSA-like symbolic variables where convenient.
+
+ For example:
+
+```
+x = 0;
+x = x + 1;
+```
+
+ can become:
+
+```
+x0 = 0
+x1 = x0 + 1
+```
+
+ This is not visible to the Tiny programmer.
+
+ SSA is recommended because it makes weakest-precondition and SMT translation considerably simpler.
+
+---
+
+ # 61. Function contracts in SMT
+
+ For a function:
+
+```
+fn f(x: Int) -> Int
+  requires P
+  ensures result == E
+```
+
+ the verifier should model calls using a fresh symbolic return value `r` and assume:
+
+```
+P
+```
+
+ and:
+
+```
+r == E
+```
+
+ after proving `P`.
+
+ Do not inline function bodies unless necessary.
+
+ Recursive calls must similarly use the recursive function's contract.
+
+---
+
+ # 62. Handling unknown functions
+
+ A call to an undeclared function is a compile-time error.
+
+ There is no dynamic dispatch.
+
+ There are no function pointers.
+
+ There are no higher-order functions.
+
+---
+
+ # 63. No implicit conversions
+
+ Tiny has no implicit conversions.
+
+ In particular:
+
+```
+1
+```
+
+ is not a `Bool`.
+
+ There is no conversion between:
+
+```
+Int
+Bool
+Array<Int>
+Array<Bool>
+```
+
+---
+
+ # 64. No exceptions
+
+ Tiny has no:
+
+```
+try
+catch
+throw
+```
+
+ If a runtime error occurs, execution stops.
+
+ The verifier should prevent ordinary runtime errors whenever the relevant property is expressible and provable.
+
+---
+
+ # 65. No null
+
+ There is no `null` value.
+
+ Arrays are always valid references.
+
+---
+
+ # 66. No uninitialized variables
+
+ Every variable must be initialized:
+
+```
+let x: Int = 0;
+```
+
+ This is illegal:
+
+```
+let x: Int;
+```
+
+---
+
+ # 67. Design philosophy
+
+ The implementation must resist the temptation to add general-purpose language features.
+
+ Tiny is specifically intended to teach:
+
+```
+programming
+    +
+contracts
+    +
+invariants
+    +
+SMT reasoning
+```
+
+ A beginner should be able to understand essentially the entire language from this specification.
+
+ The core conceptual vocabulary should remain:
+
+```
+requires = assumptions about inputs
+
+ensures = guarantees about outputs
+
+assert = property that must hold here
+
+invariant = property that remains true through a loop
+
+decreases = proof that a loop/function terminates
+
+old = value before the function started
+
+forall / exists = mathematical reasoning
+```
+
+---
+
+ # 68. Required implementation milestone order
+
+ Implement features in this order:
+
+ ### Phase 1
+
+ - lexer;
+- parser;
+- AST;
+- `Int`;
+- `Bool`;
+- variables;
+- assignments;
+- `if`;
+- `while`;
+- `return`;
+- interpreter.
+
+ ### Phase 2
+
+ - `assert`;
+- `requires`;
+- `ensures`;
+- Z3 integration;
+- arithmetic verification;
+- branching verification.
+
+ ### Phase 3
+
+ - loop invariants;
+- loop termination;
+- source-location diagnostics.
+
+ ### Phase 4
+
+ - arrays;
+- array mutation;
+- bounds verification;
+- `length`;
+- `old`.
+
+ ### Phase 5
+
+ - function calls;
+- function contracts;
+- recursion;
+- `decreases`.
+
+ ### Phase 6
+
+ - quantifiers;
+- improved counterexample/error reporting.
+
+ Do not implement advanced features before the preceding phases work.
+
+---
+
+ # 69. Required behavior for the first complete implementation
+
+ The following program must parse, execute, and verify:
+
+```
+fn abs(x: Int) -> Int
+  ensures result >= 0
+{
+  if x >= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}
+
+fn max(a: Int, b: Int) -> Int
+  ensures result >= a
+  ensures result >= b
+{
+  if a >= b {
+    return a;
+  } else {
+    return b;
+  }
+}
+
+fn count(n: Int) -> Int
+  requires n >= 0
+  ensures result == n
+{
+  let i: Int = 0;
+
+  while i < n
+    invariant 0 <= i
+    invariant i <= n
+    decreases n - i
+  {
+    i = i + 1;
+  }
+
+  return i;
+}
+```
+
+ The following program must be rejected by the verifier:
+
+```
+fn bad(x: Int) -> Int
+  ensures result > x
+{
+  return x;
+}
+```
+
+ The following must produce a precondition violation:
+
+```
+fn divide(a: Int, b: Int) -> Int
+  requires b != 0
+{
+  return a / b;
+}
+
+fn main() -> Int
+{
+  return divide(10, 0);
+}
+```
+
+---
+
+ # 70. Important implementation constraint
+
+ Do not make the language depend on Lean, Coq, Isabelle, or another interactive theorem prover.
+
+ The intended prover architecture is:
+
+```
+Tiny
+ ↓
+verification conditions
+ ↓
+Z3
+```
+
+ Z3 is the automated reasoning engine.
+
+ The programmer should never write Z3 formulas directly.
+
+ The language implementation is responsible for translating Tiny expressions, contracts, loops, arrays, and recursive calls into SMT formulas.
+
+ The goal is that a beginner can write:
+
+```
+fn abs(x: Int) -> Int
+  ensures result >= 0
+{
+  if x >= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}
+```
+
+ and get:
+
+```
+VERIFIED
+```
+
+ without knowing anything about SMT, Z3, weakest preconditions, SSA, or theorem proving.
+
+ That simplicity is a core language requirement, not merely a user-interface preference.
+
+ If you give this to a coding LLM, I’d recommend asking it to **implement Phase 1 first, then Phase 2**, rather than asking it to generate the entire compiler/prover in one shot. That dramatically reduces the chance it invents semantics or builds an inconsistent verifier.

@@ -1,0 +1,10 @@
+fn bad() -> Bool
+{
+  let i: Int = 0;
+  while i < 3
+    invariant i <= 3
+  {
+    i = i + 1;
+  }
+  return true;
+}

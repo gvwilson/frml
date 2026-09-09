@@ -1,0 +1,17 @@
+fn increment_first(a: Array<Int>)
+  requires length(a) > 0
+  ensures a[0] == old(a[0]) + 1
+{
+  a[0] = a[0] + 1;
+}
+
+fn main() -> Int
+{
+  let xs: Array<Int> = [5];
+  increment_first(xs);
+  if xs[0] == 6 {
+    return 0;
+  } else {
+    return 1;
+  }
+}

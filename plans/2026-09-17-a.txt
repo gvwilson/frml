@@ -1,0 +1,24 @@
+It is hard to understand how the prover works because it does everything at once.
+To make it more comprehensible, we are going to rewrite it to build up in stages.
+Each stage will use the full lexer and parser, but each type checker and prover
+will handle an increasingly large subset of the Frml language.
+
+- Restructure frml/*.py so that all commands take an argument `--level XYZ`,
+  where `XYZ` is the name of a language level.
+
+- The existing typechecker and prover correspond to the level `complete`.
+  Rename `frml/typechecker.py` and `frml/prover.py` to `frml/typechecker_complete.py`
+  and `frml/prover_complete.py`, and modify imports accordingly. Modify
+  the main driver so that this typechecker and prover are selected if the
+  `complete` level is selected.
+
+- Create `frml/typechecker_basic.py` and `frml/prover_basic.py` that are
+  selected with the `basic` level. These tools only handle scalar values:
+  they do not handle arrays, I/O functions, or the push/pop array functions.
+  They do not handle loops, but do handle recursion.
+
+- Break `pages/tutorial.md` into `pages/tutorial_intro.md`, `pages/tutorial_basic.md`,
+  and `pages/tutorial_complete.md`. The intro introduces concepts and to Z3.
+  The basic tutorial explains how programs containing only scalars without loops
+  are checked and validated. Save any material beyond that in the complete tutorial
+  for now.
