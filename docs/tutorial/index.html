@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../frml/">
+        <link rel="prev" href="../license/">
       
       
       
@@ -198,7 +198,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../CODE_OF_CONDUCT/" class="md-nav__link">
+      <a href="../conduct/" class="md-nav__link">
         
   
   
@@ -224,7 +224,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../CONTRIBUTING/" class="md-nav__link">
+      <a href="../contributing/" class="md-nav__link">
         
   
   
@@ -232,32 +232,6 @@
     
   
   Contributing
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../LICENSE/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  MIT License
 
     
   </span>
@@ -284,6 +258,32 @@
     
   
   Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
 
     
   </span>
@@ -1941,11 +1941,11 @@
                 
                   
 
-<h1 id="how-the-frml-verifier-works">How the Frml Verifier Works</h1>
+<h1 id="how-the-frml-verifier-works">How the Frml Verifier Works<a class="headerlink" href="#how-the-frml-verifier-works" title="Permanent link">&para;</a></h1>
 <p>This tutorial walks through the verification engine in <code>frml/prover.py</code>.
 It explains, step by step, how a Frml program becomes Boolean logic that the
 Z3 solver can check, and what Z3 does with that logic.</p>
-<h2 id="who-this-is-for">Who this is for</h2>
+<h2 id="who-this-is-for">Who this is for<a class="headerlink" href="#who-this-is-for" title="Permanent link">&para;</a></h2>
 <ul>
 <li>You are an experienced programmer.</li>
 <li>You understand basic Boolean logic (<code>and</code>, <code>or</code>, <code>not</code>, implication).</li>
@@ -1953,21 +1953,21 @@ Z3 solver can check, and what Z3 does with that logic.</p>
 <li>You already know what a lexer, parser, and AST are, so this tutorial skips them.</li>
 <li>You want to see the verifier, not the whole compiler.</li>
 </ul>
-<h2 id="what-you-will-get-out-of-it">What you will get out of it</h2>
+<h2 id="what-you-will-get-out-of-it">What you will get out of it<a class="headerlink" href="#what-you-will-get-out-of-it" title="Permanent link">&para;</a></h2>
 <ul>
 <li>You will understand what a "verification condition" is.</li>
 <li>You will see how contracts, loops, arrays, calls, and quantifiers become Z3 formulas.</li>
 <li>You will know what <code>unsat</code>, <code>sat</code>, and <code>unknown</code> mean for a proof.</li>
 <li>You will be able to read <code>frml/prover.py</code> and follow what each function does.</li>
 </ul>
-<h2 id="the-two-files-that-matter">The two files that matter</h2>
+<h2 id="the-two-files-that-matter">The two files that matter<a class="headerlink" href="#the-two-files-that-matter" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>frml/cli.py</code> runs the verifier and prints <code>VERIFIED</code>, <code>FAILED</code>, or <code>UNKNOWN</code>.</li>
 <li><code>frml/prover.py</code> generates verification conditions and checks them with Z3.</li>
 </ul>
 <p>The rest of <code>frml/</code> (lexer, parser, typechecker, interpreter) prepares the program,
 but is not the topic here.</p>
-<h2 id="the-big-picture">The big picture</h2>
+<h2 id="the-big-picture">The big picture<a class="headerlink" href="#the-big-picture" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A Frml program is text.</li>
 <li>The lexer and parser turn the text into an AST.</li>
@@ -1975,26 +1975,26 @@ but is not the topic here.</p>
 <li>The prover turns the AST into a list of <em>verification conditions</em>.</li>
 <li>Each verification condition is a logical claim of the form:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>hypotheses =&gt; goal
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>hypotheses =&gt; goal
+</span></code></pre></div>
 <ul>
 <li>The prover asks Z3 to confirm every verification condition.</li>
 <li>If Z3 confirms all of them, the program is <code>VERIFIED</code>.</li>
 </ul>
 <p>The pipeline is:</p>
-<div class="language-text highlight"><pre><span></span><code>source  -&gt;  AST  -&gt;  verification conditions  -&gt;  Z3  -&gt;  VERIFIED / FAILED / UNKNOWN
-</code></pre></div>
-<h2 id="the-single-idea-behind-the-verifier">The single idea behind the verifier</h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>source  -&gt;  AST  -&gt;  verification conditions  -&gt;  Z3  -&gt;  VERIFIED / FAILED / UNKNOWN
+</span></code></pre></div>
+<h2 id="the-single-idea-behind-the-verifier">The single idea behind the verifier<a class="headerlink" href="#the-single-idea-behind-the-verifier" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A proof obligation is a claim:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>from these hypotheses, this goal always follows
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>from these hypotheses, this goal always follows
+</span></code></pre></div>
 <ul>
 <li>In symbols:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>h1 and h2 and ... and hn  =&gt;  goal
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>h1 and h2 and ... and hn  =&gt;  goal
+</span></code></pre></div>
 <ul>
 <li><code>h1 ... hn</code> are facts known at some point in the program.</li>
 <li><code>goal</code> is a fact that must hold at that point.</li>
@@ -2006,7 +2006,7 @@ but is not the topic here.</p>
 <li>"knowing nothing, prove <code>x &gt; x</code>" (this one is false)</li>
 </ul>
 <p>The prover's whole job is to produce claims in this shape.</p>
-<h2 id="what-z3-is-and-what-it-does">What Z3 is and what it does</h2>
+<h2 id="what-z3-is-and-what-it-does">What Z3 is and what it does<a class="headerlink" href="#what-z3-is-and-what-it-does" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A formula is <em>satisfiable</em> when some assignment of values to its variables makes it true.</li>
 <li>Z3 is an SMT solver.<ul>
@@ -2022,13 +2022,13 @@ but is not the topic here.</p>
 <li><code>unknown</code>: Z3 gave up or timed out.</li>
 </ul>
 <p>Example:</p>
-<div class="language-text highlight"><pre><span></span><code>formula:  x &gt; 3 and x &lt; 5
-answer:   sat          (x = 4 works)
-</code></pre></div>
-<div class="language-text highlight"><pre><span></span><code>formula:  x &gt; 3 and x &lt; 4
-answer:   unsat        (no integer fits)
-</code></pre></div>
-<h2 id="from-is-it-valid-to-is-it-unsatisfiable">From "is it valid?" to "is it unsatisfiable?"</h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>formula:  x &gt; 3 and x &lt; 5
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>answer:   sat          (x = 4 works)
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>formula:  x &gt; 3 and x &lt; 4
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>answer:   unsat        (no integer fits)
+</span></code></pre></div>
+<h2 id="from-is-it-valid-to-is-it-unsatisfiable">From "is it valid?" to "is it unsatisfiable?"<a class="headerlink" href="#from-is-it-valid-to-is-it-unsatisfiable" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The prover wants to prove that <code>hypotheses =&gt; goal</code> is <em>valid</em>.</li>
 <li>Valid means true for every possible assignment of the variables.</li>
@@ -2037,8 +2037,8 @@ answer:   unsat        (no integer fits)
     <code>A =&gt; B</code> is valid exactly when <code>not (A =&gt; B)</code> is unsatisfiable.</li>
 <li>So the prover asks Z3:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>not (hypotheses =&gt; goal)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>not (hypotheses =&gt; goal)
+</span></code></pre></div>
 <ul>
 <li>If Z3 says <code>unsat</code>, then no counterexample exists, so the goal is proved.</li>
 <li>If Z3 says <code>sat</code>, it found a counterexample, so the goal is false.</li>
@@ -2046,47 +2046,47 @@ answer:   unsat        (no integer fits)
 <li>That is the entire proof mechanism.</li>
 <li>Everything else is just building the hypotheses and goals.</li>
 </ul>
-<h2 id="using-z3-in-python">Using Z3 in Python</h2>
-<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">z3</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Solver</span>
-
-<span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
-<span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
-<span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
-</code></pre></div>
+<h2 id="using-z3-in-python">Using Z3 in Python<a class="headerlink" href="#using-z3-in-python" title="Permanent link">&para;</a></h2>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">z3</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Solver</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
+</span></code></pre></div>
 <ul>
 <li><code>A</code>, <code>B</code>, and <code>C</code> don't have values</li>
 <li>Instead, each represents the set of possible Boolean values</li>
 <li>Specify constraints such as <code>A == B</code></li>
 </ul>
-<div class="language-python highlight"><pre><span></span><code><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
-<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
-<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
-<span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
+</span></code></pre></div>
 <ul>
 <li>Then ask Z3 to find a <em>model</em> that satisfies those constraints</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>A == B &amp; B == C: sat
-A False
-B False
-C False
-</code></pre></div>
-<h3 id="an-example-of-unsatisfiability">An example of unsatisfiability</h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>A == B &amp; B == C: sat
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>A False
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>B False
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>C False
+</span></code></pre></div>
+<h3 id="an-example-of-unsatisfiability">An example of unsatisfiability<a class="headerlink" href="#an-example-of-unsatisfiability" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Require <code>A</code> to equal <code>B</code> and <code>B</code> to equal <code>C</code> but <code>A</code> and <code>C</code> to be unequal</li>
 </ul>
-<p><div class="language-python highlight"><pre><span></span><code><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
-<span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
-<span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
-<span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
-<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
-<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
-<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">!=</span> <span class="n">C</span><span class="p">)</span>
-<span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C &amp; B != C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
-</code></pre></div>
-<div class="language-text highlight"><pre><span></span><code>A == B &amp; B == C &amp; B != C: unsat
-</code></pre></div></p>
-<h2 id="the-provers-data-model">The prover's data model</h2>
+<p><div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">!=</span> <span class="n">C</span><span class="p">)</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C &amp; B != C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>A == B &amp; B == C &amp; B != C: unsat
+</span></code></pre></div></p>
+<h2 id="the-provers-data-model">The prover's data model<a class="headerlink" href="#the-provers-data-model" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The prover tracks a program point with a <code>State</code> object.<ul>
 <li><code>State.vars</code>: symbolic values of scalar variables.</li>
@@ -2116,7 +2116,7 @@ C False
 </li>
 <li>The prover never stores concrete numbers in variables: it stores formulas about numbers.</li>
 </ul>
-<h2 id="fresh-names">Fresh names</h2>
+<h2 id="fresh-names">Fresh names<a class="headerlink" href="#fresh-names" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The prover keeps a counter and calls <code>_fresh(name)</code>.</li>
 <li>Each call returns <code>name!N</code> with an increasing <code>N</code>.<ul>
@@ -2131,36 +2131,36 @@ C False
 </li>
 <li>Example:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>x = x + 1;
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>x = x + 1;
+</span></code></pre></div>
 <ul>
 <li>After this statement, the state maps <code>x</code> to the term <code>x!1 + 1</code>, not to a number.</li>
 </ul>
-<h2 id="a-first-complete-example-abs">A first complete example: <code>abs</code></h2>
+<h2 id="a-first-complete-example-abs">A first complete example: <code>abs</code><a class="headerlink" href="#a-first-complete-example-abs" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Frml program:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>fn abs(x: Int) -&gt; Int
-  ensures result &gt;= 0
-{
-  if x &gt;= 0 {
-    return x;
-  } else {
-    return -x;
-  }
-}
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>fn abs(x: Int) -&gt; Int
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  ensures result &gt;= 0
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>{
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>  if x &gt;= 0 {
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>    return x;
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>  } else {
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>    return -x;
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>  }
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>}
+</span></code></pre></div>
 <ul>
 <li>Here is what the prover does, statement by statement.</li>
 </ul>
-<h3 id="entry">Entry</h3>
+<h3 id="entry">Entry<a class="headerlink" href="#entry" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Create a fresh integer symbol <code>x!1</code> for the parameter <code>x</code>.</li>
 <li>Put it in <code>state.vars["x"]</code>.</li>
 <li>Snapshot it into <code>state.old_vars["x"]</code>.</li>
 <li>There are no <code>requires</code> clauses, so the path starts empty.</li>
 </ul>
-<h3 id="the-if">The <code>if</code></h3>
+<h3 id="the-if">The <code>if</code><a class="headerlink" href="#the-if" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Evaluate the condition <code>x &gt;= 0</code> to the term <code>x!1 &gt;= 0</code>.</li>
 <li>Make two copies of the state.</li>
@@ -2170,29 +2170,29 @@ C False
 </ul>
 </li>
 </ul>
-<h3 id="the-first-return">The first <code>return</code></h3>
+<h3 id="the-first-return">The first <code>return</code><a class="headerlink" href="#the-first-return" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Evaluate <code>x</code> to <code>x!1</code>.</li>
 <li>Evaluate the <code>ensures</code> clause <code>result &gt;= 0</code> with <code>result</code> replaced by <code>x!1</code>.</li>
 <li>Emit an obligation:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>hypotheses:  x!1 &gt;= 0
-goal:        0 &lt;= x!1
-</code></pre></div>
-<h3 id="the-second-return">The second <code>return</code></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>hypotheses:  x!1 &gt;= 0
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>goal:        0 &lt;= x!1
+</span></code></pre></div>
+<h3 id="the-second-return">The second <code>return</code><a class="headerlink" href="#the-second-return" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Evaluate <code>-x</code> to <code>-x!1</code>.</li>
 <li>Emit an obligation:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>hypotheses:  not (x!1 &gt;= 0)
-goal:        0 &lt;= -x!1
-</code></pre></div>
-<h3 id="the-two-checks">The two checks</h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>hypotheses:  not (x!1 &gt;= 0)
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>goal:        0 &lt;= -x!1
+</span></code></pre></div>
+<h3 id="the-two-checks">The two checks<a class="headerlink" href="#the-two-checks" title="Permanent link">&para;</a></h3>
 <ul>
 <li>For the first obligation, Z3 is asked:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>not ((x!1 &gt;= 0) =&gt; (0 &lt;= x!1))
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>not ((x!1 &gt;= 0) =&gt; (0 &lt;= x!1))
+</span></code></pre></div>
 <ul>
 <li>There is no value of <code>x!1</code> that makes this true.<ul>
 <li>So Z3 returns <code>unsat</code>.</li>
@@ -2201,8 +2201,8 @@ goal:        0 &lt;= -x!1
 </li>
 <li>For the second obligation:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>not ((x!1 &lt; 0) =&gt; (0 &lt;= -x!1))
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>not ((x!1 &lt; 0) =&gt; (0 &lt;= -x!1))
+</span></code></pre></div>
 <ul>
 <li>Again <code>unsat</code>.<ul>
 <li>The program is <code>VERIFIED</code>.</li>
@@ -2210,20 +2210,20 @@ goal:        0 &lt;= -x!1
 </li>
 <li>That is the whole verifier in miniature: build hypotheses, build a goal, ask Z3.</li>
 </ul>
-<h2 id="translating-expressions-to-z3">Translating expressions to Z3</h2>
+<h2 id="translating-expressions-to-z3">Translating expressions to Z3<a class="headerlink" href="#translating-expressions-to-z3" title="Permanent link">&para;</a></h2>
 <p>The <code>eval_expr</code> method maps each Frml expression node to a Z3 term.</p>
-<h3 id="literals">Literals</h3>
+<h3 id="literals">Literals<a class="headerlink" href="#literals" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>42</code> becomes <code>z3.IntVal(42)</code>.</li>
 <li><code>true</code> becomes <code>z3.BoolVal(True)</code>.</li>
 <li><code>"hi"</code> becomes <code>z3.StringVal("hi")</code>.</li>
 </ul>
-<h3 id="variables">Variables</h3>
+<h3 id="variables">Variables<a class="headerlink" href="#variables" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>x</code> becomes the term currently stored in <code>state.vars["x"]</code>.</li>
 <li><code>result</code> becomes the current return value term, only inside an <code>ensures</code> clause.</li>
 </ul>
-<h3 id="operators">Operators</h3>
+<h3 id="operators">Operators<a class="headerlink" href="#operators" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>a and b</code> becomes <code>z3.And(a, b)</code>.</li>
 <li><code>a or b</code> becomes <code>z3.Or(a, b)</code>.</li>
@@ -2233,7 +2233,7 @@ goal:        0 &lt;= -x!1
 <li><code>&lt;</code>, <code>&lt;=</code>, <code>&gt;</code>, <code>&gt;=</code> become Z3 comparison terms.</li>
 <li><code>a == b</code> and <code>a != b</code> become equality and its negation.</li>
 </ul>
-<h3 id="a-short-example">A short example</h3>
+<h3 id="a-short-example">A short example<a class="headerlink" href="#a-short-example" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Frml: <code>0 &lt;= i and i &lt; n</code></li>
 <li>
@@ -2244,64 +2244,64 @@ goal:        0 &lt;= -x!1
 </li>
 <li>It builds a formula describing the expression.</li>
 </ul>
-<h2 id="division-and-modulo-add-an-obligation">Division and modulo add an obligation</h2>
+<h2 id="division-and-modulo-add-an-obligation">Division and modulo add an obligation<a class="headerlink" href="#division-and-modulo-add-an-obligation" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Division by zero is undefined.</li>
 <li>The verifier turns it into another proof obligation.</li>
 <li>When the prover evaluates <code>a / b</code> or <code>a % b</code>, it first emits:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>hypotheses:  current path
-goal:        b != 0
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>hypotheses:  current path
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>goal:        b != 0
+</span></code></pre></div>
 <ul>
 <li>Then it returns the Z3 division or modulo term.</li>
 <li>Example:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>fn safe_divide(a: Int, b: Int) -&gt; Int
-  requires b != 0
-{
-  return a / b;
-}
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>fn safe_divide(a: Int, b: Int) -&gt; Int
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  requires b != 0
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>{
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>  return a / b;
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>}
+</span></code></pre></div>
 <ul>
 <li>The <code>requires</code> clause puts <code>b!1 != 0</code> into the path.</li>
 <li>The <code>return a / b</code> emits an obligation <code>b!1 != 0</code>.</li>
 <li>The path already contains that fact, so Z3 proves it immediately.</li>
 </ul>
-<h2 id="requires-and-ensures"><code>requires</code> and <code>ensures</code></h2>
+<h2 id="requires-and-ensures"><code>requires</code> and <code>ensures</code><a class="headerlink" href="#requires-and-ensures" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Contracts are the source of most hypotheses and goals.</li>
 </ul>
-<h3 id="requires-is-an-assumption"><code>requires</code> is an assumption</h3>
+<h3 id="requires-is-an-assumption"><code>requires</code> is an assumption<a class="headerlink" href="#requires-is-an-assumption" title="Permanent link">&para;</a></h3>
 <ul>
 <li>At function entry, every <code>requires</code> clause is evaluated.</li>
 <li>The result is appended to the path.</li>
 <li>Later obligations may assume it.</li>
 </ul>
-<h3 id="ensures-is-a-goal"><code>ensures</code> is a goal</h3>
+<h3 id="ensures-is-a-goal"><code>ensures</code> is a goal<a class="headerlink" href="#ensures-is-a-goal" title="Permanent link">&para;</a></h3>
 <ul>
 <li>At every <code>return</code>, every <code>ensures</code> clause is evaluated.</li>
 <li>The <code>result</code> placeholder is replaced by the returned expression.</li>
 <li>The result becomes a goal, checked against the current path.</li>
 </ul>
-<h3 id="multiple-clauses">Multiple clauses</h3>
+<h3 id="multiple-clauses">Multiple clauses<a class="headerlink" href="#multiple-clauses" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Multiple <code>requires</code> clauses are and'ed, one fact per clause in the path.</li>
 <li>Multiple <code>ensures</code> clauses produce one obligation per clause.</li>
 <li>Example:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>fn max(a: Int, b: Int) -&gt; Int
-  ensures result &gt;= a
-  ensures result &gt;= b
-  ensures result == a or result == b
-{
-  if a &gt;= b {
-    return a;
-  } else {
-    return b;
-  }
-}
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>fn max(a: Int, b: Int) -&gt; Int
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>  ensures result &gt;= a
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>  ensures result &gt;= b
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>  ensures result == a or result == b
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>{
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>  if a &gt;= b {
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>    return a;
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>  } else {
+</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a>    return b;
+</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a>  }
+</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a>}
+</span></code></pre></div>
 <ul>
 <li>The <code>if</code> produces two end states…</li>
 <li>…and there are three <code>ensures</code> clauses…</li>
@@ -2312,20 +2312,20 @@ goal:        b != 0
 </li>
 <li>Each is proved with the appropriate branch condition in the path.</li>
 </ul>
-<h2 id="11-old">11. <code>old(...)</code></h2>
+<h2 id="11-old">11. <code>old(...)</code><a class="headerlink" href="#11-old" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>old(e)</code> means "the value of <code>e</code> at the moment the function was entered".</li>
 <li>The prover snapshots parameters at entry into <code>old_vars</code> and <code>old_arrays</code>.</li>
 <li>Inside an <code>ensures</code> clause, <code>old(x)</code> reads that snapshot, not the current value.</li>
 <li>Example:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>fn increment_first(a: Array&lt;Int&gt;)
-  requires length(a) &gt; 0
-  ensures a[0] == old(a[0]) + 1
-{
-  a[0] = a[0] + 1;
-}
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>fn increment_first(a: Array&lt;Int&gt;)
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>  requires length(a) &gt; 0
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>  ensures a[0] == old(a[0]) + 1
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>{
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>  a[0] = a[0] + 1;
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>}
+</span></code></pre></div>
 <ul>
 <li>At entry, <code>a</code> is a fresh array symbol <code>a!1</code> with some length.<ul>
 <li><code>old_arrays["a"]</code> keeps that original <code>a!1</code>.</li>
@@ -2338,12 +2338,12 @@ goal:        b != 0
 </li>
 <li>The emitted postcondition goal looks like:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
+</span></code></pre></div>
 <ul>
 <li>Both sides simplify to the same value, so Z3 proves it.</li>
 </ul>
-<h2 id="branching-with-if">Branching with <code>if</code></h2>
+<h2 id="branching-with-if">Branching with <code>if</code><a class="headerlink" href="#branching-with-if" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A conditional statement forks the symbolic execution.</li>
 <li>The condition is evaluated once.</li>
@@ -2355,12 +2355,12 @@ goal:        b != 0
 <li>The prover tracks a <em>list</em> of states, one per path through the code.</li>
 <li>Example:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>if x &gt;= 0 {
-  return x;
-} else {
-  return -x;
-}
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>if x &gt;= 0 {
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>  return x;
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>} else {
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>  return -x;
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a>}
+</span></code></pre></div>
 <ul>
 <li>After the <code>if</code>, there are two states:<ul>
 <li>State 1 path: <code>x &gt;= 0</code>.</li>
@@ -2369,12 +2369,12 @@ goal:        b != 0
 </li>
 <li>Each <code>return</code> is checked independently against its own path.</li>
 </ul>
-<h2 id="assert"><code>assert</code></h2>
+<h2 id="assert"><code>assert</code><a class="headerlink" href="#assert" title="Permanent link">&para;</a></h2>
 <ul>
 <li>An <code>assert</code> statement produces a goal from the current path.</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>assert 1 &lt; 2;
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>assert 1 &lt; 2;
+</span></code></pre></div>
 <ul>
 <li>Evaluate the condition.</li>
 <li>Emit an obligation with the current path as hypotheses and the condition as goal.</li>
@@ -2386,9 +2386,9 @@ because &gt; <code>assert</code> is a check, not an assumption.
 The programmer asserts what should already be true,
 so the verifier must prove it from what came before.</p>
 </blockquote>
-<h2 id="arrays">Arrays</h2>
+<h2 id="arrays">Arrays<a class="headerlink" href="#arrays" title="Permanent link">&para;</a></h2>
 <p>Arrays need more machinery than integers.</p>
-<h3 id="representation">Representation</h3>
+<h3 id="representation">Representation<a class="headerlink" href="#representation" title="Permanent link">&para;</a></h3>
 <ul>
 <li>An array is a Z3 <code>Array(Int, elem)</code> plus a length.<ul>
 <li>The array maps integer indexes to element values.</li>
@@ -2405,28 +2405,28 @@ so the verifier must prove it from what came before.</p>
 </ul>
 </li>
 </ul>
-<h3 id="array-literals">Array literals</h3>
+<h3 id="array-literals">Array literals<a class="headerlink" href="#array-literals" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>[3, 4]</code> becomes a chain of <code>Store</code> operations:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>Store(Store(fresh_array, 0, 3), 1, 4)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>Store(Store(fresh_array, 0, 3), 1, 4)
+</span></code></pre></div>
 <ul>
 <li>Its length is the literal <code>2</code>.</li>
 </ul>
-<h3 id="bounds-obligations">Bounds obligations</h3>
+<h3 id="bounds-obligations">Bounds obligations<a class="headerlink" href="#bounds-obligations" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Every array read and write produces:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>hypotheses:  current path
-goal:        0 &lt;= i and i &lt; length(a)
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>hypotheses:  current path
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>goal:        0 &lt;= i and i &lt; length(a)
+</span></code></pre></div>
 <ul>
 <li>Example from <code>increment_first</code>:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)
-</code></pre></div>
-<h3 id="array-equality">Array equality</h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)
+</span></code></pre></div>
+<h3 id="array-equality">Array equality<a class="headerlink" href="#array-equality" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Frml <code>a == b</code> on two arrays is not a single Z3 equality.<ul>
 <li>The lengths must be equal.</li>
@@ -2435,14 +2435,14 @@ goal:        0 &lt;= i and i &lt; length(a)
 </li>
 <li>The prover builds:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>length(a) == length(b)
-and
-forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>length(a) == length(b)
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>and
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
+</span></code></pre></div>
 <ul>
 <li>This is why array equality is defined by a quantified formula.</li>
 </ul>
-<h2 id="loops-and-invariants">Loops and invariants</h2>
+<h2 id="loops-and-invariants">Loops and invariants<a class="headerlink" href="#loops-and-invariants" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Loops are the hardest part of verification, because a loop runs an unknown number of times.</li>
 <li>The prover cannot execute the loop symbolically "until it ends", so it uses invariants.</li>
@@ -2453,24 +2453,24 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </ul>
 </li>
 </ul>
-<h3 id="the-count-example">The <code>count</code> example</h3>
-<div class="language-text highlight"><pre><span></span><code>fn count(n: Int) -&gt; Int
-  requires n &gt;= 0
-  ensures result == n
-{
-  let i: Int = 0;
-
-  while i &lt; n
-    invariant 0 &lt;= i
-    invariant i &lt;= n
-    decreases n - i
-  {
-    i = i + 1;
-  }
-
-  return i;
-}
-</code></pre></div>
+<h3 id="the-count-example">The <code>count</code> example<a class="headerlink" href="#the-count-example" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>fn count(n: Int) -&gt; Int
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>  requires n &gt;= 0
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>  ensures result == n
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>{
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>  let i: Int = 0;
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>  while i &lt; n
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>    invariant 0 &lt;= i
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>    invariant i &lt;= n
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a>    decreases n - i
+</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>  {
+</span><span id="__span-29-12"><a id="__codelineno-29-12" name="__codelineno-29-12" href="#__codelineno-29-12"></a>    i = i + 1;
+</span><span id="__span-29-13"><a id="__codelineno-29-13" name="__codelineno-29-13" href="#__codelineno-29-13"></a>  }
+</span><span id="__span-29-14"><a id="__codelineno-29-14" name="__codelineno-29-14" href="#__codelineno-29-14"></a>
+</span><span id="__span-29-15"><a id="__codelineno-29-15" name="__codelineno-29-15" href="#__codelineno-29-15"></a>  return i;
+</span><span id="__span-29-16"><a id="__codelineno-29-16" name="__codelineno-29-16" href="#__codelineno-29-16"></a>}
+</span></code></pre></div>
 <ul>
 <li>Verifying <code>count</code> emits seven obligations in total:<ul>
 <li>Two initialization.</li>
@@ -2480,7 +2480,7 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </ul>
 </li>
 </ul>
-<h3 id="initialization-obligations">Initialization obligations</h3>
+<h3 id="initialization-obligations">Initialization obligations<a class="headerlink" href="#initialization-obligations" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Before the first iteration, each invariant must hold.<ul>
 <li><code>0 &lt;= i</code> with <code>i = 0</code> becomes <code>0 &lt;= 0</code>.</li>
@@ -2488,7 +2488,7 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </ul>
 </li>
 </ul>
-<h3 id="preservation-obligations">Preservation obligations</h3>
+<h3 id="preservation-obligations">Preservation obligations<a class="headerlink" href="#preservation-obligations" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Assume the invariants and the loop condition, run the body, and prove the invariants again.<ul>
 <li>Run <code>i = i + 1</code> to get <code>i = 0 + 1</code>.</li>
@@ -2497,7 +2497,7 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </ul>
 </li>
 </ul>
-<h3 id="exit-state">Exit state</h3>
+<h3 id="exit-state">Exit state<a class="headerlink" href="#exit-state" title="Permanent link">&para;</a></h3>
 <ul>
 <li>After the loop, the prover does not know how many iterations ran.<ul>
 <li>It <em>havocs</em> every variable the loop body assigns.</li>
@@ -2513,7 +2513,7 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </li>
 <li>The final <code>return i</code> then proves <code>ensures result == n</code>.</li>
 </ul>
-<h2 id="havoc">Havoc</h2>
+<h2 id="havoc">Havoc<a class="headerlink" href="#havoc" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Havoc is how the prover forgets what a loop did to a variable.<ul>
 <li>Scan the loop body for assigned scalar names and array names.</li>
@@ -2532,23 +2532,23 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </ul>
 </li>
 </ul>
-<h2 id="termination-with-decreases">Termination with <code>decreases</code></h2>
+<h2 id="termination-with-decreases">Termination with <code>decreases</code><a class="headerlink" href="#termination-with-decreases" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A <code>decreases</code> clause proves a loop terminates.</li>
 <li>Two obligations are emitted.</li>
 </ul>
-<h3 id="before-the-loop">Before the loop</h3>
+<h3 id="before-the-loop">Before the loop<a class="headerlink" href="#before-the-loop" title="Permanent link">&para;</a></h3>
 <ul>
 <li>The measure must be non-negative:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>decreases &gt;= 0
-</code></pre></div>
-<h3 id="after-the-body">After the body</h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>decreases &gt;= 0
+</span></code></pre></div>
+<h3 id="after-the-body">After the body<a class="headerlink" href="#after-the-body" title="Permanent link">&para;</a></h3>
 <ul>
 <li>The measure must strictly decrease:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>new_decreases &lt; old_decreases
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>new_decreases &lt; old_decreases
+</span></code></pre></div>
 <ul>
 <li>For <code>count</code>, the measure is <code>n - i</code>.<ul>
 <li>Entry: <code>n - 0 &gt;= 0</code>.</li>
@@ -2557,11 +2557,11 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </li>
 <li>Both are proved from the path facts.</li>
 </ul>
-<h2 id="function-calls">Function calls</h2>
+<h2 id="function-calls">Function calls<a class="headerlink" href="#function-calls" title="Permanent link">&para;</a></h2>
 <ul>
 <li>When one function calls another, the prover uses the callee's contract.</li>
 </ul>
-<h3 id="the-model_call-method">The <code>model_call</code> method</h3>
+<h3 id="the-model_call-method">The <code>model_call</code> method<a class="headerlink" href="#the-model_call-method" title="Permanent link">&para;</a></h3>
 <ul>
 <li>For a call <code>f(args)</code>:<ul>
 <li>Prove the callee's <code>requires</code> clauses under the caller's current path.</li>
@@ -2575,17 +2575,17 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 <li>The caller never sees the callee's body.</li>
 <li>It only sees the callee's contract.</li>
 </ul>
-<h3 id="example">Example</h3>
-<div class="language-text highlight"><pre><span></span><code>fn inc(x: Int) -&gt; Int
-  requires x &gt;= 0
-  ensures result == x + 1
-{ return x + 1; }
-
-fn main() -&gt; Int
-{
-  return inc(41);
-}
-</code></pre></div>
+<h3 id="example">Example<a class="headerlink" href="#example" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>fn inc(x: Int) -&gt; Int
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>  requires x &gt;= 0
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>  ensures result == x + 1
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a>{ return x + 1; }
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a>fn main() -&gt; Int
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a>{
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>  return inc(41);
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a>}
+</span></code></pre></div>
 <ul>
 <li>For the call <code>inc(41)</code>:<ul>
 <li>Emit a precondition obligation: <code>41 &gt;= 0</code>.</li>
@@ -2595,7 +2595,7 @@ fn main() -&gt; Int
 </ul>
 </li>
 </ul>
-<h3 id="array-arguments">Array arguments</h3>
+<h3 id="array-arguments">Array arguments<a class="headerlink" href="#array-arguments" title="Permanent link">&para;</a></h3>
 <ul>
 <li>A callee may mutate an array argument.<ul>
 <li><code>written_params</code> tracks which array parameters a function writes.</li>
@@ -2605,21 +2605,21 @@ fn main() -&gt; Int
 </li>
 <li>After the call, the caller's array argument is updated to the callee's post-array.</li>
 </ul>
-<h2 id="19-recursion">19. Recursion</h2>
+<h2 id="19-recursion">19. Recursion<a class="headerlink" href="#19-recursion" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Recursive functions need a <code>decreases</code> clause.</li>
 </ul>
-<h3 id="at-function-entry">At function entry</h3>
+<h3 id="at-function-entry">At function entry<a class="headerlink" href="#at-function-entry" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Emit <code>decreases &gt;= 0</code>.</li>
 <li>For <code>factorial</code>, that is <code>n &gt;= 0</code>, proved from <code>requires n &gt;= 0</code>.</li>
 </ul>
-<h3 id="at-a-recursive-call">At a recursive call</h3>
+<h3 id="at-a-recursive-call">At a recursive call<a class="headerlink" href="#at-a-recursive-call" title="Permanent link">&para;</a></h3>
 <ul>
 <li>The callee's <code>requires</code> clauses are proved at the call site.</li>
 <li>For <code>factorial(n - 1)</code>, the prover proves <code>n - 1 &gt;= 0</code>.</li>
 </ul>
-<h3 id="the-strict-decrease-check">The strict-decrease check</h3>
+<h3 id="the-strict-decrease-check">The strict-decrease check<a class="headerlink" href="#the-strict-decrease-check" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>model_call</code> emits <code>decreases_at_call &lt; decreases_at_entry</code> for a self-call.</li>
 <li>This applies to statement calls and to whole-right-hand-side calls with array arguments.</li>
@@ -2627,19 +2627,19 @@ fn main() -&gt; Int
     the current implementation proves the callee's precondition
     but does not emit the strict-decrease obligation.</li>
 </ul>
-<h3 id="the-factorial-example">The <code>factorial</code> example</h3>
-<div class="language-text highlight"><pre><span></span><code>fn factorial(n: Int) -&gt; Int
-  requires n &gt;= 0
-  ensures result &gt;= 1
-  decreases n
-{
-  if n == 0 {
-    return 1;
-  } else {
-    return n * factorial(n - 1);
-  }
-}
-</code></pre></div>
+<h3 id="the-factorial-example">The <code>factorial</code> example<a class="headerlink" href="#the-factorial-example" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>fn factorial(n: Int) -&gt; Int
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a>  requires n &gt;= 0
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>  ensures result &gt;= 1
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a>  decreases n
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>{
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>  if n == 0 {
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a>    return 1;
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>  } else {
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>    return n * factorial(n - 1);
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a>  }
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>}
+</span></code></pre></div>
 <ul>
 <li>The prover emits four obligations:<ul>
 <li><code>n &gt;= 0</code> for the entry <code>decreases n &gt;= 0</code>.</li>
@@ -2649,12 +2649,12 @@ fn main() -&gt; Int
 </ul>
 </li>
 </ul>
-<h2 id="20-quantifiers">20. Quantifiers</h2>
+<h2 id="20-quantifiers">20. Quantifiers<a class="headerlink" href="#20-quantifiers" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Frml supports <code>forall</code> and <code>exists</code> in specifications.</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
+</span></code></pre></div>
 <ul>
 <li>The prover translates these to Z3 quantifiers.<ul>
 <li><code>forall</code> becomes <code>z3.ForAll([var], body)</code>.</li>
@@ -2664,49 +2664,49 @@ fn main() -&gt; Int
 </ul>
 </li>
 </ul>
-<h3 id="why-_quant_depth-exists">Why <code>_quant_depth</code> exists</h3>
+<h3 id="why-_quant_depth-exists">Why <code>_quant_depth</code> exists<a class="headerlink" href="#why-_quant_depth-exists" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Bounds and division obligations are statements about "this program point".</li>
 <li>Inside a quantifier body there is no single program point.</li>
 <li>So the prover skips bounds and division obligations while <code>_quant_depth &gt; 0</code>.</li>
 <li>The quantified formula itself is still a term, and Z3 reasons about it directly.</li>
 </ul>
-<h3 id="array-property-example">Array property example</h3>
-<div class="language-text highlight"><pre><span></span><code>ensures
-  result ==
-    (forall i: Int ::
-      0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0)
-</code></pre></div>
+<h3 id="array-property-example">Array property example<a class="headerlink" href="#array-property-example" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>ensures
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>  result ==
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>    (forall i: Int ::
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>      0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0)
+</span></code></pre></div>
 <ul>
 <li>The <code>ensures</code> goal is a Z3 term:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>result == ForAll(i, Implies(And(0 &lt;= i, i &lt; len), a[i] &gt;= 0))
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>result == ForAll(i, Implies(And(0 &lt;= i, i &lt; len), a[i] &gt;= 0))
+</span></code></pre></div>
 <ul>
 <li>Z3 knows how to decide quantified integer formulas like this one.</li>
 </ul>
-<h2 id="the-z3-check-loop">The Z3 check loop</h2>
+<h2 id="the-z3-check-loop">The Z3 check loop<a class="headerlink" href="#the-z3-check-loop" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The <code>check_obligations</code> function is where Z3 is actually called.</li>
 </ul>
-<div class="language-python highlight"><pre><span></span><code><span class="n">solver</span> <span class="o">=</span> <span class="n">z3</span><span class="o">.</span><span class="n">Solver</span><span class="p">()</span>
-<span class="n">solver</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ms</span><span class="p">)</span>
-
-<span class="k">for</span> <span class="n">ob</span> <span class="ow">in</span> <span class="n">obligations</span><span class="p">:</span>
-    <span class="n">solver</span><span class="o">.</span><span class="n">push</span><span class="p">()</span>
-    <span class="n">hyp</span> <span class="o">=</span> <span class="n">z3</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="o">*</span><span class="n">ob</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span> <span class="k">if</span> <span class="n">ob</span><span class="o">.</span><span class="n">hyp</span> <span class="k">else</span> <span class="n">z3</span><span class="o">.</span><span class="n">BoolVal</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">z3</span><span class="o">.</span><span class="n">Not</span><span class="p">(</span><span class="n">z3</span><span class="o">.</span><span class="n">Implies</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">ob</span><span class="o">.</span><span class="n">goal</span><span class="p">)))</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
-
-    <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="n">z3</span><span class="o">.</span><span class="n">unsat</span><span class="p">:</span>
-        <span class="o">-&gt;</span> <span class="n">VERIFIED</span>
-    <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="n">z3</span><span class="o">.</span><span class="n">sat</span><span class="p">:</span>
-        <span class="o">-&gt;</span> <span class="n">FAILED</span> <span class="k">with</span> <span class="n">the</span> <span class="n">counterexample</span> <span class="n">model</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="o">-&gt;</span> <span class="n">UNKNOWN</span>
-
-    <span class="n">solver</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
-</code></pre></div>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">z3</span><span class="o">.</span><span class="n">Solver</span><span class="p">()</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="n">solver</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ms</span><span class="p">)</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="k">for</span> <span class="n">ob</span> <span class="ow">in</span> <span class="n">obligations</span><span class="p">:</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>    <span class="n">solver</span><span class="o">.</span><span class="n">push</span><span class="p">()</span>
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a>    <span class="n">hyp</span> <span class="o">=</span> <span class="n">z3</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="o">*</span><span class="n">ob</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span> <span class="k">if</span> <span class="n">ob</span><span class="o">.</span><span class="n">hyp</span> <span class="k">else</span> <span class="n">z3</span><span class="o">.</span><span class="n">BoolVal</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a>    <span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">z3</span><span class="o">.</span><span class="n">Not</span><span class="p">(</span><span class="n">z3</span><span class="o">.</span><span class="n">Implies</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">ob</span><span class="o">.</span><span class="n">goal</span><span class="p">)))</span>
+</span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
+</span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a>
+</span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a>    <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="n">z3</span><span class="o">.</span><span class="n">unsat</span><span class="p">:</span>
+</span><span id="__span-37-11"><a id="__codelineno-37-11" name="__codelineno-37-11" href="#__codelineno-37-11"></a>        <span class="o">-&gt;</span> <span class="n">VERIFIED</span>
+</span><span id="__span-37-12"><a id="__codelineno-37-12" name="__codelineno-37-12" href="#__codelineno-37-12"></a>    <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="n">z3</span><span class="o">.</span><span class="n">sat</span><span class="p">:</span>
+</span><span id="__span-37-13"><a id="__codelineno-37-13" name="__codelineno-37-13" href="#__codelineno-37-13"></a>        <span class="o">-&gt;</span> <span class="n">FAILED</span> <span class="k">with</span> <span class="n">the</span> <span class="n">counterexample</span> <span class="n">model</span>
+</span><span id="__span-37-14"><a id="__codelineno-37-14" name="__codelineno-37-14" href="#__codelineno-37-14"></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-37-15"><a id="__codelineno-37-15" name="__codelineno-37-15" href="#__codelineno-37-15"></a>        <span class="o">-&gt;</span> <span class="n">UNKNOWN</span>
+</span><span id="__span-37-16"><a id="__codelineno-37-16" name="__codelineno-37-16" href="#__codelineno-37-16"></a>
+</span><span id="__span-37-17"><a id="__codelineno-37-17" name="__codelineno-37-17" href="#__codelineno-37-17"></a>    <span class="n">solver</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+</span></code></pre></div>
 <ul>
 <li>Each obligation gets a fresh solver context via <code>push</code> and <code>pop</code>.</li>
 <li>The empty hypothesis list becomes <code>True</code>.</li>
@@ -2715,43 +2715,43 @@ fn main() -&gt; Int
 <li><code>sat</code> means a counterexample exists.</li>
 <li>Anything else is <code>unknown</code>.</li>
 </ul>
-<h2 id="the-three-outcomes">The three outcomes</h2>
-<h3 id="verified"><code>VERIFIED</code></h3>
+<h2 id="the-three-outcomes">The three outcomes<a class="headerlink" href="#the-three-outcomes" title="Permanent link">&para;</a></h2>
+<h3 id="verified"><code>VERIFIED</code><a class="headerlink" href="#verified" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Z3 found no counterexample.</li>
 <li>The claim is valid.</li>
 <li>Every obligation in the program reached this result.</li>
 </ul>
-<h3 id="failed"><code>FAILED</code></h3>
+<h3 id="failed"><code>FAILED</code><a class="headerlink" href="#failed" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Z3 found a counterexample model.</li>
 <li>The claim is false for some inputs.</li>
 <li>The CLI prints the obligation kind and description.</li>
 <li>Example:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>fn bad(x: Int) -&gt; Int
-  ensures result &gt; x
-{
-  return x;
-}
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>fn bad(x: Int) -&gt; Int
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>  ensures result &gt; x
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>{
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a>  return x;
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a>}
+</span></code></pre></div>
 <ul>
 <li>The obligation is:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code>hypotheses:  (none)
-goal:        x!1 &gt; x!1
-</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>hypotheses:  (none)
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a>goal:        x!1 &gt; x!1
+</span></code></pre></div>
 <ul>
 <li>Z3 finds any value making <code>not (x &gt; x)</code> true, which is every value, so <code>FAILED</code>.</li>
 </ul>
-<h3 id="unknown"><code>UNKNOWN</code></h3>
+<h3 id="unknown"><code>UNKNOWN</code><a class="headerlink" href="#unknown" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Z3 timed out or gave up.</li>
 <li>The verifier does not pretend the claim is proved.</li>
 <li>The program is not silently accepted.</li>
 <li>The verifier never reports <code>VERIFIED</code> for a program it could not prove.</li>
 </ul>
-<h2 id="a-mental-model-to-keep">A mental model to keep</h2>
+<h2 id="a-mental-model-to-keep">A mental model to keep<a class="headerlink" href="#a-mental-model-to-keep" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The prover runs the program with formulas, not numbers.</li>
 <li>A variable is a symbol, not a value.</li>
@@ -2761,7 +2761,7 @@ goal:        x!1 &gt; x!1
 <li>Every obligation is <code>hypotheses =&gt; goal</code>.</li>
 <li>Z3 proves the obligation by showing the negation has no solution.</li>
 </ul>
-<h2 id="appendix-structure-of-proverpy">Appendix: Structure of <code>prover.py</code></h2>
+<h2 id="appendix-structure-of-proverpy">Appendix: Structure of <code>prover.py</code><a class="headerlink" href="#appendix-structure-of-proverpy" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>ArrayVal</code>: an array term plus its length.</li>
 <li><code>State</code>: the symbolic program state.</li>

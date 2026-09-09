@@ -1,0 +1,7 @@
+[project]
+site_name = "frml"
+docs_dir = "pages"
+site_dir = "docs"
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["frml"]

@@ -25,6 +25,10 @@ coverage:
 ## docs: make documentation
 docs:
 	@find . -path './.venv' -prune -o -type f -name '*~' -exec rm {} +
+	@cp README.md pages/index.md
+	@cp CODE_OF_CONDUCT.md pages/conduct.md
+	@cp CONTRIBUTING.md pages/contributing.md
+	@cp LICENSE.md pages/license.md
 	@zensical build --clean
 	@touch docs/.nojekyll
 
