@@ -1,0 +1,937 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+        <link rel="next" href="./CODE_OF_CONDUCT/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="./assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>Frml - frml</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="./assets/stylesheets/modern/main.ce62732f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#frml" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="" title="frml" class="md-header__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            frml
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Frml
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="" title="frml" class="md-nav__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    frml
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Installation
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Usage
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frml-check-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml check FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frml-run-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml run FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frml-verify-run-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml verify-run FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The language
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Types
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Functions
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Statements
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Expressions
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Examples
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intentional-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intentional limitations
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Project layout
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./CODE_OF_CONDUCT/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./CONTRIBUTING/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./LICENSE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Installation
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Usage
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frml-check-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml check FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frml-run-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml run FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frml-verify-run-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml verify-run FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The language
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Types
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Functions
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Statements
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Expressions
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Examples
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intentional-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intentional limitations
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Project layout
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="frml">Frml</h1>
+<p>Frml is a small, statically typed, contract-based programming language for
+teaching formal verification. It feels like a simplified combination of Python
+and Dafny: ordinary imperative programs, plus <code>requires</code> / <code>ensures</code> contracts,
+<code>assert</code>, loop <code>invariant</code>s, <code>decreases</code> termination measures, <code>old(...)</code>, and
+<code>forall</code> / <code>exists</code> quantifiers. Verification is fully automatic: Frml
+translates each program into verification conditions and asks the <a href="https://github.com/Z3Prover/z3">Z3</a> SMT
+solver to check them. There are no interactive proof tactics and no handwritten
+SMT formulas.</p>
+<p>A program that verifies looks like this:</p>
+<p>```
+fn abs(x: Int) -&gt; Int
+  ensures result &gt;= 0
+{
+  if x &gt;= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}</p>
+<p>fn main() -&gt; Int
+{
+  return abs(-7);
+}
+```</p>
+<p>Running the verifier prints <code>VERIFIED</code>; running the program prints nothing and
+uses <code>main</code>'s return value as the process exit code.</p>
+<h2 id="installation">Installation</h2>
+<p>Frml requires Python 3.13 or newer.</p>
+<p><code>bash
+uv venv
+source .venv/bin/activate
+uv sync --dev
+uv pip install -e .</code></p>
+<p>This installs a <code>frml</code> command on your <code>PATH</code>. You can also run Frml without
+installing it, using the module form:</p>
+<p><code>bash
+python -m frml check examples/abs.frml</code></p>
+<h2 id="usage">Usage</h2>
+<p>Frml exposes three subcommands.</p>
+<h3 id="frml-check-filefrml"><code>frml check FILE.frml</code></h3>
+<p>Parse, type-check, and verify the program. Prints <code>VERIFIED</code> on success, or
+<code>FAILED</code>/<code>UNKNOWN</code> with source locations on failure.</p>
+<h3 id="frml-run-filefrml"><code>frml run FILE.frml</code></h3>
+<p>Type-check the program (without static verification) and execute <code>main()</code>. The
+exit status is <code>main</code>'s return value.</p>
+<h3 id="frml-verify-run-filefrml"><code>frml verify-run FILE.frml</code></h3>
+<p>Verify first, and then execute <code>main()</code> if verification succeeded.</p>
+<h2 id="the-language">The language</h2>
+<h3 id="types">Types</h3>
+<p>Frml has three basic types:</p>
+<p><code>Int          arbitrary-precision integers (no overflow)
+Bool         true or false
+String       a sequence of characters, written in double quotes</code></p>
+<p>Frml supports homogeneous one-dimensional arrays:</p>
+<p><code>Array&lt;Int&gt;    mutable, fixed-length, zero-indexed arrays
+Array&lt;Bool&gt;   mutable, fixed-length, zero-indexed arrays
+Array&lt;String&gt; mutable, fixed-length, zero-indexed arrays of strings</code></p>
+<p>Nested arrays (<code>Array&lt;Array&lt;Int&gt;&gt;</code>) are not allowed, and Frml does not (yet)
+have a mapping (dictionary) type.</p>
+<h3 id="functions">Functions</h3>
+<p><code>fn max(a: Int, b: Int) -&gt; Int
+  ensures result &gt;= a
+  ensures result &gt;= b
+  ensures result == a or result == b
+{
+  if a &gt;= b {
+    return a;
+  } else {
+    return b;
+  }
+}</code></p>
+<ul>
+<li><code>requires</code> clauses are assumptions about the caller's inputs.</li>
+<li><code>ensures</code> clauses are guarantees about the result.<ul>
+<li><code>result</code> names the return value.</li>
+<li><code>old(e)</code> refers to the value of <code>e</code> at function entry.</li>
+</ul>
+</li>
+<li>Multiple <code>requires</code>/<code>ensures</code> clauses are implicitly ANDed.</li>
+<li>A function may omit <code>-&gt; TYPE</code>, making it a void procedure:</li>
+</ul>
+<p><code>fn increment_first(a: Array&lt;Int&gt;)
+  requires length(a) &gt; 0
+  ensures a[0] == old(a[0]) + 1
+{
+  a[0] = a[0] + 1;
+}</code></p>
+<ul>
+<li>Recursive functions must declare a <code>decreases</code> measure.</li>
+</ul>
+<h3 id="statements">Statements</h3>
+<p><code>let NAME: TYPE = expr;       // local variable declaration
+NAME = expr;                 // scalar assignment
+a[i] = expr;                 // array element assignment
+if expr { ... } else { ... } // conditional (else optional)
+while expr
+  invariant expr             // loop invariants (optional)
+  decreases expr             // termination measure (optional)
+{ ... }
+return expr;                 // (value-returning functions only)
+assert expr;                 // runtime + static assertion
+f(args);                     // procedure call statement</code></p>
+<h3 id="expressions">Expressions</h3>
+<p>Operators, from lowest to highest precedence: <code>=&gt;</code>, <code>or</code>, <code>and</code>, <code>==</code>/<code>!=</code>,
+<code>&lt;</code>/<code>&lt;=</code>/<code>&gt;</code>/<code>&gt;=</code>, <code>+</code>/<code>-</code>/<code>++</code>, <code>*</code>/<code>/</code>/<code>%</code>, unary <code>!</code>/<code>-</code>/<code>`</code>, then indexing
+and calls.</p>
+<p><code>/</code> and <code>%</code> use Euclidean integer division compatible with Z3 (the remainder is
+always non-negative). Division and modulo by zero are runtime errors and
+verification obligations.</p>
+<p>String literals are written in double quotes and support the usual C-style
+backslash escapes (<code>\n</code>, <code>\t</code>, <code>\"</code>, <code>\\</code>, and so on). The <code>++</code> operator
+concatenates two strings, and a single backtick before a value converts it to a
+string (<code>5</code> is <code>"5"</code>, <code>x</code> is the string form of <code>x</code>'s value):</p>
+<p><code>let greeting: String = "hello" ++ " " ++ "world";
+let n: Int = 42;
+let label: String = `n;  // "42"</code></p>
+<p>Quantifiers are available in specifications:</p>
+<p><code>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
+exists i: Int :: 0 &lt;= i and i &lt; length(a) and a[i] == 0</code></p>
+<p><code>length(a)</code> is the single built-in function.</p>
+<h2 id="examples">Examples</h2>
+<p>The <code>examples/</code> directory contains small programs:</p>
+<ul>
+<li><code>abs.frml</code>, <code>max.frml</code>, <code>count.frml</code>: the core required examples.</li>
+<li><code>required.frml</code>: all three core examples plus a <code>main</code>.</li>
+<li><code>factorial.frml</code>: recursive function with <code>decreases</code>.</li>
+<li><code>all_nonnegative.frml</code>: array property proved with a quantifier loop invariant.</li>
+<li><code>increment_first.frml</code>: a procedure mutating an array, with <code>old</code>.</li>
+<li><code>bad.frml</code>: a deliberately unprovable postcondition (<code>FAILED</code>).</li>
+<li><code>precondition.frml</code>: a runtime precondition violation.</li>
+</ul>
+<p>Try them:</p>
+<p><code>bash
+frml check examples/required.frml
+frml verify-run examples/factorial.frml
+frml check examples/bad.frml
+frml run examples/precondition.frml</code></p>
+<h2 id="intentional-limitations">Intentional limitations</h2>
+<p>These choices keep the verifier sound and the implementation small; they match
+the specification's own "simplest recommended model":</p>
+<p>Arrays are references, not values.
+:   <code>let b: Array&lt;Int&gt; = a;</code> (array-to-array assignment) is rejected to avoid
+    aliasing ambiguity. Create fresh arrays with array literals instead.</p>
+<p>Functions return <code>Int</code> or <code>Bool</code>.
+:   Array-returning functions are not supported. Array mutation is expressed
+    with procedures, as shown earlier.</p>
+<p>A call that takes array arguments must appear on its own.
+:   It may be a statement, or the whole right-hand side of, <code>let</code>, <code>return</code>, or
+    assignment. It may not be nested inside a larger expression (<code>f(a) + g(a)</code>
+    is rejected during verification).</p>
+<p>Runtime quantifier checking is best-effort.
+:   Quantified postconditions over a finite array index range (<code>0 &lt;= i and i &lt;
+    length(a)</code>) are evaluated at runtime. Other quantified expressions are
+    skipped during runtime checking but still fully verified statically.</p>
+<p>The verifier never claims success on a program it cannot prove. If Z3 cannot
+decide an obligation it reports <code>UNKNOWN</code>, and a genuinely unprovable program is
+reported as <code>FAILED</code>: it is never silently accepted.</p>
+<h2 id="project-layout">Project layout</h2>
+<p><code>frml/
+  errors.py       error types and source-location formatting
+  lexer.py        tokenizer
+  parser.py       recursive-descent parser -&gt; AST
+  ast_nodes.py    AST node definitions
+  types.py        Int / Bool / Array&lt;T&gt; types
+  typechecker.py  name resolution + static type checking
+  interpreter.py  concrete executor with runtime checks
+  prover.py       verification-condition generation + Z3 proof checking
+  cli.py          the `frml` command-line interface</code></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":".","features":[],"search":"./assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="./assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,47 @@
+[project]
+name = "frml"
+dynamic = ["version"]
+requires-python = ">=3.13"
+authors = [
+    {name = "Greg Wilson", email = "gvwilson@third-bit.com"},
+]
+maintainers = [
+    {name = "Greg Wilson", email = "gvwilson@third-bit.com"},
+]
+description = "A minimal contract-based verification language backed by Z3"
+keywords = ["formal verification", "open source", "tutorial"]
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "z3-solver>=5.1.0.0",
+]
+
+[project.urls]
+Repository = "https://github.com/gvwilson/frml"
+Documentation = "https://gvwilson.github.io/frml"
+
+[dependency-groups]
+dev = [
+    "build>=1.6.0",
+    "coverage>=7.16.0",
+    "markdown-include>=0.8.1",
+    "mkdocstrings[python]>=1.0.6",
+    "pytest>=9.1.1",
+    "ruff>=0.16.6",
+    "twine>=7.0.0",
+    "zensical>=0.0.60",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+path = "frml/__init__.py"
+
+[project.scripts]
+frml = "frml.clui:main"

@@ -1,0 +1,16 @@
+fn max(a: Int, b: Int) -> Int
+  ensures result >= a
+  ensures result >= b
+  ensures result == a or result == b
+{
+  if a >= b {
+    return a;
+  } else {
+    return b;
+  }
+}
+
+fn main() -> Int
+{
+  return max(3, 9);
+}
