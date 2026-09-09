@@ -419,7 +419,7 @@
   <a href="#what-z3-is-and-what-it-does" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What Z3 is, and what it does
+        What Z3 is and what it does
       </span>
     </span>
   </a>
@@ -434,6 +434,34 @@
       </span>
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-z3-in-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Using Z3 in Python
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Z3 in Python">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#an-example-of-unsatisfiability" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        An example of unsatisfiability
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1009,10 +1037,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#21-the-z3-check-loop" class="md-nav__link">
+  <a href="#the-z3-check-loop" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        21. The Z3 check loop
+        The Z3 check loop
       </span>
     </span>
   </a>
@@ -1198,7 +1226,7 @@
   <a href="#what-z3-is-and-what-it-does" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What Z3 is, and what it does
+        What Z3 is and what it does
       </span>
     </span>
   </a>
@@ -1213,6 +1241,34 @@
       </span>
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-z3-in-python" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Using Z3 in Python
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Z3 in Python">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#an-example-of-unsatisfiability" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        An example of unsatisfiability
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1788,10 +1844,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#21-the-z3-check-loop" class="md-nav__link">
+  <a href="#the-z3-check-loop" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        21. The Z3 check loop
+        The Z3 check loop
       </span>
     </span>
   </a>
@@ -1919,22 +1975,26 @@ but is not the topic here.</p>
 <li>The prover turns the AST into a list of <em>verification conditions</em>.</li>
 <li>Each verification condition is a logical claim of the form:</li>
 </ul>
-<p><code>hypotheses =&gt; goal</code></p>
+<div class="language-text highlight"><pre><span></span><code>hypotheses =&gt; goal
+</code></pre></div>
 <ul>
 <li>The prover asks Z3 to confirm every verification condition.</li>
 <li>If Z3 confirms all of them, the program is <code>VERIFIED</code>.</li>
 </ul>
 <p>The pipeline is:</p>
-<p><code>source  -&gt;  AST  -&gt;  verification conditions  -&gt;  Z3  -&gt;  VERIFIED / FAILED / UNKNOWN</code></p>
+<div class="language-text highlight"><pre><span></span><code>source  -&gt;  AST  -&gt;  verification conditions  -&gt;  Z3  -&gt;  VERIFIED / FAILED / UNKNOWN
+</code></pre></div>
 <h2 id="the-single-idea-behind-the-verifier">The single idea behind the verifier</h2>
 <ul>
 <li>A proof obligation is a claim:</li>
 </ul>
-<p><code>from these hypotheses, this goal always follows</code></p>
+<div class="language-text highlight"><pre><span></span><code>from these hypotheses, this goal always follows
+</code></pre></div>
 <ul>
 <li>In symbols:</li>
 </ul>
-<p><code>h1 and h2 and ... and hn  =&gt;  goal</code></p>
+<div class="language-text highlight"><pre><span></span><code>h1 and h2 and ... and hn  =&gt;  goal
+</code></pre></div>
 <ul>
 <li><code>h1 ... hn</code> are facts known at some point in the program.</li>
 <li><code>goal</code> is a fact that must hold at that point.</li>
@@ -1946,7 +2006,7 @@ but is not the topic here.</p>
 <li>"knowing nothing, prove <code>x &gt; x</code>" (this one is false)</li>
 </ul>
 <p>The prover's whole job is to produce claims in this shape.</p>
-<h2 id="what-z3-is-and-what-it-does">What Z3 is, and what it does</h2>
+<h2 id="what-z3-is-and-what-it-does">What Z3 is and what it does</h2>
 <ul>
 <li>A formula is <em>satisfiable</em> when some assignment of values to its variables makes it true.</li>
 <li>Z3 is an SMT solver.<ul>
@@ -1962,10 +2022,12 @@ but is not the topic here.</p>
 <li><code>unknown</code>: Z3 gave up or timed out.</li>
 </ul>
 <p>Example:</p>
-<p><code>formula:  x &gt; 3 and x &lt; 5
-answer:   sat          (x = 4 works)</code></p>
-<p><code>formula:  x &gt; 3 and x &lt; 4
-answer:   unsat        (no integer fits)</code></p>
+<div class="language-text highlight"><pre><span></span><code>formula:  x &gt; 3 and x &lt; 5
+answer:   sat          (x = 4 works)
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>formula:  x &gt; 3 and x &lt; 4
+answer:   unsat        (no integer fits)
+</code></pre></div>
 <h2 id="from-is-it-valid-to-is-it-unsatisfiable">From "is it valid?" to "is it unsatisfiable?"</h2>
 <ul>
 <li>The prover wants to prove that <code>hypotheses =&gt; goal</code> is <em>valid</em>.</li>
@@ -1975,7 +2037,8 @@ answer:   unsat        (no integer fits)</code></p>
     <code>A =&gt; B</code> is valid exactly when <code>not (A =&gt; B)</code> is unsatisfiable.</li>
 <li>So the prover asks Z3:</li>
 </ul>
-<p><code>not (hypotheses =&gt; goal)</code></p>
+<div class="language-text highlight"><pre><span></span><code>not (hypotheses =&gt; goal)
+</code></pre></div>
 <ul>
 <li>If Z3 says <code>unsat</code>, then no counterexample exists, so the goal is proved.</li>
 <li>If Z3 says <code>sat</code>, it found a counterexample, so the goal is false.</li>
@@ -1983,6 +2046,46 @@ answer:   unsat        (no integer fits)</code></p>
 <li>That is the entire proof mechanism.</li>
 <li>Everything else is just building the hypotheses and goals.</li>
 </ul>
+<h2 id="using-z3-in-python">Using Z3 in Python</h2>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">z3</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Solver</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
+</code></pre></div>
+<ul>
+<li><code>A</code>, <code>B</code>, and <code>C</code> don't have values</li>
+<li>Instead, each represents the set of possible Boolean values</li>
+<li>Specify constraints such as <code>A == B</code></li>
+</ul>
+<div class="language-python highlight"><pre><span></span><code><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
+</code></pre></div>
+<ul>
+<li>Then ask Z3 to find a <em>model</em> that satisfies those constraints</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code>A == B &amp; B == C: sat
+A False
+B False
+C False
+</code></pre></div>
+<h3 id="an-example-of-unsatisfiability">An example of unsatisfiability</h3>
+<ul>
+<li>Require <code>A</code> to equal <code>B</code> and <code>B</code> to equal <code>C</code> but <code>A</code> and <code>C</code> to be unequal</li>
+</ul>
+<p><div class="language-python highlight"><pre><span></span><code><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
+<span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">!=</span> <span class="n">C</span><span class="p">)</span>
+<span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C &amp; B != C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>A == B &amp; B == C &amp; B != C: unsat
+</code></pre></div></p>
 <h2 id="the-provers-data-model">The prover's data model</h2>
 <ul>
 <li>The prover tracks a program point with a <code>State</code> object.<ul>
@@ -2028,7 +2131,8 @@ answer:   unsat        (no integer fits)</code></p>
 </li>
 <li>Example:</li>
 </ul>
-<p><code>x = x + 1;</code></p>
+<div class="language-text highlight"><pre><span></span><code>x = x + 1;
+</code></pre></div>
 <ul>
 <li>After this statement, the state maps <code>x</code> to the term <code>x!1 + 1</code>, not to a number.</li>
 </ul>
@@ -2036,8 +2140,7 @@ answer:   unsat        (no integer fits)</code></p>
 <ul>
 <li>Frml program:</li>
 </ul>
-<p><code>frml
-fn abs(x: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn abs(x: Int) -&gt; Int
   ensures result &gt;= 0
 {
   if x &gt;= 0 {
@@ -2045,7 +2148,8 @@ fn abs(x: Int) -&gt; Int
   } else {
     return -x;
   }
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>Here is what the prover does, statement by statement.</li>
 </ul>
@@ -2072,20 +2176,23 @@ fn abs(x: Int) -&gt; Int
 <li>Evaluate the <code>ensures</code> clause <code>result &gt;= 0</code> with <code>result</code> replaced by <code>x!1</code>.</li>
 <li>Emit an obligation:</li>
 </ul>
-<p><code>hypotheses:  x!1 &gt;= 0
-goal:        0 &lt;= x!1</code></p>
+<div class="language-text highlight"><pre><span></span><code>hypotheses:  x!1 &gt;= 0
+goal:        0 &lt;= x!1
+</code></pre></div>
 <h3 id="the-second-return">The second <code>return</code></h3>
 <ul>
 <li>Evaluate <code>-x</code> to <code>-x!1</code>.</li>
 <li>Emit an obligation:</li>
 </ul>
-<p><code>hypotheses:  not (x!1 &gt;= 0)
-goal:        0 &lt;= -x!1</code></p>
+<div class="language-text highlight"><pre><span></span><code>hypotheses:  not (x!1 &gt;= 0)
+goal:        0 &lt;= -x!1
+</code></pre></div>
 <h3 id="the-two-checks">The two checks</h3>
 <ul>
 <li>For the first obligation, Z3 is asked:</li>
 </ul>
-<p><code>not ((x!1 &gt;= 0) =&gt; (0 &lt;= x!1))</code></p>
+<div class="language-text highlight"><pre><span></span><code>not ((x!1 &gt;= 0) =&gt; (0 &lt;= x!1))
+</code></pre></div>
 <ul>
 <li>There is no value of <code>x!1</code> that makes this true.<ul>
 <li>So Z3 returns <code>unsat</code>.</li>
@@ -2094,7 +2201,8 @@ goal:        0 &lt;= -x!1</code></p>
 </li>
 <li>For the second obligation:</li>
 </ul>
-<p><code>not ((x!1 &lt; 0) =&gt; (0 &lt;= -x!1))</code></p>
+<div class="language-text highlight"><pre><span></span><code>not ((x!1 &lt; 0) =&gt; (0 &lt;= -x!1))
+</code></pre></div>
 <ul>
 <li>Again <code>unsat</code>.<ul>
 <li>The program is <code>VERIFIED</code>.</li>
@@ -2142,18 +2250,19 @@ goal:        0 &lt;= -x!1</code></p>
 <li>The verifier turns it into another proof obligation.</li>
 <li>When the prover evaluates <code>a / b</code> or <code>a % b</code>, it first emits:</li>
 </ul>
-<p><code>hypotheses:  current path
-goal:        b != 0</code></p>
+<div class="language-text highlight"><pre><span></span><code>hypotheses:  current path
+goal:        b != 0
+</code></pre></div>
 <ul>
 <li>Then it returns the Z3 division or modulo term.</li>
 <li>Example:</li>
 </ul>
-<p><code>frml
-fn safe_divide(a: Int, b: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn safe_divide(a: Int, b: Int) -&gt; Int
   requires b != 0
 {
   return a / b;
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>The <code>requires</code> clause puts <code>b!1 != 0</code> into the path.</li>
 <li>The <code>return a / b</code> emits an obligation <code>b!1 != 0</code>.</li>
@@ -2181,8 +2290,7 @@ fn safe_divide(a: Int, b: Int) -&gt; Int
 <li>Multiple <code>ensures</code> clauses produce one obligation per clause.</li>
 <li>Example:</li>
 </ul>
-<p><code>frml
-fn max(a: Int, b: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn max(a: Int, b: Int) -&gt; Int
   ensures result &gt;= a
   ensures result &gt;= b
   ensures result == a or result == b
@@ -2192,7 +2300,8 @@ fn max(a: Int, b: Int) -&gt; Int
   } else {
     return b;
   }
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>The <code>if</code> produces two end states…</li>
 <li>…and there are three <code>ensures</code> clauses…</li>
@@ -2210,13 +2319,13 @@ fn max(a: Int, b: Int) -&gt; Int
 <li>Inside an <code>ensures</code> clause, <code>old(x)</code> reads that snapshot, not the current value.</li>
 <li>Example:</li>
 </ul>
-<p><code>frml
-fn increment_first(a: Array&lt;Int&gt;)
+<div class="language-text highlight"><pre><span></span><code>fn increment_first(a: Array&lt;Int&gt;)
   requires length(a) &gt; 0
   ensures a[0] == old(a[0]) + 1
 {
   a[0] = a[0] + 1;
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>At entry, <code>a</code> is a fresh array symbol <code>a!1</code> with some length.<ul>
 <li><code>old_arrays["a"]</code> keeps that original <code>a!1</code>.</li>
@@ -2229,7 +2338,8 @@ fn increment_first(a: Array&lt;Int&gt;)
 </li>
 <li>The emitted postcondition goal looks like:</li>
 </ul>
-<p><code>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1</code></p>
+<div class="language-text highlight"><pre><span></span><code>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
+</code></pre></div>
 <ul>
 <li>Both sides simplify to the same value, so Z3 proves it.</li>
 </ul>
@@ -2245,12 +2355,12 @@ fn increment_first(a: Array&lt;Int&gt;)
 <li>The prover tracks a <em>list</em> of states, one per path through the code.</li>
 <li>Example:</li>
 </ul>
-<p><code>frml
-if x &gt;= 0 {
+<div class="language-text highlight"><pre><span></span><code>if x &gt;= 0 {
   return x;
 } else {
   return -x;
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>After the <code>if</code>, there are two states:<ul>
 <li>State 1 path: <code>x &gt;= 0</code>.</li>
@@ -2263,8 +2373,8 @@ if x &gt;= 0 {
 <ul>
 <li>An <code>assert</code> statement produces a goal from the current path.</li>
 </ul>
-<p><code>frml
-assert 1 &lt; 2;</code></p>
+<div class="language-text highlight"><pre><span></span><code>assert 1 &lt; 2;
+</code></pre></div>
 <ul>
 <li>Evaluate the condition.</li>
 <li>Emit an obligation with the current path as hypotheses and the condition as goal.</li>
@@ -2299,7 +2409,8 @@ so the verifier must prove it from what came before.</p>
 <ul>
 <li><code>[3, 4]</code> becomes a chain of <code>Store</code> operations:</li>
 </ul>
-<p><code>Store(Store(fresh_array, 0, 3), 1, 4)</code></p>
+<div class="language-text highlight"><pre><span></span><code>Store(Store(fresh_array, 0, 3), 1, 4)
+</code></pre></div>
 <ul>
 <li>Its length is the literal <code>2</code>.</li>
 </ul>
@@ -2307,12 +2418,14 @@ so the verifier must prove it from what came before.</p>
 <ul>
 <li>Every array read and write produces:</li>
 </ul>
-<p><code>hypotheses:  current path
-goal:        0 &lt;= i and i &lt; length(a)</code></p>
+<div class="language-text highlight"><pre><span></span><code>hypotheses:  current path
+goal:        0 &lt;= i and i &lt; length(a)
+</code></pre></div>
 <ul>
 <li>Example from <code>increment_first</code>:</li>
 </ul>
-<p><code>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)</code></p>
+<div class="language-text highlight"><pre><span></span><code>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)
+</code></pre></div>
 <h3 id="array-equality">Array equality</h3>
 <ul>
 <li>Frml <code>a == b</code> on two arrays is not a single Z3 equality.<ul>
@@ -2322,9 +2435,10 @@ goal:        0 &lt;= i and i &lt; length(a)</code></p>
 </li>
 <li>The prover builds:</li>
 </ul>
-<p><code>length(a) == length(b)
+<div class="language-text highlight"><pre><span></span><code>length(a) == length(b)
 and
-forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]</code></p>
+forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
+</code></pre></div>
 <ul>
 <li>This is why array equality is defined by a quantified formula.</li>
 </ul>
@@ -2340,22 +2454,23 @@ forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]</code></p>
 </li>
 </ul>
 <h3 id="the-count-example">The <code>count</code> example</h3>
-<p>```frml
-fn count(n: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn count(n: Int) -&gt; Int
   requires n &gt;= 0
   ensures result == n
 {
-  let i: Int = 0;</p>
-<p>while i &lt; n
+  let i: Int = 0;
+
+  while i &lt; n
     invariant 0 &lt;= i
     invariant i &lt;= n
     decreases n - i
   {
     i = i + 1;
-  }</p>
-<p>return i;
+  }
+
+  return i;
 }
-```</p>
+</code></pre></div>
 <ul>
 <li>Verifying <code>count</code> emits seven obligations in total:<ul>
 <li>Two initialization.</li>
@@ -2426,12 +2541,14 @@ fn count(n: Int) -&gt; Int
 <ul>
 <li>The measure must be non-negative:</li>
 </ul>
-<p><code>decreases &gt;= 0</code></p>
+<div class="language-text highlight"><pre><span></span><code>decreases &gt;= 0
+</code></pre></div>
 <h3 id="after-the-body">After the body</h3>
 <ul>
 <li>The measure must strictly decrease:</li>
 </ul>
-<p><code>new_decreases &lt; old_decreases</code></p>
+<div class="language-text highlight"><pre><span></span><code>new_decreases &lt; old_decreases
+</code></pre></div>
 <ul>
 <li>For <code>count</code>, the measure is <code>n - i</code>.<ul>
 <li>Entry: <code>n - 0 &gt;= 0</code>.</li>
@@ -2459,16 +2576,16 @@ fn count(n: Int) -&gt; Int
 <li>It only sees the callee's contract.</li>
 </ul>
 <h3 id="example">Example</h3>
-<p>```frml
-fn inc(x: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn inc(x: Int) -&gt; Int
   requires x &gt;= 0
   ensures result == x + 1
-{ return x + 1; }</p>
-<p>fn main() -&gt; Int
+{ return x + 1; }
+
+fn main() -&gt; Int
 {
   return inc(41);
 }
-```</p>
+</code></pre></div>
 <ul>
 <li>For the call <code>inc(41)</code>:<ul>
 <li>Emit a precondition obligation: <code>41 &gt;= 0</code>.</li>
@@ -2511,8 +2628,7 @@ fn inc(x: Int) -&gt; Int
     but does not emit the strict-decrease obligation.</li>
 </ul>
 <h3 id="the-factorial-example">The <code>factorial</code> example</h3>
-<p><code>frml
-fn factorial(n: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn factorial(n: Int) -&gt; Int
   requires n &gt;= 0
   ensures result &gt;= 1
   decreases n
@@ -2522,7 +2638,8 @@ fn factorial(n: Int) -&gt; Int
   } else {
     return n * factorial(n - 1);
   }
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>The prover emits four obligations:<ul>
 <li><code>n &gt;= 0</code> for the entry <code>decreases n &gt;= 0</code>.</li>
@@ -2536,8 +2653,8 @@ fn factorial(n: Int) -&gt; Int
 <ul>
 <li>Frml supports <code>forall</code> and <code>exists</code> in specifications.</li>
 </ul>
-<p><code>frml
-forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0</code></p>
+<div class="language-text highlight"><pre><span></span><code>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
+</code></pre></div>
 <ul>
 <li>The prover translates these to Z3 quantifiers.<ul>
 <li><code>forall</code> becomes <code>z3.ForAll([var], body)</code>.</li>
@@ -2555,40 +2672,41 @@ forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0</code></p>
 <li>The quantified formula itself is still a term, and Z3 reasons about it directly.</li>
 </ul>
 <h3 id="array-property-example">Array property example</h3>
-<p><code>frml
-ensures
+<div class="language-text highlight"><pre><span></span><code>ensures
   result ==
     (forall i: Int ::
-      0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0)</code></p>
+      0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0)
+</code></pre></div>
 <ul>
 <li>The <code>ensures</code> goal is a Z3 term:</li>
 </ul>
-<p><code>result == ForAll(i, Implies(And(0 &lt;= i, i &lt; len), a[i] &gt;= 0))</code></p>
+<div class="language-text highlight"><pre><span></span><code>result == ForAll(i, Implies(And(0 &lt;= i, i &lt; len), a[i] &gt;= 0))
+</code></pre></div>
 <ul>
 <li>Z3 knows how to decide quantified integer formulas like this one.</li>
 </ul>
-<h2 id="21-the-z3-check-loop">21. The Z3 check loop</h2>
+<h2 id="the-z3-check-loop">The Z3 check loop</h2>
 <ul>
 <li>The <code>check_obligations</code> function is where Z3 is actually called.</li>
 </ul>
-<p>```python
-solver = z3.Solver()
-solver.set(timeout=timeout_ms)</p>
-<p>for ob in obligations:
-    solver.push()
-    hyp = z3.And(*ob.hyp) if ob.hyp else z3.BoolVal(True)
-    solver.add(z3.Not(z3.Implies(hyp, ob.goal)))
-    result = solver.check()</p>
-<pre><code>if result == z3.unsat:
-    -&gt; VERIFIED
-elif result == z3.sat:
-    -&gt; FAILED with the counterexample model
-else:
-    -&gt; UNKNOWN
+<div class="language-python highlight"><pre><span></span><code><span class="n">solver</span> <span class="o">=</span> <span class="n">z3</span><span class="o">.</span><span class="n">Solver</span><span class="p">()</span>
+<span class="n">solver</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ms</span><span class="p">)</span>
 
-solver.pop()
-</code></pre>
-<p>```</p>
+<span class="k">for</span> <span class="n">ob</span> <span class="ow">in</span> <span class="n">obligations</span><span class="p">:</span>
+    <span class="n">solver</span><span class="o">.</span><span class="n">push</span><span class="p">()</span>
+    <span class="n">hyp</span> <span class="o">=</span> <span class="n">z3</span><span class="o">.</span><span class="n">And</span><span class="p">(</span><span class="o">*</span><span class="n">ob</span><span class="o">.</span><span class="n">hyp</span><span class="p">)</span> <span class="k">if</span> <span class="n">ob</span><span class="o">.</span><span class="n">hyp</span> <span class="k">else</span> <span class="n">z3</span><span class="o">.</span><span class="n">BoolVal</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">z3</span><span class="o">.</span><span class="n">Not</span><span class="p">(</span><span class="n">z3</span><span class="o">.</span><span class="n">Implies</span><span class="p">(</span><span class="n">hyp</span><span class="p">,</span> <span class="n">ob</span><span class="o">.</span><span class="n">goal</span><span class="p">)))</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">result</span> <span class="o">==</span> <span class="n">z3</span><span class="o">.</span><span class="n">unsat</span><span class="p">:</span>
+        <span class="o">-&gt;</span> <span class="n">VERIFIED</span>
+    <span class="k">elif</span> <span class="n">result</span> <span class="o">==</span> <span class="n">z3</span><span class="o">.</span><span class="n">sat</span><span class="p">:</span>
+        <span class="o">-&gt;</span> <span class="n">FAILED</span> <span class="k">with</span> <span class="n">the</span> <span class="n">counterexample</span> <span class="n">model</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="o">-&gt;</span> <span class="n">UNKNOWN</span>
+
+    <span class="n">solver</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+</code></pre></div>
 <ul>
 <li>Each obligation gets a fresh solver context via <code>push</code> and <code>pop</code>.</li>
 <li>The empty hypothesis list becomes <code>True</code>.</li>
@@ -2611,17 +2729,18 @@ solver.pop()
 <li>The CLI prints the obligation kind and description.</li>
 <li>Example:</li>
 </ul>
-<p><code>frml
-fn bad(x: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn bad(x: Int) -&gt; Int
   ensures result &gt; x
 {
   return x;
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>The obligation is:</li>
 </ul>
-<p><code>hypotheses:  (none)
-goal:        x!1 &gt; x!1</code></p>
+<div class="language-text highlight"><pre><span></span><code>hypotheses:  (none)
+goal:        x!1 &gt; x!1
+</code></pre></div>
 <ul>
 <li>Z3 finds any value making <code>not (x &gt; x)</code> true, which is every value, so <code>FAILED</code>.</li>
 </ul>

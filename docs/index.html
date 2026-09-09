@@ -743,8 +743,7 @@ translates each program into verification conditions and asks the <a href="https
 solver to check them. There are no interactive proof tactics and no handwritten
 SMT formulas.</p>
 <p>A program that verifies looks like this:</p>
-<p>```
-fn abs(x: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn abs(x: Int) -&gt; Int
   ensures result &gt;= 0
 {
   if x &gt;= 0 {
@@ -752,25 +751,26 @@ fn abs(x: Int) -&gt; Int
   } else {
     return -x;
   }
-}</p>
-<p>fn main() -&gt; Int
+}
+
+fn main() -&gt; Int
 {
   return abs(-7);
 }
-```</p>
+</code></pre></div>
 <p>Running the verifier prints <code>VERIFIED</code>; running the program prints nothing and
 uses <code>main</code>'s return value as the process exit code.</p>
 <h2 id="installation">Installation</h2>
 <p>Frml requires Python 3.13 or newer.</p>
-<p><code>bash
-uv venv
-source .venv/bin/activate
-uv sync --dev
-uv pip install -e .</code></p>
+<div class="language-bash highlight"><pre><span></span><code>uv<span class="w"> </span>venv
+<span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+uv<span class="w"> </span>sync<span class="w"> </span>--dev
+uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</code></pre></div>
 <p>This installs a <code>frml</code> command on your <code>PATH</code>. You can also run Frml without
 installing it, using the module form:</p>
-<p><code>bash
-python -m frml check examples/abs.frml</code></p>
+<div class="language-bash highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>frml<span class="w"> </span>check<span class="w"> </span>examples/abs.frml
+</code></pre></div>
 <h2 id="usage">Usage</h2>
 <p>Frml exposes three subcommands.</p>
 <h3 id="frml-check-filefrml"><code>frml check FILE.frml</code></h3>
@@ -784,17 +784,19 @@ exit status is <code>main</code>'s return value.</p>
 <h2 id="the-language">The language</h2>
 <h3 id="types">Types</h3>
 <p>Frml has three basic types:</p>
-<p><code>Int          arbitrary-precision integers (no overflow)
+<div class="language-text highlight"><pre><span></span><code>Int          arbitrary-precision integers (no overflow)
 Bool         true or false
-String       a sequence of characters, written in double quotes</code></p>
+String       a sequence of characters, written in double quotes
+</code></pre></div>
 <p>Frml supports homogeneous one-dimensional arrays:</p>
-<p><code>Array&lt;Int&gt;    mutable, fixed-length, zero-indexed arrays
+<div class="language-text highlight"><pre><span></span><code>Array&lt;Int&gt;    mutable, fixed-length, zero-indexed arrays
 Array&lt;Bool&gt;   mutable, fixed-length, zero-indexed arrays
-Array&lt;String&gt; mutable, fixed-length, zero-indexed arrays of strings</code></p>
+Array&lt;String&gt; mutable, fixed-length, zero-indexed arrays of strings
+</code></pre></div>
 <p>Nested arrays (<code>Array&lt;Array&lt;Int&gt;&gt;</code>) are not allowed, and Frml does not (yet)
 have a mapping (dictionary) type.</p>
 <h3 id="functions">Functions</h3>
-<p><code>fn max(a: Int, b: Int) -&gt; Int
+<div class="language-text highlight"><pre><span></span><code>fn max(a: Int, b: Int) -&gt; Int
   ensures result &gt;= a
   ensures result &gt;= b
   ensures result == a or result == b
@@ -804,7 +806,8 @@ have a mapping (dictionary) type.</p>
   } else {
     return b;
   }
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li><code>requires</code> clauses are assumptions about the caller's inputs.</li>
 <li><code>ensures</code> clauses are guarantees about the result.<ul>
@@ -815,17 +818,18 @@ have a mapping (dictionary) type.</p>
 <li>Multiple <code>requires</code>/<code>ensures</code> clauses are implicitly ANDed.</li>
 <li>A function may omit <code>-&gt; TYPE</code>, making it a void procedure:</li>
 </ul>
-<p><code>fn increment_first(a: Array&lt;Int&gt;)
+<div class="language-text highlight"><pre><span></span><code>fn increment_first(a: Array&lt;Int&gt;)
   requires length(a) &gt; 0
   ensures a[0] == old(a[0]) + 1
 {
   a[0] = a[0] + 1;
-}</code></p>
+}
+</code></pre></div>
 <ul>
 <li>Recursive functions must declare a <code>decreases</code> measure.</li>
 </ul>
 <h3 id="statements">Statements</h3>
-<p><code>let NAME: TYPE = expr;       // local variable declaration
+<div class="language-text highlight"><pre><span></span><code>let NAME: TYPE = expr;       // local variable declaration
 NAME = expr;                 // scalar assignment
 a[i] = expr;                 // array element assignment
 if expr { ... } else { ... } // conditional (else optional)
@@ -835,7 +839,8 @@ while expr
 { ... }
 return expr;                 // (value-returning functions only)
 assert expr;                 // runtime + static assertion
-f(args);                     // procedure call statement</code></p>
+f(args);                     // procedure call statement
+</code></pre></div>
 <h3 id="expressions">Expressions</h3>
 <p>Operators, from lowest to highest precedence: <code>=&gt;</code>, <code>or</code>, <code>and</code>, <code>==</code>/<code>!=</code>,
 <code>&lt;</code>/<code>&lt;=</code>/<code>&gt;</code>/<code>&gt;=</code>, <code>+</code>/<code>-</code>/<code>++</code>, <code>*</code>/<code>/</code>/<code>%</code>, unary <code>!</code>/<code>-</code>/<code>`</code>, then indexing
@@ -847,12 +852,14 @@ verification obligations.</p>
 backslash escapes (<code>\n</code>, <code>\t</code>, <code>\"</code>, <code>\\</code>, and so on). The <code>++</code> operator
 concatenates two strings, and a single backtick before a value converts it to a
 string (<code>5</code> is <code>"5"</code>, <code>x</code> is the string form of <code>x</code>'s value):</p>
-<p><code>let greeting: String = "hello" ++ " " ++ "world";
+<div class="language-text highlight"><pre><span></span><code>let greeting: String = "hello" ++ " " ++ "world";
 let n: Int = 42;
-let label: String = `n;  // "42"</code></p>
+let label: String = `n;  // "42"
+</code></pre></div>
 <p>Quantifiers are available in specifications:</p>
-<p><code>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
-exists i: Int :: 0 &lt;= i and i &lt; length(a) and a[i] == 0</code></p>
+<div class="language-text highlight"><pre><span></span><code>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
+exists i: Int :: 0 &lt;= i and i &lt; length(a) and a[i] == 0
+</code></pre></div>
 <p><code>length(a)</code> is the single built-in function.</p>
 <h2 id="examples">Examples</h2>
 <p>The <code>examples/</code> directory contains small programs:</p>
@@ -866,11 +873,11 @@ exists i: Int :: 0 &lt;= i and i &lt; length(a) and a[i] == 0</code></p>
 <li><code>precondition.frml</code>: a runtime precondition violation.</li>
 </ul>
 <p>Try them:</p>
-<p><code>bash
-frml check examples/required.frml
-frml verify-run examples/factorial.frml
-frml check examples/bad.frml
-frml run examples/precondition.frml</code></p>
+<div class="language-bash highlight"><pre><span></span><code>frml<span class="w"> </span>check<span class="w"> </span>examples/required.frml
+frml<span class="w"> </span>verify-run<span class="w"> </span>examples/factorial.frml
+frml<span class="w"> </span>check<span class="w"> </span>examples/bad.frml
+frml<span class="w"> </span>run<span class="w"> </span>examples/precondition.frml
+</code></pre></div>
 <h2 id="intentional-limitations">Intentional limitations</h2>
 <p>These choices keep the verifier sound and the implementation small; they match
 the specification's own "simplest recommended model":</p>
@@ -892,7 +899,7 @@ the specification's own "simplest recommended model":</p>
 decide an obligation it reports <code>UNKNOWN</code>, and a genuinely unprovable program is
 reported as <code>FAILED</code>: it is never silently accepted.</p>
 <h2 id="project-layout">Project layout</h2>
-<p><code>frml/
+<div class="language-text highlight"><pre><span></span><code>frml/
   errors.py       error types and source-location formatting
   lexer.py        tokenizer
   parser.py       recursive-descent parser -&gt; AST
@@ -901,7 +908,8 @@ reported as <code>FAILED</code>: it is never silently accepted.</p>
   typechecker.py  name resolution + static type checking
   interpreter.py  concrete executor with runtime checks
   prover.py       verification-condition generation + Z3 proof checking
-  cli.py          the `frml` command-line interface</code></p>
+  cli.py          the `frml` command-line interface
+</code></pre></div>
 
 
 

@@ -10,10 +10,10 @@ plugins:
           members_order: source
           filters: []
 
-theme:
-  name: "material"
-
 markdown_extensions:
+- pymdownx.superfences
+- pymdownx.highlight:
+    pygments_lang_class: true
 - markdown_include.include:
     base_path: docs
 

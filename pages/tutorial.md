@@ -73,7 +73,7 @@ Example claims from a real program:
 
 The prover's whole job is to produce claims in this shape.
 
-## What Z3 is, and what it does
+## What Z3 is and what it does
 
 -   A formula is *satisfiable* when some assignment of values to its variables makes it true.
 -   Z3 is an SMT solver.
@@ -116,6 +116,54 @@ not (hypotheses => goal)
 -   If Z3 says `unknown`, the proof is inconclusive.
 -   That is the entire proof mechanism.
 -   Everything else is just building the hypotheses and goals.
+
+## Using Z3 in Python
+
+```python
+from z3 import Bool, Solver
+
+A = Bool("A")
+B = Bool("B")
+C = Bool("C")
+```
+
+-   `A`, `B`, and `C` don't have values
+-   Instead, each represents the set of possible Boolean values
+-   Specify constraints such as `A == B`
+
+```python
+solver = Solver()
+solver.add(A == B)
+solver.add(B == C)
+report("A == B & B == C", solver.check())
+```
+
+-   Then ask Z3 to find a *model* that satisfies those constraints
+
+```
+A == B & B == C: sat
+A False
+B False
+C False
+```
+
+### An example of unsatisfiability
+
+-   Require `A` to equal `B` and `B` to equal `C` but `A` and `C` to be unequal
+
+```python
+A = Bool("A")
+B = Bool("B")
+C = Bool("C")
+solver = Solver()
+solver.add(A == B)
+solver.add(B == C)
+solver.add(A != C)
+report("A == B & B == C & B != C", solver.check())
+```
+```
+A == B & B == C & B != C: unsat
+```
 
 ## The prover's data model
 
@@ -160,7 +208,7 @@ x = x + 1;
 
 -   Frml program:
 
-```frml
+```
 fn abs(x: Int) -> Int
   ensures result >= 0
 {
@@ -278,7 +326,7 @@ goal:        b != 0
 -   Then it returns the Z3 division or modulo term.
 -   Example:
 
-```frml
+```
 fn safe_divide(a: Int, b: Int) -> Int
   requires b != 0
 {
@@ -312,7 +360,7 @@ fn safe_divide(a: Int, b: Int) -> Int
 -   Multiple `ensures` clauses produce one obligation per clause.
 -   Example:
 
-```frml
+```
 fn max(a: Int, b: Int) -> Int
   ensures result >= a
   ensures result >= b
@@ -340,7 +388,7 @@ fn max(a: Int, b: Int) -> Int
 -   Inside an `ensures` clause, `old(x)` reads that snapshot, not the current value.
 -   Example:
 
-```frml
+```
 fn increment_first(a: Array<Int>)
   requires length(a) > 0
   ensures a[0] == old(a[0]) + 1
@@ -372,7 +420,7 @@ Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
 -   The prover tracks a *list* of states, one per path through the code.
 -   Example:
 
-```frml
+```
 if x >= 0 {
   return x;
 } else {
@@ -389,7 +437,7 @@ if x >= 0 {
 
 -   An `assert` statement produces a goal from the current path.
 
-```frml
+```
 assert 1 < 2;
 ```
 
@@ -468,7 +516,7 @@ forall i: 0 <= i and i < length(a) => a[i] == b[i]
 
 ### The `count` example
 
-```frml
+```
 fn count(n: Int) -> Int
   requires n >= 0
   ensures result == n
@@ -575,7 +623,7 @@ new_decreases < old_decreases
 
 ### Example
 
-```frml
+```
 fn inc(x: Int) -> Int
   requires x >= 0
   ensures result == x + 1
@@ -625,7 +673,7 @@ fn main() -> Int
 
 ### The `factorial` example
 
-```frml
+```
 fn factorial(n: Int) -> Int
   requires n >= 0
   ensures result >= 1
@@ -649,7 +697,7 @@ fn factorial(n: Int) -> Int
 
 -   Frml supports `forall` and `exists` in specifications.
 
-```frml
+```
 forall i: Int :: 0 <= i and i < length(a) => a[i] >= 0
 ```
 
@@ -668,7 +716,7 @@ forall i: Int :: 0 <= i and i < length(a) => a[i] >= 0
 
 ### Array property example
 
-```frml
+```
 ensures
   result ==
     (forall i: Int ::
@@ -683,7 +731,7 @@ result == ForAll(i, Implies(And(0 <= i, i < len), a[i] >= 0))
 
 -   Z3 knows how to decide quantified integer formulas like this one.
 
-## 21. The Z3 check loop
+## The Z3 check loop
 
 -   The `check_obligations` function is where Z3 is actually called.
 
@@ -729,7 +777,7 @@ for ob in obligations:
 -   The CLI prints the obligation kind and description.
 -   Example:
 
-```frml
+```
 fn bad(x: Int) -> Int
   ensures result > x
 {
