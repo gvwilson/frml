@@ -1,0 +1,19 @@
+[project]
+site_name = "frml"
+docs_dir = "pages"
+site_dir = "docs"
+nav = [
+  "tutorial_intro.md",
+  "tutorial_basic.md",
+  "tutorial_loop.md",
+  "tutorial_array.md",
+  "tutorial_builtin.md",
+  "tutorial_complete.md",
+  "conduct.md",
+  "contributing.md",
+  "frml.md",
+  "license.md",
+]
+
+[project.plugins.mkdocstrings.handlers.python]
+paths = ["frml"]

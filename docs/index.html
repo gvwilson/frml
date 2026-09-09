@@ -1,0 +1,959 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="./assets/images/favicon.png">
+      <meta name="generator" content="zensical-0.0.60">
+    
+    
+      
+        <title>Frml - frml</title>
+      
+    
+    
+      
+        
+      
+      <link rel="stylesheet" href="./assets/stylesheets/modern/main.ce62732f.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,500,500i,700,700i%7CJetBrains+Mono:400,400i,700,700i&amp;display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL(".",location),__md_scope.pathname.endsWith("/")||(__md_scope=new URL(__md_scope.pathname+"/",location)),__md_hash=e=>[...e].reduce(((e,t)=>(e<<5)-e+t.charCodeAt(0)),0),__md_get=(e,t=localStorage,_=__md_scope)=>JSON.parse(t.getItem(_.pathname+"."+e)),__md_set=(e,t,_=localStorage,a=__md_scope)=>{try{_.setItem(a.pathname+"."+e,JSON.stringify(t))}catch(e){}},document.documentElement.setAttribute("data-platform",navigator.platform)</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer" aria-label="Navigation"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#frml" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="" title="frml" class="md-header__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer" aria-label="Navigation">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-menu" viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h16"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            frml
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Frml
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search" aria-label="Search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog" aria-label="Search">
+  <button type="button" class="md-search__button">
+    Search
+  </button>
+</div>
+      
+    
+    <div class="md-header__source">
+      
+    </div>
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="" title="frml" class="md-nav__button md-logo" aria-label="frml" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-book-open" viewBox="0 0 24 24"><path d="M12 5v16M20.001 19A2 2 0 0 0 22 17V5a2 2 0 0 0-1.999-2L16 3.002A5 5 0 0 0 12 5a5 5 0 0 0-4-2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 1.999 2H8a5 5 0 0 1 4 2 5 5 0 0 1 4-2z"/></svg>
+
+    </a>
+    frml
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./tutorial_intro/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  How the Frml Verifier Works
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./tutorial_basic/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Basic Level: Scalars, No Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./tutorial_loop/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Loop Level: Scalar Loops
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./tutorial_array/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Array Level: Fixed-Size Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./tutorial_builtin/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Builtin Level: I/O and Resizable Arrays
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./tutorial_complete/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Complete Level: The Full Language
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./conduct/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Code of Conduct
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Contributing
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="./license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  
+                    
+                    
+                    
+                      
+                    
+                    
+                      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+                      <div class="md-sidebar-button__wrapper">
+                        <label class="md-sidebar-button" for="__toc"></label>
+                      </div>
+                    
+                  
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Installation
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Usage
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#frml-check-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml check FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frml-run-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml run FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#frml-do-filefrml" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        <code>frml do FILE.frml</code>
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-language" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        The language
+      </span>
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The language">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#types" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Types
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Functions
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statements" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Statements
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Expressions
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Examples
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#intentional-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Intentional limitations
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#project-layout" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Project layout
+      </span>
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+<h1 id="frml">Frml<a class="headerlink" href="#frml" title="Permanent link">&para;</a></h1>
+<p>Frml (pronounced "fermle") is a small, imperative, statically typed,
+contract-based programming language for teaching formal verification. Its basic
+syntax should be comprehensible to most programmers, but it also offers
+<code>requires</code> / <code>ensures</code> contracts, <code>assert</code>, loop <code>invariant</code>s, <code>decreases</code>
+termination measures, <code>old(...)</code>, and <code>forall</code> / <code>exists</code> quantifiers.
+Verification is fully automatic: Frml translates each program into verification
+conditions and asks the <a href="https://github.com/Z3Prover/z3">Z3</a> SMT solver to check them. There are no
+interactive proof tactics and no handwritten SMT formulas.</p>
+<p>A program that verifies looks like this:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn abs(x: Int) -&gt; Int
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  ensures result &gt;= 0
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>{
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  if x &gt;= 0 {
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>    return x;
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  } else {
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>    return -x;
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  }
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>}
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>fn main() -&gt; Int
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>{
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  return abs(-7);
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>}
+</span></code></pre></div>
+<p>Running the verifier prints <code>VERIFIED</code>; running the program prints nothing and
+uses <code>main</code>'s return value as the process exit code.</p>
+<h2 id="installation">Installation<a class="headerlink" href="#installation" title="Permanent link">&para;</a></h2>
+<p>Frml requires Python 3.13 or newer.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>uv<span class="w"> </span>venv
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">source</span><span class="w"> </span>.venv/bin/activate
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>uv<span class="w"> </span>sync<span class="w"> </span>--dev
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</span></code></pre></div>
+<p>This installs a <code>frml</code> command on your <code>PATH</code>. You can also run Frml without
+installing it, using the module form:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>python<span class="w"> </span>-m<span class="w"> </span>frml<span class="w"> </span>check<span class="w"> </span>examples/basic/abs.frml
+</span></code></pre></div>
+<h2 id="usage">Usage<a class="headerlink" href="#usage" title="Permanent link">&para;</a></h2>
+<p>Frml exposes three subcommands.</p>
+<h3 id="frml-check-filefrml"><code>frml check FILE.frml</code><a class="headerlink" href="#frml-check-filefrml" title="Permanent link">&para;</a></h3>
+<p>Parse, level-check, type-check, and verify the program. Prints <code>VERIFIED</code> on
+success, or <code>FAILED</code>/<code>UNKNOWN</code> with source locations on failure.</p>
+<h3 id="frml-run-filefrml"><code>frml run FILE.frml</code><a class="headerlink" href="#frml-run-filefrml" title="Permanent link">&para;</a></h3>
+<p>Level-check and type-check the program (without static verification) and execute
+<code>main()</code>. The exit status is <code>main</code>'s return value.</p>
+<h3 id="frml-do-filefrml"><code>frml do FILE.frml</code><a class="headerlink" href="#frml-do-filefrml" title="Permanent link">&para;</a></h3>
+<p>Verify first, and then execute <code>main()</code> if verification succeeded.</p>
+<p>Every subcommand accepts <code>--level basic</code>, <code>--level loop</code>, <code>--level array</code>,
+<code>--level builtin</code>, or <code>--level complete</code> to select the language level. The
+<code>basic</code> level handles only scalar values (<code>Int</code>, <code>Bool</code>, <code>String</code>) and no
+loops, but does allow recursion. The <code>loop</code> level adds <code>while</code> loops on top
+of <code>basic</code>, but still has no arrays and no built-in functions. The <code>array</code>
+level adds fixed-size arrays on top of <code>loop</code>, but still has no built-in
+functions. The <code>builtin</code> level adds I/O and <code>push</code>/<code>pop</code> on top of <code>array</code>.
+The <code>complete</code> level (the default) is the full language, currently the same as
+<code>builtin</code>.</p>
+<h2 id="the-language">The language<a class="headerlink" href="#the-language" title="Permanent link">&para;</a></h2>
+<h3 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h3>
+<p>Frml has three basic types:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Int          arbitrary-precision integers (no overflow)
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>Bool         true or false
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>String       a sequence of characters, written in double quotes
+</span></code></pre></div>
+<p>Frml supports homogeneous one-dimensional arrays:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Array&lt;Int&gt;    mutable, zero-indexed arrays
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Array&lt;Bool&gt;   mutable, zero-indexed arrays
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Array&lt;String&gt; mutable, zero-indexed arrays of strings
+</span></code></pre></div>
+<p>Arrays grow and shrink only through the <code>push</code> and <code>pop</code> built-ins; they
+cannot otherwise be resized.</p>
+<p>Nested arrays (<code>Array&lt;Array&lt;Int&gt;&gt;</code>) are not allowed, and Frml does not (yet)
+have a mapping (dictionary) type.</p>
+<h3 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>fn max(a: Int, b: Int) -&gt; Int
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>  ensures result &gt;= a
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>  ensures result &gt;= b
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>  ensures result == a or result == b
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>{
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>  if a &gt;= b {
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>    return a;
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>  } else {
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>    return b;
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>  }
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>}
+</span></code></pre></div>
+<ul>
+<li><code>requires</code> clauses are assumptions about the caller's inputs.</li>
+<li><code>ensures</code> clauses are guarantees about the result.<ul>
+<li><code>result</code> names the return value.</li>
+<li><code>old(e)</code> refers to the value of <code>e</code> at function entry.</li>
+</ul>
+</li>
+<li>Multiple <code>requires</code>/<code>ensures</code> clauses are implicitly ANDed.</li>
+<li>A function may omit <code>-&gt; TYPE</code>, making it a void procedure:</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>fn increment_first(a: Array&lt;Int&gt;)
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>  requires length(a) &gt; 0
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>  ensures a[0] == old(a[0]) + 1
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>{
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>  a[0] = a[0] + 1;
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>}
+</span></code></pre></div>
+<ul>
+<li>A function may return an array, provided the returned array is <em>fresh</em>: an
+    array literal, another array-returning call, or a function-local array
+    variable. Returning an array parameter is rejected, since it would let the
+    caller alias the argument:</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>fn first_primes() -&gt; Array&lt;Int&gt;
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  ensures length(result) == 4
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  ensures result[0] == 2
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>  ensures result[3] == 7
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>{
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>  return [2, 3, 5, 7];
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>}
+</span></code></pre></div>
+<ul>
+<li>Recursive functions must declare a <code>decreases</code> measure.</li>
+</ul>
+<h3 id="statements">Statements<a class="headerlink" href="#statements" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>let NAME: TYPE = expr;       // local variable declaration
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>NAME = expr;                 // scalar assignment
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>a[i] = expr;                 // array element assignment
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>if expr { ... } else { ... } // conditional (else optional)
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>while expr
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>  invariant expr             // loop invariants (optional)
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>  decreases expr             // termination measure (optional)
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>{ ... }
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>return expr;                 // (value-returning functions only)
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>assert expr;                 // runtime + static assertion
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>f(args);                     // procedure call statement
+</span></code></pre></div>
+<h3 id="expressions">Expressions<a class="headerlink" href="#expressions" title="Permanent link">&para;</a></h3>
+<p>Operators, from lowest to highest precedence: <code>=&gt;</code>, <code>or</code>, <code>and</code>, <code>==</code>/<code>!=</code>,
+<code>&lt;</code>/<code>&lt;=</code>/<code>&gt;</code>/<code>&gt;=</code>, <code>+</code>/<code>-</code>/<code>++</code>, <code>*</code>/<code>/</code>/<code>%</code>, unary <code>!</code>/<code>-</code>/<code>`</code>, then indexing
+and calls.</p>
+<p><code>/</code> and <code>%</code> use Euclidean integer division compatible with Z3 (the remainder is
+always non-negative). Division and modulo by zero are runtime errors and
+verification obligations.</p>
+<p>String literals are written in double quotes and support the usual C-style
+backslash escapes (<code>\n</code>, <code>\t</code>, <code>\"</code>, <code>\\</code>, and so on). The <code>++</code> operator
+concatenates two strings, and a single backtick before a value converts it to a
+string (<code>`5</code> is <code>"5"</code>, <code>`x</code> is the string form of <code>x</code>'s value):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>let greeting: String = "hello" ++ " " ++ "world";
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>let n: Int = 42;
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>let label: String = `n;  // "42"
+</span></code></pre></div>
+<p>Quantifiers are available in specifications:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>exists i: Int :: 0 &lt;= i and i &lt; length(a) and a[i] == 0
+</span></code></pre></div>
+<p><code>length(a)</code> is built into the language: it is a special construct with exact
+semantics that the verifier reasons about precisely, not an ordinary function.
+Frml also provides these built-in functions:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>read(path) -&gt; String               read a whole file and return its contents
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>write(path, text)                  write `text` to a file, overwriting it
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>split(text, sep) -&gt; Array&lt;String&gt;  split `text` on occurrences of `sep`
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>args() -&gt; Array&lt;String&gt;            the program's command-line arguments
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>push(array, item)                  append `item` to the end of `array`
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>pop(array) -&gt; T                    remove and return the last element of `array`
+</span></code></pre></div>
+<p><code>write</code> and <code>push</code> are procedures (they have no return value); <code>read</code>,
+<code>split</code>, <code>args</code> and <code>pop</code> are used in expressions. <code>split</code> and <code>args</code> return
+arrays of strings; they are built-ins because their results come from outside
+the program (the string being split and the command line), not because Frml
+lacks array-returning functions. <code>read</code> and <code>write</code> perform file I/O, which
+the verifier treats as uninterpreted: it can prove nothing about the file
+contents read or written. <code>args()</code> returns the arguments that follow the
+source file on the <code>frml run</code> or <code>frml checkrun</code> command line.</p>
+<p><code>push</code> and <code>pop</code> work on any <code>Array&lt;T&gt;</code> and change the array's length. <code>push</code>
+appends <code>item</code> (whose type must match the array's element type) to the end of
+a named array; <code>pop</code> returns and removes the last element, and popping an
+empty array is an error (<code>length(a) &gt; 0</code> is a verification obligation). They
+are the only built-ins that mutate a program array.</p>
+<h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
+<p>The <code>examples/</code> directory is split by language level:</p>
+<p><code>examples/basic/</code> contains programs that use only scalar values, branching,
+function calls, and recursion:</p>
+<ul>
+<li><code>abs.frml</code>: absolute value.</li>
+<li><code>max.frml</code>: maximum of two integers.</li>
+<li><code>factorial.frml</code>: recursive function with <code>decreases</code>.</li>
+<li><code>precondition.frml</code>: a runtime precondition violation.</li>
+<li><code>bad.frml</code>: a deliberately unprovable postcondition (<code>FAILED</code>).</li>
+<li><code>ex01_assign_then_assert.frml</code> and <code>ex02_assign_then_add.frml</code>: the first
+    two walk-throughs from the basic tutorial.</li>
+</ul>
+<p><code>examples/loop/</code> contains programs that also use scalar <code>while</code> loops:</p>
+<ul>
+<li><code>count.frml</code>: a <code>while</code> loop with invariants and a termination measure.</li>
+</ul>
+<p><code>examples/complete/</code> contains programs that also use arrays, loops, I/O, or
+<code>push</code>/<code>pop</code>:</p>
+<ul>
+<li><code>count.frml</code>: a <code>while</code> loop with invariants and a termination measure.</li>
+<li><code>required.frml</code>: the <code>abs</code>, <code>max</code>, and <code>count</code> core examples plus a <code>main</code>.</li>
+<li><code>all_nonnegative.frml</code>: array property proved with a quantifier loop invariant.</li>
+<li><code>increment_first.frml</code>: a procedure mutating an array, with <code>old</code>.</li>
+<li><code>array_return.frml</code>: functions returning fresh arrays.</li>
+<li><code>push_pop.frml</code>: a runtime example of arrays that grow and shrink through
+    <code>push</code> and <code>pop</code> (use <code>frml run</code>, not <code>frml check</code>).</li>
+<li><code>ex03_while_count_up_bad.frml</code> and <code>ex03_while_count_up_good.frml</code>: the
+    loop walk-through from the complete tutorial.</li>
+</ul>
+<p>Try them:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>frml<span class="w"> </span>check<span class="w"> </span>--level<span class="w"> </span><span class="nb">complete</span><span class="w"> </span>examples/complete/required.frml
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>frml<span class="w"> </span>checkrun<span class="w"> </span>--level<span class="w"> </span>basic<span class="w"> </span>examples/basic/factorial.frml
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>frml<span class="w"> </span>check<span class="w"> </span>--level<span class="w"> </span>basic<span class="w"> </span>examples/basic/bad.frml
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>frml<span class="w"> </span>run<span class="w"> </span>--level<span class="w"> </span>basic<span class="w"> </span>examples/basic/precondition.frml
+</span></code></pre></div>
+<h2 id="intentional-limitations">Intentional limitations<a class="headerlink" href="#intentional-limitations" title="Permanent link">&para;</a></h2>
+<p>These choices keep the verifier sound and the implementation small; they match
+the specification's own "simplest recommended model":</p>
+<ul>
+<li>
+<p><strong>Arrays are references, not values.</strong>
+    <code>let b: Array&lt;Int&gt; = a;</code> (array-to-array assignment) is rejected to avoid
+    aliasing ambiguity. Create fresh arrays with array literals instead.</p>
+</li>
+<li>
+<p><strong>Returned arrays must be fresh.</strong>
+    A function may return an array, but only an array it created itself (a
+    literal, an array-returning call, or a function-local array variable).
+    Returning an array parameter is rejected to keep aliasing unambiguous.
+    Array mutation is expressed with procedures, as shown earlier.</p>
+</li>
+<li>
+<p><strong>A call that takes array arguments must appear on its own.</strong>
+    It may be a statement, or the whole right-hand side of, <code>let</code>, <code>return</code>, or
+    assignment. It may not be nested inside a larger expression (<code>f(a) + g(a)</code>
+    is rejected during verification).</p>
+</li>
+<li>
+<p><strong>Runtime quantifier checking is best-effort.</strong>
+    Quantified postconditions over a finite array index range (<code>0 &lt;= i and i &lt;
+    length(a)</code>) are evaluated at runtime. Other quantified expressions are
+    skipped during runtime checking but still fully verified statically.</p>
+</li>
+</ul>
+<p>The verifier never claims success on a program it cannot prove. If Z3 cannot
+decide an obligation it reports <code>UNKNOWN</code>, and a genuinely unprovable program is
+reported as <code>FAILED</code>: it is never silently accepted.</p>
+<h2 id="project-layout">Project layout<a class="headerlink" href="#project-layout" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>frml/
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  errors.py       error types and source-location formatting
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>  lexer.py        tokenizer
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>  parser.py       recursive-descent parser -&gt; AST
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>  ast_nodes.py    AST node definitions
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>  levelchecker.py      language-level conformance checks
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>  types.py               Int / Bool / String / Array&lt;T&gt; types
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>  builtins.py            built-in function signatures
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>  typechecker_basic.py   type checking for the `basic` level
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>  typechecker_loop.py    type checking for the `loop` level
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>  typechecker_array.py   type checking for the `array` level
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a>  typechecker_builtin.py type checking for the `builtin` level
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a>  typechecker_complete.py type checking for the `complete` level
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a>  interpreter.py         concrete executor with runtime checks
+</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a>  prover_basic.py        verification for the `basic` level
+</span><span id="__span-13-16"><a id="__codelineno-13-16" name="__codelineno-13-16" href="#__codelineno-13-16"></a>  prover_loop.py         verification for the `loop` level
+</span><span id="__span-13-17"><a id="__codelineno-13-17" name="__codelineno-13-17" href="#__codelineno-13-17"></a>  prover_array.py        verification for the `array` level
+</span><span id="__span-13-18"><a id="__codelineno-13-18" name="__codelineno-13-18" href="#__codelineno-13-18"></a>  prover_builtin.py      verification for the `builtin` level
+</span><span id="__span-13-19"><a id="__codelineno-13-19" name="__codelineno-13-19" href="#__codelineno-13-19"></a>  prover_complete.py     verification for the `complete` level
+</span><span id="__span-13-20"><a id="__codelineno-13-20" name="__codelineno-13-20" href="#__codelineno-13-20"></a>  cli.py                 the `frml` command-line interface
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://zensical.org/" target="_blank" rel="noopener">
+      Zensical
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate":null,"base":".","features":[],"search":"./assets/javascripts/workers/search.7d14d953.min.js","tags":null,"translations":{"clipboard.copied":"Copied to clipboard","clipboard.copy":"Copy to clipboard","search.result.more.one":"1 more on this page","search.result.more.other":"# more on this page","search.result.none":"No matching documents","search.result.one":"1 matching document","search.result.other":"# matching documents","search.result.placeholder":"Type to start searching","search.result.term.missing":"Missing","select.version":"Select version"},"version":null}</script>
+    
+    
+      <script src="./assets/javascripts/bundle.88ee1349.min.js"></script>
+      
+    
+  </body>
+</html>

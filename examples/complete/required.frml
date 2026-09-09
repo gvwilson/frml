@@ -1,0 +1,43 @@
+fn abs(x: Int) -> Int
+  ensures result >= 0
+{
+  if x >= 0 {
+    return x;
+  } else {
+    return -x;
+  }
+}
+
+fn max(a: Int, b: Int) -> Int
+  ensures result >= a
+  ensures result >= b
+  ensures result == a or result == b
+{
+  if a >= b {
+    return a;
+  } else {
+    return b;
+  }
+}
+
+fn count(n: Int) -> Int
+  requires n >= 0
+  ensures result == n
+{
+  let i: Int = 0;
+
+  while i < n
+    invariant 0 <= i
+    invariant i <= n
+    decreases n - i
+  {
+    i = i + 1;
+  }
+
+  return i;
+}
+
+fn main() -> Int
+{
+  return count(7);
+}

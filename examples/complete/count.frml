@@ -1,0 +1,21 @@
+fn count(n: Int) -> Int
+  requires n >= 0
+  ensures result == n
+{
+  let i: Int = 0;
+
+  while i < n
+    invariant 0 <= i
+    invariant i <= n
+    decreases n - i
+  {
+    i = i + 1;
+  }
+
+  return i;
+}
+
+fn main() -> Int
+{
+  return count(7);
+}

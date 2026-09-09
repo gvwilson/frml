@@ -1,0 +1,6 @@
+1.  Modify the language to use `and` instead of `&&` and `or` instead of `||`.
+2.  Modify the parser to expect UTF-8 input.
+3.  Modify the language to allow string literals. These must appear in double quotes, and support the usual C-style backslash escapes.
+4.  Modify the language so that "++" concatenates strings.
+5.  Modify the language so that a single backtick before a value converts it to a string. A single backtick before a variable converts the variable's value to a string.
+6.  Modify the language to allow arrays of strings.

@@ -1,0 +1,13 @@
+Add the following built-in functions to the Frml language:
+
+read(Str) -> Str: takes a file path as an input argument and returns the contents of the file as a string.
+
+write(Str, Str): takes a file path and a string as inputs and writes the string to the file (overwriting the file's previous contents). Choose a sensible return value if one is required.
+
+I would like to add two more functions, but Frml functions cannot presently return arrays:
+
+split(a: Str, b: Str) -> Array<Str>: split 'a' on occurrences of 'b' (e.g., split text on newlines).
+
+args() -> Array<Str>: return the program's command-line arguments.
+
+Is it simpler to modify the language (and verifier) to allow functions to create and return arrays, or is there a simpler way to implement these?

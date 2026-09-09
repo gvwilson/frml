@@ -1,0 +1,5 @@
+fn bad(x: Int) -> Int
+  ensures result > x
+{
+  return x;
+}
