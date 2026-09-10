@@ -31,6 +31,11 @@ def build_parser():
         "check", help="parse, type-check and verify", allow_abbrev=False
     )
     check.add_argument("file", metavar="FILE.frml", help="program to check")
+    check.add_argument(
+        "--trace",
+        action="store_true",
+        help="show the verification conditions sent to Z3",
+    )
 
     run = subparsers.add_parser(
         "run", help="type-check and execute main()", allow_abbrev=False
@@ -43,6 +48,11 @@ def build_parser():
     verify_run.add_argument(
         "file", metavar="FILE.frml", help="program to verify and run"
     )
+    verify_run.add_argument(
+        "--trace",
+        action="store_true",
+        help="show the verification conditions sent to Z3",
+    )
 
     return parser
 
@@ -51,20 +61,20 @@ def main(argv=None):
     args = build_parser().parse_args(sys.argv[1:] if argv is None else argv)
 
     if args.command == "check":
-        return do_check(args.file)
+        return do_check(args.file, trace=args.trace)
     if args.command == "run":
         return do_run(args.file)
-    return do_verify_run(args.file)
+    return do_verify_run(args.file, trace=args.trace)
 
 
-def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS):
+def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
     try:
         program = load_program(filename)
     except FrmlError as e:
         print(e.format(filename), file=sys.stderr)
         return 1
 
-    _, outcomes = verify_program(program, timeout_ms=timeout_ms)
+    _, outcomes = verify_program(program, timeout_ms=timeout_ms, trace=trace)
 
     failed = [oc for oc in outcomes if oc.status == "FAILED"]
     unknown = [oc for oc in outcomes if oc.status == "UNKNOWN"]
@@ -100,8 +110,8 @@ def do_run(filename):
     return int(code)
 
 
-def do_verify_run(filename, timeout_ms=DEFAULT_TIMEOUT_MS):
-    status = do_check(filename, timeout_ms=timeout_ms)
+def do_verify_run(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
+    status = do_check(filename, timeout_ms=timeout_ms, trace=trace)
     if status != 0:
         return status
     return do_run(filename)

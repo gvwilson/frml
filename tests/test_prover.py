@@ -565,3 +565,52 @@ def test_check_obligations_reports_unknown(monkeypatch):
     outcomes = check_obligations([ob], timeout_ms=100)
     assert outcomes[0].status == "UNKNOWN"
     assert outcomes[0].counterexample is None
+
+
+# -- trace output ----------------------------------------------------------
+
+
+def test_check_obligations_trace_prints_vc(capsys):
+    ob = Obligation(
+        "postcondition",
+        "result >= x",
+        [z3.IntVal(1) <= z3.IntVal(2)],
+        z3.IntVal(3) >= z3.IntVal(2),
+        4,
+        5,
+    )
+    outcomes = check_obligations([ob], trace=True)
+    assert outcomes[0].status == "VERIFIED"
+    out = capsys.readouterr().out
+    assert out == (
+        "--- postcondition:4:5: result >= x\n"
+        "    given: (and (<= 1 2))\n"
+        "    prove: (>= 3 2)\n"
+        "    => VERIFIED\n"
+    )
+
+
+def test_check_obligations_trace_without_hyp(capsys):
+    ob = Obligation("postcondition", "true", [], z3.BoolVal(True), None, None)
+    outcomes = check_obligations([ob], trace=True)
+    assert outcomes[0].status == "VERIFIED"
+    out = capsys.readouterr().out
+    assert "--- postcondition: true" in out
+    assert "given:" not in out
+    assert "    => VERIFIED" in out
+
+
+def test_check_obligations_trace_line_without_col(capsys):
+    ob = Obligation("bounds", "0 <= i", [], z3.IntVal(0) >= z3.IntVal(0), 7, None)
+    check_obligations([ob], trace=True)
+    out = capsys.readouterr().out
+    assert "--- bounds:7: 0 <= i" in out
+
+
+def test_verify_program_trace_prints_function_header(capsys):
+    program = parse("fn main() -> Int { assert 1 < 2; return 0; }")
+    TypeChecker(program).check()
+    verify_program(program, trace=True)
+    out = capsys.readouterr().out
+    assert "fn main" in out
+    assert "=> VERIFIED" in out

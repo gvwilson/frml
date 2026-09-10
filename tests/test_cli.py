@@ -94,7 +94,7 @@ def test_do_check_unknown(monkeypatch, capsys, write_frml):
     path = write_frml("fn main() -> Int { return 0; }")
     ob = Obligation("postcondition", "result == 0", [], None, None, None)
 
-    def fake_verify(program, timeout_ms=10000):
+    def fake_verify(program, timeout_ms=10000, trace=False):
         return [], [CheckOutcome(ob, "UNKNOWN")]
 
     monkeypatch.setattr("frml.cli.verify_program", fake_verify)
@@ -105,6 +105,44 @@ def test_do_check_unknown(monkeypatch, capsys, write_frml):
 def test_do_run_returns_exit_code(write_frml):
     path = write_frml("fn main() -> Int { return 42; }")
     assert do_run(path) == 42
+
+
+def test_main_check_trace(capsys, write_frml):
+    path = write_frml(
+        "fn abs(x: Int) -> Int ensures result >= 0"
+        "{ if x >= 0 { return x; } else { return -x; } }"
+    )
+    assert main(["check", "--trace", path]) == 0
+    out = capsys.readouterr().out
+    assert "fn abs" in out
+    assert "prove:" in out
+    assert "=> VERIFIED" in out
+    assert out.endswith("VERIFIED\n")
+
+
+def test_main_verify_run_trace(capsys, write_frml):
+    path = write_frml("fn main() -> Int { assert 1 < 2; return 4; }")
+    assert main(["verify-run", "--trace", path]) == 4
+    out = capsys.readouterr().out
+    assert "fn main" in out
+    assert "=> VERIFIED" in out
+
+
+def test_do_check_trace(capsys, write_frml):
+    path = write_frml("fn main() -> Int { assert 1 < 2; return 0; }")
+    assert do_check(path, trace=True) == 0
+    out = capsys.readouterr().out
+    assert "fn main" in out
+    assert "--- assert" in out
+    assert "=> VERIFIED" in out
+
+
+def test_do_verify_run_trace(capsys, write_frml):
+    path = write_frml("fn main() -> Int { assert 1 < 2; return 2; }")
+    assert do_verify_run(path, trace=True) == 2
+    out = capsys.readouterr().out
+    assert "fn main" in out
+    assert "=> VERIFIED" in out
 
 
 def test_do_run_runtime_error(capsys, write_frml):
