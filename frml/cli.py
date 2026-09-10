@@ -1,9 +1,9 @@
 """Command-line interface for Frml.
 
 Usage:
-    frml check FILE.frml        parse, type-check and verify
-    frml run FILE.frml          type-check and execute main()
-    frml verify-run FILE.frml   verify, then execute main()
+    frml check FILE.frml      parse, type-check and verify
+    frml run FILE.frml        type-check and execute main()
+    frml checkrun FILE.frml   verify, then execute main()
 """
 
 import argparse
@@ -42,13 +42,13 @@ def build_parser():
     )
     run.add_argument("file", metavar="FILE.frml", help="program to run")
 
-    verify_run = subparsers.add_parser(
-        "verify-run", help="verify, then execute main()", allow_abbrev=False
+    checkrun = subparsers.add_parser(
+        "checkrun", help="verify, then execute main()", allow_abbrev=False
     )
-    verify_run.add_argument(
+    checkrun.add_argument(
         "file", metavar="FILE.frml", help="program to verify and run"
     )
-    verify_run.add_argument(
+    checkrun.add_argument(
         "--trace",
         action="store_true",
         help="show the verification conditions sent to Z3",
@@ -64,7 +64,7 @@ def main(argv=None):
         return do_check(args.file, trace=args.trace)
     if args.command == "run":
         return do_run(args.file)
-    return do_verify_run(args.file, trace=args.trace)
+    return do_checkrun(args.file, trace=args.trace)
 
 
 def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
@@ -110,7 +110,7 @@ def do_run(filename):
     return int(code)
 
 
-def do_verify_run(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
+def do_checkrun(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
     status = do_check(filename, timeout_ms=timeout_ms, trace=trace)
     if status != 0:
         return status

@@ -276,10 +276,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#frml-verify-run-filefrml" class="md-nav__link">
+  <a href="#frml-do-filefrml" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>frml verify-run FILE.frml</code>
+        <code>frml do FILE.frml</code>
       </span>
     </span>
   </a>
@@ -609,10 +609,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#frml-verify-run-filefrml" class="md-nav__link">
+  <a href="#frml-do-filefrml" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>frml verify-run FILE.frml</code>
+        <code>frml do FILE.frml</code>
       </span>
     </span>
   </a>
@@ -734,14 +734,14 @@
                   
 
 <h1 id="frml">Frml<a class="headerlink" href="#frml" title="Permanent link">&para;</a></h1>
-<p>Frml is a small, statically typed, contract-based programming language for
-teaching formal verification. It feels like a simplified combination of Python
-and Dafny: ordinary imperative programs, plus <code>requires</code> / <code>ensures</code> contracts,
-<code>assert</code>, loop <code>invariant</code>s, <code>decreases</code> termination measures, <code>old(...)</code>, and
-<code>forall</code> / <code>exists</code> quantifiers. Verification is fully automatic: Frml
-translates each program into verification conditions and asks the <a href="https://github.com/Z3Prover/z3">Z3</a> SMT
-solver to check them. There are no interactive proof tactics and no handwritten
-SMT formulas.</p>
+<p>Frml (pronounced "fermle") is a small, imperative, statically typed,
+contract-based programming language for teaching formal verification. Its basic
+syntax should be comprehensible to most programmers, but it also offers
+<code>requires</code> / <code>ensures</code> contracts, <code>assert</code>, loop <code>invariant</code>s, <code>decreases</code>
+termination measures, <code>old(...)</code>, and <code>forall</code> / <code>exists</code> quantifiers.
+Verification is fully automatic: Frml translates each program into verification
+conditions and asks the <a href="https://github.com/Z3Prover/z3">Z3</a> SMT solver to check them. There are no
+interactive proof tactics and no handwritten SMT formulas.</p>
 <p>A program that verifies looks like this:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn abs(x: Int) -&gt; Int
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  ensures result &gt;= 0
@@ -779,7 +779,7 @@ installing it, using the module form:</p>
 <h3 id="frml-run-filefrml"><code>frml run FILE.frml</code><a class="headerlink" href="#frml-run-filefrml" title="Permanent link">&para;</a></h3>
 <p>Type-check the program (without static verification) and execute <code>main()</code>. The
 exit status is <code>main</code>'s return value.</p>
-<h3 id="frml-verify-run-filefrml"><code>frml verify-run FILE.frml</code><a class="headerlink" href="#frml-verify-run-filefrml" title="Permanent link">&para;</a></h3>
+<h3 id="frml-do-filefrml"><code>frml do FILE.frml</code><a class="headerlink" href="#frml-do-filefrml" title="Permanent link">&para;</a></h3>
 <p>Verify first, and then execute <code>main()</code> if verification succeeded.</p>
 <h2 id="the-language">The language<a class="headerlink" href="#the-language" title="Permanent link">&para;</a></h2>
 <h3 id="types">Types<a class="headerlink" href="#types" title="Permanent link">&para;</a></h3>
@@ -874,29 +874,37 @@ string (<code>`5</code> is <code>"5"</code>, <code>`x</code> is the string form 
 </ul>
 <p>Try them:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/required.frml
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>frml<span class="w"> </span>verify-run<span class="w"> </span>examples/factorial.frml
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>frml<span class="w"> </span>checkrun<span class="w"> </span>examples/factorial.frml
 </span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/bad.frml
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>frml<span class="w"> </span>run<span class="w"> </span>examples/precondition.frml
 </span></code></pre></div>
 <h2 id="intentional-limitations">Intentional limitations<a class="headerlink" href="#intentional-limitations" title="Permanent link">&para;</a></h2>
 <p>These choices keep the verifier sound and the implementation small; they match
 the specification's own "simplest recommended model":</p>
-<dl>
-<dt>Arrays are references, not values.</dt>
-<dd><code>let b: Array&lt;Int&gt; = a;</code> (array-to-array assignment) is rejected to avoid
-aliasing ambiguity. Create fresh arrays with array literals instead.</dd>
-<dt>Functions return <code>Int</code> or <code>Bool</code>.</dt>
-<dd>Array-returning functions are not supported. Array mutation is expressed
-with procedures, as shown earlier.</dd>
-<dt>A call that takes array arguments must appear on its own.</dt>
-<dd>It may be a statement, or the whole right-hand side of, <code>let</code>, <code>return</code>, or
-assignment. It may not be nested inside a larger expression (<code>f(a) + g(a)</code>
-is rejected during verification).</dd>
-<dt>Runtime quantifier checking is best-effort.</dt>
-<dd>Quantified postconditions over a finite array index range (<code>0 &lt;= i and i &lt;
-length(a)</code>) are evaluated at runtime. Other quantified expressions are
-skipped during runtime checking but still fully verified statically.</dd>
-</dl>
+<ul>
+<li>
+<p><strong>Arrays are references, not values.</strong>
+    <code>let b: Array&lt;Int&gt; = a;</code> (array-to-array assignment) is rejected to avoid
+    aliasing ambiguity. Create fresh arrays with array literals instead.</p>
+</li>
+<li>
+<p><strong>Functions return <code>Int</code> or <code>Bool</code>.</strong>
+    Array-returning functions are not supported. Array mutation is expressed
+    with procedures, as shown earlier.</p>
+</li>
+<li>
+<p><strong>A call that takes array arguments must appear on its own.</strong>
+    It may be a statement, or the whole right-hand side of, <code>let</code>, <code>return</code>, or
+    assignment. It may not be nested inside a larger expression (<code>f(a) + g(a)</code>
+    is rejected during verification).</p>
+</li>
+<li>
+<p><strong>Runtime quantifier checking is best-effort.</strong>
+    Quantified postconditions over a finite array index range (<code>0 &lt;= i and i &lt;
+    length(a)</code>) are evaluated at runtime. Other quantified expressions are
+    skipped during runtime checking but still fully verified statically.</p>
+</li>
+</ul>
 <p>The verifier never claims success on a program it cannot prove. If Z3 cannot
 decide an obligation it reports <code>UNKNOWN</code>, and a genuinely unprovable program is
 reported as <code>FAILED</code>: it is never silently accepted.</p>

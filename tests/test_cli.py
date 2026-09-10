@@ -5,8 +5,8 @@ import pytest
 from frml.cli import (
     _format_outcome,
     do_check,
+    do_checkrun,
     do_run,
-    do_verify_run,
     load_program,
     main,
 )
@@ -67,9 +67,9 @@ def test_main_run_command(write_frml):
     assert main(["run", path]) == 5
 
 
-def test_main_verify_run_command(write_frml):
+def test_main_checkrun_command(write_frml):
     path = write_frml("fn main() -> Int { return 7; }")
-    assert main(["verify-run", path]) == 7
+    assert main(["checkrun", path]) == 7
 
 
 def test_do_check_verified(capsys, write_frml):
@@ -120,9 +120,9 @@ def test_main_check_trace(capsys, write_frml):
     assert out.endswith("VERIFIED\n")
 
 
-def test_main_verify_run_trace(capsys, write_frml):
+def test_main_checkrun_trace(capsys, write_frml):
     path = write_frml("fn main() -> Int { assert 1 < 2; return 4; }")
-    assert main(["verify-run", "--trace", path]) == 4
+    assert main(["checkrun", "--trace", path]) == 4
     out = capsys.readouterr().out
     assert "fn main" in out
     assert "=> VERIFIED" in out
@@ -137,9 +137,9 @@ def test_do_check_trace(capsys, write_frml):
     assert "=> VERIFIED" in out
 
 
-def test_do_verify_run_trace(capsys, write_frml):
+def test_do_checkrun_trace(capsys, write_frml):
     path = write_frml("fn main() -> Int { assert 1 < 2; return 2; }")
-    assert do_verify_run(path, trace=True) == 2
+    assert do_checkrun(path, trace=True) == 2
     out = capsys.readouterr().out
     assert "fn main" in out
     assert "=> VERIFIED" in out
@@ -157,16 +157,16 @@ def test_do_run_syntax_error(capsys, write_frml):
     assert "SyntaxError" in capsys.readouterr().err
 
 
-def test_do_verify_run_success(write_frml):
+def test_do_checkrun_success(write_frml):
     path = write_frml("fn main() -> Int { return 7; }")
-    assert do_verify_run(path) == 7
+    assert do_checkrun(path) == 7
 
 
-def test_do_verify_run_fails_verification(capsys, write_frml):
+def test_do_checkrun_fails_verification(capsys, write_frml):
     path = write_frml(
         "fn bad(x: Int) -> Int ensures result > x { return x; } fn main() -> Int { return 0; }"
     )
-    assert do_verify_run(path) == 1
+    assert do_checkrun(path) == 1
     assert "FAILED" in capsys.readouterr().err
 
 

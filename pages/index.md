@@ -1,13 +1,13 @@
 # Frml
 
-Frml is a small, statically typed, contract-based programming language for
-teaching formal verification. It feels like a simplified combination of Python
-and Dafny: ordinary imperative programs, plus `requires` / `ensures` contracts,
-`assert`, loop `invariant`s, `decreases` termination measures, `old(...)`, and
-`forall` / `exists` quantifiers. Verification is fully automatic: Frml
-translates each program into verification conditions and asks the [Z3][z3] SMT
-solver to check them. There are no interactive proof tactics and no handwritten
-SMT formulas.
+Frml (pronounced "fermle") is a small, imperative, statically typed,
+contract-based programming language for teaching formal verification. Its basic
+syntax should be comprehensible to most programmers, but it also offers
+`requires` / `ensures` contracts, `assert`, loop `invariant`s, `decreases`
+termination measures, `old(...)`, and `forall` / `exists` quantifiers.
+Verification is fully automatic: Frml translates each program into verification
+conditions and asks the [Z3][z3] SMT solver to check them. There are no
+interactive proof tactics and no handwritten SMT formulas.
 
 A program that verifies looks like this:
 
@@ -63,7 +63,7 @@ Parse, type-check, and verify the program. Prints `VERIFIED` on success, or
 Type-check the program (without static verification) and execute `main()`. The
 exit status is `main`'s return value.
 
-### `frml verify-run FILE.frml`
+### `frml do FILE.frml`
 
 Verify first, and then execute `main()` if verification succeeded.
 
@@ -186,7 +186,7 @@ Try them:
 
 ```bash
 frml check examples/required.frml
-frml verify-run examples/factorial.frml
+frml checkrun examples/factorial.frml
 frml check examples/bad.frml
 frml run examples/precondition.frml
 ```
@@ -196,21 +196,21 @@ frml run examples/precondition.frml
 These choices keep the verifier sound and the implementation small; they match
 the specification's own "simplest recommended model":
 
-Arrays are references, not values.
-:   `let b: Array<Int> = a;` (array-to-array assignment) is rejected to avoid
+-   **Arrays are references, not values.**
+    `let b: Array<Int> = a;` (array-to-array assignment) is rejected to avoid
     aliasing ambiguity. Create fresh arrays with array literals instead.
 
-Functions return `Int` or `Bool`.
-:   Array-returning functions are not supported. Array mutation is expressed
+-   **Functions return `Int` or `Bool`.**
+    Array-returning functions are not supported. Array mutation is expressed
     with procedures, as shown earlier.
 
-A call that takes array arguments must appear on its own.
-:   It may be a statement, or the whole right-hand side of, `let`, `return`, or
+-   **A call that takes array arguments must appear on its own.**
+    It may be a statement, or the whole right-hand side of, `let`, `return`, or
     assignment. It may not be nested inside a larger expression (`f(a) + g(a)`
     is rejected during verification).
 
-Runtime quantifier checking is best-effort.
-:   Quantified postconditions over a finite array index range (`0 <= i and i <
+-   **Runtime quantifier checking is best-effort.**
+    Quantified postconditions over a finite array index range (`0 <= i and i <
     length(a)`) are evaluated at runtime. Other quantified expressions are
     skipped during runtime checking but still fully verified statically.
 
