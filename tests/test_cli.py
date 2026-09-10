@@ -27,22 +27,32 @@ def test_load_program_raises_on_syntax_error(write_frml):
 
 
 def test_main_with_no_args(capsys):
-    assert main([]) == 1
+    with pytest.raises(SystemExit) as excinfo:
+        main([])
+    assert excinfo.value.code == 2
     assert "check" in capsys.readouterr().err
 
 
 def test_main_help(capsys):
-    assert main(["--help"]) == 0
-    assert "frml check" in capsys.readouterr().out
+    with pytest.raises(SystemExit) as excinfo:
+        main(["--help"])
+    assert excinfo.value.code == 0
+    captured = capsys.readouterr()
+    assert "usage: frml" in captured.out
+    assert "check" in captured.out
 
 
 def test_main_unknown_command(capsys):
-    assert main(["frobnicate"]) == 1
-    assert "unknown command" in capsys.readouterr().err
+    with pytest.raises(SystemExit) as excinfo:
+        main(["frobnicate"])
+    assert excinfo.value.code == 2
+    assert "invalid choice" in capsys.readouterr().err
 
 
 def test_main_wrong_argument_count(capsys):
-    assert main(["check"]) == 1
+    with pytest.raises(SystemExit) as excinfo:
+        main(["check"])
+    assert excinfo.value.code == 2
     assert "usage" in capsys.readouterr().err
 
 

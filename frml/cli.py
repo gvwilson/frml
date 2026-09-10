@@ -6,6 +6,7 @@ Usage:
     frml verify-run FILE.frml   verify, then execute main()
 """
 
+import argparse
 import sys
 
 from .errors import FrmlError
@@ -17,32 +18,43 @@ from .typechecker import TypeChecker
 DEFAULT_TIMEOUT_MS = 10_000
 
 
+def build_parser():
+    """Build the Frml command-line argument parser."""
+    parser = argparse.ArgumentParser(
+        prog="frml",
+        description="A minimal contract-based verification language.",
+        allow_abbrev=False,
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    check = subparsers.add_parser(
+        "check", help="parse, type-check and verify", allow_abbrev=False
+    )
+    check.add_argument("file", metavar="FILE.frml", help="program to check")
+
+    run = subparsers.add_parser(
+        "run", help="type-check and execute main()", allow_abbrev=False
+    )
+    run.add_argument("file", metavar="FILE.frml", help="program to run")
+
+    verify_run = subparsers.add_parser(
+        "verify-run", help="verify, then execute main()", allow_abbrev=False
+    )
+    verify_run.add_argument(
+        "file", metavar="FILE.frml", help="program to verify and run"
+    )
+
+    return parser
+
+
 def main(argv=None):
-    argv = list(sys.argv[1:] if argv is None else argv)
-    if not argv:
-        print(__doc__.strip(), file=sys.stderr)
-        return 1
+    args = build_parser().parse_args(sys.argv[1:] if argv is None else argv)
 
-    command = argv[0]
-    if command in ("-h", "--help", "help"):
-        print(__doc__.strip())
-        return 0
-
-    if command not in ("check", "run", "verify-run"):
-        print(f"unknown command {command!r}", file=sys.stderr)
-        print(__doc__.strip(), file=sys.stderr)
-        return 1
-
-    if len(argv) != 2:
-        print(f"usage: frml {command} FILE.frml", file=sys.stderr)
-        return 1
-
-    filename = argv[1]
-    if command == "check":
-        return do_check(filename)
-    if command == "run":
-        return do_run(filename)
-    return do_verify_run(filename)
+    if args.command == "check":
+        return do_check(args.file)
+    if args.command == "run":
+        return do_run(args.file)
+    return do_verify_run(args.file)
 
 
 def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS):
