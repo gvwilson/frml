@@ -851,7 +851,7 @@ verification obligations.</p>
 <p>String literals are written in double quotes and support the usual C-style
 backslash escapes (<code>\n</code>, <code>\t</code>, <code>\"</code>, <code>\\</code>, and so on). The <code>++</code> operator
 concatenates two strings, and a single backtick before a value converts it to a
-string (<code>5</code> is <code>"5"</code>, <code>x</code> is the string form of <code>x</code>'s value):</p>
+string (<code>`5</code> is <code>"5"</code>, <code>`x</code> is the string form of <code>x</code>'s value):</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>let greeting: String = "hello" ++ " " ++ "world";
 </span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>let n: Int = 42;
 </span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>let label: String = `n;  // "42"

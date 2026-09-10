@@ -153,7 +153,7 @@ verification obligations.
 String literals are written in double quotes and support the usual C-style
 backslash escapes (`\n`, `\t`, `\"`, `\\`, and so on). The `++` operator
 concatenates two strings, and a single backtick before a value converts it to a
-string (`5` is `"5"`, `x` is the string form of `x`'s value):
+string (`` `5 `` is `"5"`, `` `x `` is the string form of `x`'s value):
 
 ```
 let greeting: String = "hello" ++ " " ++ "world";
