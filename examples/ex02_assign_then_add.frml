@@ -1,0 +1,7 @@
+fn simple() -> Bool
+{
+  let x: Int = 3;
+  let y: Int = x + 2;
+  assert y > x;
+  return true;
+}

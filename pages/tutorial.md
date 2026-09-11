@@ -242,6 +242,42 @@ fn simple
 VERIFIED
 ```
 
+-   Let's try two variables:
+
+```
+fn simple() -> Bool
+{
+  let x: Int = 3;
+  let y: Int = x + 2;
+  assert y > x;
+  return true;
+}
+```
+
+-   Once again the symbolic path starts empty.
+-   `let x: Int = 3;` evaluates the literal `3` and stores it in `state.vars["x"]` as the Z3 integer `3`.
+-   `let y: Int = x + 2;` evaluates `x + 2` with the current state.
+    -   `x` looks up the stored term `3`.
+    -   `+` builds the Z3 term `3 + 2`.
+    -   The prover stores that term in `state.vars["y"]`.
+-   At `assert y > x;`, the prover evaluates the assertion expression with the current state.
+    -   `y` looks up the stored term `3 + 2`.
+    -   `x` looks up the stored term `3`.
+    -   `>` builds the Z3 term `(3 + 2) > 3`.
+-   The prover emits an obligation with the current (empty) path and the goal `(3 + 2) > 3`
+-   No assignment makes `not ((3 + 2) > 3)` true, so it returns `unsat`, and the assertion is verified.
+-   Running `uv run frml check --trace examples/ex02_assign_then_add.frml` prints:
+
+```
+fn simple
+--- assert:5:3: assert (y > x)
+    prove: (< 3 (+ 3 2))
+    => VERIFIED
+VERIFIED
+```
+
+-   `(< 3 (+ 3 2))` is Z3's prefix notation for `3 < 3 + 2`, which is the same logical claim as `(3 + 2) > 3`.
+
 ## A more complex example: `abs`
 
 -   Frml program:
