@@ -45,7 +45,7 @@ hypotheses => goal
 The pipeline is:
 
 ```
-source  ->  AST  ->  verification conditions  ->  Z3  ->  VERIFIED / FAILED / UNKNOWN
+source -> AST -> verification conditions -> Z3 -> VERIFIED / FAILED / UNKNOWN
 ```
 
 ## The single idea behind the verifier
@@ -204,7 +204,45 @@ x = x + 1;
 
 -   After this statement, the state maps `x` to the term `x!1 + 1`, not to a number.
 
-## A first complete example: `abs`
+## Some simple examples
+
+-   Frml program:
+
+```
+fn simple() -> Bool
+{
+  let x: Int = 3;
+  assert x > 0;
+  return true;
+}
+```
+
+-   The `simple` function has no `requires` clause, so the symbolic path starts empty.
+-   `let x: Int = 3;` evaluates the literal `3` and stores it in `state.vars["x"]` as the Z3 integer `3`
+    (not a fresh symbol).
+-   At `assert x > 0;`, the prover evaluates the assertion expression with the current state.
+    -   `x` looks up the stored term `3`.
+    -   `>` builds the Z3 term `3 > 0`.
+-   The prover emits one obligation:
+    -   kind: `assert`
+    -   description: `assert (x > 0)`
+    -   hypotheses: the current path (empty here)
+    -   goal: `3 > 0`
+-   In the Z3 check loop, this obligation becomes `not (True => 3 > 0)`, which simplifies to `not (3 > 0)`.
+-   Z3 finds no assignment that makes `not (3 > 0)` true, so it returns `unsat`.
+-   `unsat` means the goal holds, so the assert is `VERIFIED`.
+-   It is the only obligation, so the whole program is `VERIFIED`.
+-   Running `uv run frml check --trace examples/ex01_assign_then_assert.frml` prints:
+
+```
+fn simple
+--- assert:4:3: assert (x > 0)
+    prove: (> 3 0)
+    => VERIFIED
+VERIFIED
+```
+
+## A more complex example: `abs`
 
 -   Frml program:
 
@@ -446,7 +484,7 @@ assert 1 < 2;
 -   If Z3 proves it, execution continues with the fact now guaranteed.
 
 > The prover does not add the assertion to the path after checking
-> because > `assert` is a check, not an assumption.
+> because `assert` is a check, not an assumption.
 > The programmer asserts what should already be true,
 > so the verifier must prove it from what came before.
 
