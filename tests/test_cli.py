@@ -11,6 +11,7 @@ from frml.cli import (
     main,
 )
 from frml.errors import FrmlSyntaxError
+from frml.position import Position
 from frml.prover import CheckOutcome, Obligation
 
 
@@ -129,7 +130,7 @@ def test_do_check_syntax_error(capsys, write_frml):
 
 def test_do_check_unknown(monkeypatch, capsys, write_frml):
     path = write_frml("fn main() -> Int { return 0; }")
-    ob = Obligation("postcondition", "result == 0", [], None, None, None)
+    ob = Obligation("postcondition", "result == 0", [], None, None)
 
     def fake_verify(program, timeout_ms=10000, trace=False):
         return [], [CheckOutcome(ob, "UNKNOWN")]
@@ -208,7 +209,7 @@ def test_do_checkrun_fails_verification(capsys, write_frml):
 
 
 def test_format_outcome_failed():
-    ob = Obligation("postcondition", "result > x", [], None, 3, 5)
+    ob = Obligation("postcondition", "result > x", [], None, Position(3, 5))
     outcome = CheckOutcome(ob, "FAILED", "model")
     text = _format_outcome("prog.frml", outcome)
     assert text.startswith("prog.frml:3:5: FAILED")
@@ -217,10 +218,19 @@ def test_format_outcome_failed():
 
 
 def test_format_outcome_unknown():
-    ob = Obligation("postcondition", "result == x", [], None, None, None)
+    ob = Obligation("postcondition", "result == x", [], None, None)
     outcome = CheckOutcome(ob, "UNKNOWN", None)
     text = _format_outcome("prog.frml", outcome)
     assert (
         text
         == "prog.frml: UNKNOWN\npostcondition could not be decided:\n    result == x"
     )
+
+
+def test_main_run_passes_command_line_args(write_frml):
+    path = write_frml(
+        "fn main() -> Int {"
+        " let a: Array<String> = args();"
+        ' if length(a) == 2 and a[0] == "x" and a[1] == "y" { return 0; } else { return 1; } }'
+    )
+    assert main(["run", path, "x", "y"]) == 0

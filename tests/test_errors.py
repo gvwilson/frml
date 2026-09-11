@@ -10,6 +10,7 @@ from frml.errors import (
     FrmlTypeError,
     FrmlVerificationError,
 )
+from frml.position import Position
 
 
 def test_default_category_and_message_only():
@@ -21,15 +22,18 @@ def test_format_with_filename_only():
 
 
 def test_format_with_line_only():
-    assert FrmlError("boom", 3).format() == "3: Error: boom"
+    assert FrmlError("boom", Position(3)).format() == "3: Error: boom"
 
 
 def test_format_with_line_and_col():
-    assert FrmlError("boom", 3, 7).format() == "3:7: Error: boom"
+    assert FrmlError("boom", Position(3, 7)).format() == "3:7: Error: boom"
 
 
 def test_format_with_filename_line_and_col():
-    assert FrmlError("boom", 3, 7).format("prog.frml") == "prog.frml:3:7: Error: boom"
+    assert (
+        FrmlError("boom", Position(3, 7)).format("prog.frml")
+        == "prog.frml:3:7: Error: boom"
+    )
 
 
 def test_each_subclass_has_its_own_category():
@@ -43,8 +47,7 @@ def test_each_subclass_has_its_own_category():
 
 
 def test_error_carries_message_and_location():
-    err = FrmlError("nope", 9, 4)
+    err = FrmlError("nope", Position(9, 4))
     assert err.message == "nope"
-    assert err.line == 9
-    assert err.col == 4
+    assert err.pos == Position(9, 4)
     assert str(err) == "nope"

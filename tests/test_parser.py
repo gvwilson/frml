@@ -6,6 +6,7 @@ from frml import ast_nodes as ast
 from frml.errors import FrmlSyntaxError
 from frml.lexer import tokenize
 from frml.parser import Parser, _render_expr, parse
+from frml.position import Position
 
 
 def test_parse_empty_program():
@@ -78,18 +79,23 @@ def test_unexpected_token_in_expression():
 
 
 def test_render_unary_expression():
-    expr = ast.ExprUnary("-", ast.LiteralInt(1, 0, 0), 0, 0)
+    expr = ast.ExprUnary("-", ast.LiteralInt(1, Position(0, 0)), Position(0, 0))
     assert _render_expr(expr) == "(-1)"
 
 
 def test_render_call_expression():
-    expr = ast.ExprCall("f", [ast.LiteralInt(1, 0, 0), ast.LiteralInt(2, 0, 0)], 0, 0)
+    expr = ast.ExprCall(
+        "f",
+        [ast.LiteralInt(1, Position(0, 0)), ast.LiteralInt(2, Position(0, 0))],
+        Position(0, 0),
+    )
     assert _render_expr(expr) == "f(1, 2)"
 
 
 def test_render_array_literal():
     expr = ast.ExprArrayLiteral(
-        [ast.LiteralInt(1, 0, 0), ast.LiteralInt(2, 0, 0)], 0, 0
+        [ast.LiteralInt(1, Position(0, 0)), ast.LiteralInt(2, Position(0, 0))],
+        Position(0, 0),
     )
     assert _render_expr(expr) == "[1, 2]"
 

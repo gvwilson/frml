@@ -1,0 +1,18 @@
+fn main() -> Int
+{
+  let a: Array<Int> = [];
+  let i: Int = 0;
+  while i < 3
+    invariant length(a) == i
+    invariant forall j: Int :: 0 <= j and j < length(a) => a[j] == j
+    decreases 3 - i
+  {
+    push(a, i);
+    i = i + 1;
+  }
+  assert length(a) == 3;
+  let x: Int = pop(a);
+  assert x == 2;
+  assert length(a) == 2;
+  return 0;
+}

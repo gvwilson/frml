@@ -9,6 +9,7 @@ checked for validity with a fresh solver push.
 import z3
 
 from . import ast_nodes as ast
+from .builtins import BUILTINS
 from .errors import FrmlVerificationError
 from .types import ArrayType, BoolType, IntType, StringType
 
@@ -42,19 +43,42 @@ class State:
 
 
 class Obligation:
-    def __init__(self, kind, description, hyp, goal, line, col):
+    def __init__(self, kind, description, hyp, goal, pos):
         self.kind = kind
         self.description = description
         self.hyp = list(hyp)
         self.goal = goal
-        self.line = line
-        self.col = col
+        self.pos = pos
 
 
 class ProverResult:
     def __init__(self, fn_name, obligations):
         self.fn_name = fn_name
         self.obligations = obligations
+
+
+def _collect_pop_arrays(expr, names):
+    """Add to `names` every array variable that a nested `pop` call mutates."""
+    if isinstance(expr, ast.ExprCall):
+        if expr.name == "pop" and isinstance(expr.args[0], ast.ExprVar):
+            names.add(expr.args[0].name)
+        for a in expr.args:
+            _collect_pop_arrays(a, names)
+    elif isinstance(expr, (ast.ExprUnary, ast.ExprStringify)):
+        _collect_pop_arrays(expr.operand, names)
+    elif isinstance(expr, ast.ExprBinary):
+        _collect_pop_arrays(expr.left, names)
+        _collect_pop_arrays(expr.right, names)
+    elif isinstance(expr, ast.ExprArrayAccess):
+        _collect_pop_arrays(expr.array, names)
+        _collect_pop_arrays(expr.index, names)
+    elif isinstance(expr, ast.ExprArrayLiteral):
+        for e in expr.elements:
+            _collect_pop_arrays(e, names)
+    elif isinstance(expr, (ast.ExprLength, ast.ExprOld)):
+        _collect_pop_arrays(expr.arg, names)
+    elif isinstance(expr, ast.ExprQuantifier):
+        _collect_pop_arrays(expr.body, names)
 
 
 class Prover:
@@ -66,8 +90,12 @@ class Prover:
         self.current_fn = None
         self.entry_decreases = None
         self._quant_depth = 0
+        self._assume_depth = 0
         self.written_params = {
             f.name: self._written_array_params(f) for f in program.functions
+        }
+        self.resized_params = {
+            f.name: self._resized_array_params(f) for f in program.functions
         }
 
     # -- fresh names and sorts ---------------------------------------------
@@ -104,6 +132,12 @@ class Prover:
         term = z3.Array(self._fresh(name), z3.IntSort(), self._sort(elem))
         return ArrayVal(term, z3.Int(self._fresh(name + "_len")))
 
+    def _fresh_result(self, type_, name):
+        """Create a fresh result term for a function's return type."""
+        if isinstance(type_, ArrayType):
+            return self._fresh_array(type_.elem, name)
+        return self._fresh_scalar(type_, name)
+
     def _elem_sort_hint(self, type_):
         if isinstance(type_, ArrayType):
             return self._sort(type_.elem)
@@ -111,34 +145,65 @@ class Prover:
 
     # -- obligations --------------------------------------------------------
 
-    def _emit(self, kind, description, hyp, goal, line, col):
-        self.obligations.append(Obligation(kind, description, hyp, goal, line, col))
+    def _emit(self, kind, description, hyp, goal, pos):
+        self.obligations.append(Obligation(kind, description, hyp, goal, pos))
 
     # -- static analysis ----------------------------------------------------
 
     def _written_array_params(self, fn):
-        written = set()
-        for stmt in fn.body:
-            self._collect_writes(stmt, written)
+        written, resized = self._collect_body_writes(fn.body)
         return {
             name
-            for name in written
+            for name in (written | resized)
             if any(p.name == name and isinstance(p.type, ArrayType) for p in fn.params)
         }
 
-    def _collect_writes(self, stmt, written):
+    def _resized_array_params(self, fn):
+        _, resized = self._collect_body_writes(fn.body)
+        return {
+            name
+            for name in resized
+            if any(p.name == name and isinstance(p.type, ArrayType) for p in fn.params)
+        }
+
+    def _collect_body_writes(self, stmts):
+        written = set()
+        resized = set()
+        for stmt in stmts:
+            self._collect_writes(stmt, written, resized)
+        return written, resized
+
+    def _collect_writes(self, stmt, written, resized):
         if isinstance(stmt, ast.StmtArrayAssign):
             if isinstance(stmt.array, ast.ExprVar):
                 written.add(stmt.array.name)
+            _collect_pop_arrays(stmt.index, resized)
+            _collect_pop_arrays(stmt.value, resized)
+        elif isinstance(stmt, ast.StmtCall):
+            if stmt.name == "push" and isinstance(stmt.args[0], ast.ExprVar):
+                written.add(stmt.args[0].name)
+                resized.add(stmt.args[0].name)
+            for a in stmt.args:
+                _collect_pop_arrays(a, resized)
+        elif isinstance(stmt, ast.StmtLet):
+            _collect_pop_arrays(stmt.init, resized)
+        elif isinstance(stmt, (ast.StmtAssign, ast.StmtReturn, ast.StmtAssert)):
+            _collect_pop_arrays(stmt.expr, resized)
         elif isinstance(stmt, ast.StmtIf):
+            _collect_pop_arrays(stmt.cond, resized)
             for s in stmt.then:
-                self._collect_writes(s, written)
+                self._collect_writes(s, written, resized)
             if stmt.else_:
                 for s in stmt.else_:
-                    self._collect_writes(s, written)
+                    self._collect_writes(s, written, resized)
         elif isinstance(stmt, ast.StmtWhile):
+            _collect_pop_arrays(stmt.cond, resized)
+            for inv in stmt.invariants:
+                _collect_pop_arrays(inv, resized)
+            if stmt.decreases is not None:
+                _collect_pop_arrays(stmt.decreases, resized)
             for s in stmt.body:
-                self._collect_writes(s, written)
+                self._collect_writes(s, written, resized)
 
     # -- entry point --------------------------------------------------------
 
@@ -184,8 +249,7 @@ class Prover:
                 f"decreases {self._render(fn.decreases)} >= 0",
                 state.path,
                 d >= 0,
-                fn.decreases.line,
-                fn.decreases.col,
+                fn.decreases.pos,
             )
 
         end_states = self.exec_stmts(fn.body, state)
@@ -193,8 +257,7 @@ class Prover:
             if end_states:
                 raise FrmlVerificationError(
                     f"function {fn.name!r} has a path that does not return",
-                    fn.line,
-                    fn.col,
+                    fn.pos,
                 )
         else:
             for s in end_states:
@@ -250,15 +313,14 @@ class Prover:
             value = self.eval_expr(stmt.value, state)
             if not isinstance(arr, ArrayVal):
                 raise FrmlVerificationError(
-                    "array assignment target is not an array", stmt.line, stmt.col
+                    "array assignment target is not an array", stmt.pos
                 )
             self._emit(
                 "bounds",
                 f"array index in bounds: 0 <= {self._render(stmt.index)} < length",
                 state.path,
                 z3.And(index >= 0, index < arr.length),
-                stmt.line,
-                stmt.col,
+                stmt.pos,
             )
             new_arr = ArrayVal(z3.Store(arr.term, index, value), arr.length)
             target_name = (
@@ -269,6 +331,12 @@ class Prover:
             return [state]
 
         if isinstance(stmt, ast.StmtCall):
+            if stmt.name == "push":
+                return self._exec_push(stmt, state)
+            if stmt.name in BUILTINS:
+                for a in stmt.args:
+                    self.eval_expr(a, state)
+                return [state]
             fn = self.functions[stmt.name]
             arg_vals = [self.eval_expr(a, state) for a in stmt.args]
             _, state = self.model_call(
@@ -309,19 +377,20 @@ class Prover:
                 f"assert {self._render(stmt.expr)}",
                 state.path,
                 goal,
-                stmt.line,
-                stmt.col,
+                stmt.pos,
             )
             return [state]
 
         raise FrmlVerificationError(
-            f"unknown statement {type(stmt).__name__}", stmt.line, stmt.col
+            f"unknown statement {type(stmt).__name__}", stmt.pos
         )
 
     def eval_rhs(self, expr, state, elem_sort_hint=None):
         """Evaluate a right-hand-side expression, allowing a call with array
         parameters to update the symbolic state (returned alongside the value)."""
-        if isinstance(expr, ast.ExprCall):
+        if isinstance(expr, ast.ExprCall) and expr.name == "pop":
+            return self._eval_pop(expr, state)
+        if isinstance(expr, ast.ExprCall) and expr.name in self.functions:
             fn = self.functions[expr.name]
             if any(isinstance(p.type, ArrayType) for p in fn.params):
                 arg_vals = [self.eval_expr(a, state) for a in expr.args]
@@ -344,8 +413,7 @@ class Prover:
                 f"loop invariant initially: {self._render(inv)}",
                 state.path,
                 term,
-                inv.line,
-                inv.col,
+                inv.pos,
             )
 
         d_before = None
@@ -356,8 +424,7 @@ class Prover:
                 f"loop decreases {self._render(stmt.decreases)} >= 0",
                 state.path + inv_terms + [cond],
                 d_before >= 0,
-                stmt.decreases.line,
-                stmt.decreases.col,
+                stmt.decreases.pos,
             )
 
         # Body verification (preservation + termination step).
@@ -383,8 +450,7 @@ class Prover:
                     f"loop invariant preserved: {self._render(inv)}",
                     end.path,
                     term,
-                    inv.line,
-                    inv.col,
+                    inv.pos,
                 )
             if stmt.decreases is not None:
                 d_after = self.eval_expr(stmt.decreases, end)
@@ -393,8 +459,7 @@ class Prover:
                     f"loop decreases {self._render(stmt.decreases)} strictly decreases",
                     end.path,
                     d_after < d_before_body,
-                    stmt.decreases.line,
-                    stmt.decreases.col,
+                    stmt.decreases.pos,
                 )
 
         # Exit state: havoc modified variables, then assume invariant and !cond.
@@ -405,34 +470,68 @@ class Prover:
         exit_state.path += exit_invs + [z3.Not(exit_cond)]
         return [exit_state]
 
-    def _assigned_names(self, stmts, scalars, arrays):
+    def _assigned_names(self, stmts, scalars, arrays, resized):
         for stmt in stmts:
             if isinstance(stmt, ast.StmtAssign):
                 scalars.add(stmt.name)
+                _collect_pop_arrays(stmt.expr, resized)
             elif isinstance(stmt, ast.StmtArrayAssign):
                 if isinstance(stmt.array, ast.ExprVar):
                     arrays.add(stmt.array.name)
+                _collect_pop_arrays(stmt.index, resized)
+                _collect_pop_arrays(stmt.value, resized)
+            elif isinstance(stmt, ast.StmtCall):
+                if stmt.name == "push" and isinstance(stmt.args[0], ast.ExprVar):
+                    arrays.add(stmt.args[0].name)
+                    resized.add(stmt.args[0].name)
+                for a in stmt.args:
+                    _collect_pop_arrays(a, resized)
+            elif isinstance(stmt, ast.StmtLet):
+                _collect_pop_arrays(stmt.init, resized)
+            elif isinstance(stmt, (ast.StmtReturn, ast.StmtAssert)):
+                _collect_pop_arrays(stmt.expr, resized)
             elif isinstance(stmt, ast.StmtIf):
-                self._assigned_names(stmt.then, scalars, arrays)
+                _collect_pop_arrays(stmt.cond, resized)
+                self._assigned_names(stmt.then, scalars, arrays, resized)
                 if stmt.else_:
-                    self._assigned_names(stmt.else_, scalars, arrays)
+                    self._assigned_names(stmt.else_, scalars, arrays, resized)
             elif isinstance(stmt, ast.StmtWhile):
-                self._assigned_names(stmt.body, scalars, arrays)
+                _collect_pop_arrays(stmt.cond, resized)
+                for inv in stmt.invariants:
+                    _collect_pop_arrays(inv, resized)
+                if stmt.decreases is not None:
+                    _collect_pop_arrays(stmt.decreases, resized)
+                self._assigned_names(stmt.body, scalars, arrays, resized)
 
     def _havoc_loop_vars(self, body, state):
         scalars = set()
         arrays = set()
-        self._assigned_names(body, scalars, arrays)
+        resized = set()
+        self._assigned_names(body, scalars, arrays, resized)
+        arrays |= resized  # resized arrays are also mutated, so havoc their contents
         for name in scalars:
             if name in state.vars:
                 state.vars[name] = self._fresh_from_term(state.vars[name], name)
         for name in arrays:
             if name in state.arrays:
                 arr = state.arrays[name]
-                state.arrays[name] = ArrayVal(
-                    z3.Array(self._fresh(name), z3.IntSort(), arr.term.sort().range()),
-                    arr.length,
-                )
+                if name in resized:
+                    # `push`/`pop` change the length, so both the contents and
+                    # the length must be havocked for a sound induction.
+                    state.arrays[name] = ArrayVal(
+                        z3.Array(
+                            self._fresh(name), z3.IntSort(), arr.term.sort().range()
+                        ),
+                        z3.Int(self._fresh(name + "_len")),
+                    )
+                    state.path.append(state.arrays[name].length >= 0)
+                else:
+                    state.arrays[name] = ArrayVal(
+                        z3.Array(
+                            self._fresh(name), z3.IntSort(), arr.term.sort().range()
+                        ),
+                        arr.length,
+                    )
 
     def _fresh_from_term(self, term, name):
         if z3.is_bool(term):
@@ -464,8 +563,7 @@ class Prover:
                 f"precondition of {fn.name}: {self._render(req)}",
                 caller_state.path,
                 goal,
-                req.line,
-                req.col,
+                req.pos,
             )
 
         # Recursive-call termination check (direct self-recursion only).
@@ -481,24 +579,29 @@ class Prover:
                     f"recursive decreases {self._render(fn.decreases)} strictly decreases",
                     caller_state.path,
                     d_call < self.entry_decreases,
-                    fn.decreases.line,
-                    fn.decreases.col,
+                    fn.decreases.pos,
                 )
 
         # Build post-state values for the callee's parameters.
         post_state = State()
         post_state.path = []
+        resized_lens = []
         for p, val in zip(fn.params, arg_vals):
             if isinstance(p.type, ArrayType):
                 if p.name in self.written_params.get(fn.name, set()):
-                    post_state.arrays[p.name] = ArrayVal(
-                        z3.Array(
-                            self._fresh(p.name + "_post"),
-                            z3.IntSort(),
-                            self._sort(p.type.elem),
-                        ),
-                        val.length,
-                    )
+                    if p.name in self.resized_params.get(fn.name, set()):
+                        arr = self._fresh_array(p.type.elem, p.name + "_post")
+                        post_state.arrays[p.name] = arr
+                        resized_lens.append(arr.length)
+                    else:
+                        post_state.arrays[p.name] = ArrayVal(
+                            z3.Array(
+                                self._fresh(p.name + "_post"),
+                                z3.IntSort(),
+                                self._sort(p.type.elem),
+                            ),
+                            val.length,
+                        )
                 else:
                     post_state.arrays[p.name] = val
             else:
@@ -508,12 +611,14 @@ class Prover:
 
         result = None
         if fn.return_type is not None:
-            result = self._fresh_scalar(fn.return_type, fn.name + "_result")
+            result = self._fresh_result(fn.return_type, fn.name + "_result")
 
         # Assume the callee's postconditions.
-        assumes = []
+        assumes = [l >= 0 for l in resized_lens]
         for ens in fn.ensures:
-            assumes.append(self.eval_expr(ens, post_state, result_term=result))
+            assumes.append(self._eval_assumption(ens, post_state, result_term=result))
+        if isinstance(result, ArrayVal):
+            assumes.append(result.length >= 0)
 
         # Update the caller's state.
         new_state = caller_state.copy()
@@ -531,9 +636,56 @@ class Prover:
             self._render(ens),
             state.path,
             goal,
-            ens.line,
-            ens.col,
+            ens.pos,
         )
+
+    def _exec_push(self, stmt, state):
+        """Model `push(array, item)` as appending `item` to the array's SMT store."""
+        arr = self.eval_expr(stmt.args[0], state)
+        value = self.eval_expr(stmt.args[1], state)
+        if not isinstance(arr, ArrayVal):
+            raise FrmlVerificationError("push expects an array", stmt.pos)
+        new_arr = ArrayVal(z3.Store(arr.term, arr.length, value), arr.length + 1)
+        state.arrays[stmt.args[0].name] = new_arr
+        return [state]
+
+    def _eval_pop(self, expr, state):
+        """Model `pop(array)` as returning the last element and shrinking length.
+
+        Popping from an empty array is a verification obligation: the caller
+        must prove the array is non-empty at the pop site.
+        """
+        arr = self.eval_expr(expr.args[0], state)
+        if not isinstance(arr, ArrayVal):
+            raise FrmlVerificationError("pop expects an array", expr.pos)
+        self._emit(
+            "bounds",
+            f"pop from a non-empty array: 0 < length({self._render(expr.args[0])})",
+            state.path,
+            arr.length > 0,
+            expr.pos,
+        )
+        result = z3.Select(arr.term, arr.length - 1)
+        state.arrays[expr.args[0].name] = ArrayVal(arr.term, arr.length - 1)
+        return result, state
+
+    def _eval_builtin_call(self, expr, state, use_old, result_term):
+        """Model a built-in call as an uninterpreted value.
+
+        `read` becomes a fresh string and `split`/`args` become fresh arrays of
+        strings, so the verifier can prove nothing about their contents (which
+        is sound, since file contents and command-line arguments are external).
+        """
+        builtin = BUILTINS[expr.name]
+        # Evaluate arguments so any nested proof obligations are still emitted.
+        for a in expr.args:
+            self.eval_expr(a, state, use_old=use_old, result_term=result_term)
+        if isinstance(builtin.return_type, ArrayType):
+            arr = self._fresh_array(builtin.return_type.elem, expr.name)
+            if not use_old:
+                state.path.append(arr.length >= 0)
+            return arr
+        return self._fresh_scalar(builtin.return_type, expr.name)
 
     # -- expression evaluation ---------------------------------------------
 
@@ -560,8 +712,7 @@ class Prover:
                 if result_term is None:
                     raise FrmlVerificationError(
                         "'result' is only allowed inside an ensures clause",
-                        expr.line,
-                        expr.col,
+                        expr.pos,
                     )
                 return result_term
             if use_old:
@@ -570,15 +721,13 @@ class Prover:
                 if expr.name in state.old_vars:
                     return state.old_vars[expr.name]
                 raise FrmlVerificationError(
-                    f"unknown variable {expr.name!r} in old()", expr.line, expr.col
+                    f"unknown variable {expr.name!r} in old()", expr.pos
                 )
             if expr.name in state.arrays:
                 return state.arrays[expr.name]
             if expr.name in state.vars:
                 return state.vars[expr.name]
-            raise FrmlVerificationError(
-                f"unknown variable {expr.name!r}", expr.line, expr.col
-            )
+            raise FrmlVerificationError(f"unknown variable {expr.name!r}", expr.pos)
 
         if isinstance(expr, ast.ExprUnary):
             v = self.eval_expr(
@@ -588,9 +737,7 @@ class Prover:
                 return z3.Not(v)
             if expr.op == "-":
                 return -v
-            raise FrmlVerificationError(
-                f"unknown unary operator {expr.op!r}", expr.line, expr.col
-            )
+            raise FrmlVerificationError(f"unknown unary operator {expr.op!r}", expr.pos)
 
         if isinstance(expr, ast.ExprStringify):
             v = self.eval_expr(
@@ -650,14 +797,13 @@ class Prover:
                 right = self.eval_expr(
                     expr.right, state, use_old=use_old, result_term=result_term
                 )
-                if self._quant_depth == 0:
+                if self._quant_depth == 0 and self._assume_depth == 0:
                     self._emit(
                         "division",
                         f"divisor is non-zero in {self._render(expr)}",
                         state.path,
                         right != 0,
-                        expr.line,
-                        expr.col,
+                        expr.pos,
                     )
                 if op == "/":
                     return left / right
@@ -675,18 +821,23 @@ class Prover:
                     eq = z3.Not(eq)
                 return eq
 
-            raise FrmlVerificationError(
-                f"unknown binary operator {op!r}", expr.line, expr.col
-            )
+            raise FrmlVerificationError(f"unknown binary operator {op!r}", expr.pos)
 
         if isinstance(expr, ast.ExprCall):
+            if expr.name == "pop":
+                raise FrmlVerificationError(
+                    "pop is only allowed as the whole right-hand side of a let, "
+                    "return, assignment or assert",
+                    expr.pos,
+                )
+            if expr.name in BUILTINS:
+                return self._eval_builtin_call(expr, state, use_old, result_term)
             fn = self.functions[expr.name]
             if any(isinstance(p.type, ArrayType) for p in fn.params):
                 raise FrmlVerificationError(
                     f"call to {expr.name} with array parameters is only allowed as a "
                     f"statement or the whole right-hand side of an assignment",
-                    expr.line,
-                    expr.col,
+                    expr.pos,
                 )
             # Scalar-pure call: prove requires, assume ensures via a fresh result.
             arg_vals = [
@@ -704,17 +855,20 @@ class Prover:
                     f"precondition of {fn.name}: {self._render(req)}",
                     state.path,
                     goal,
-                    req.line,
-                    req.col,
+                    req.pos,
                 )
             assert fn.return_type is not None
-            result = self._fresh_scalar(fn.return_type, fn.name + "_result")
+            result = self._fresh_result(fn.return_type, fn.name + "_result")
             ens_state = State()
             ens_state.path = []
             ens_state.vars = dict(req_state.vars)
             ens_state.old_vars = dict(req_state.vars)
+            if isinstance(result, ArrayVal):
+                state.path.append(result.length >= 0)
             for ens in fn.ensures:
-                state.path.append(self.eval_expr(ens, ens_state, result_term=result))
+                state.path.append(
+                    self._eval_assumption(ens, ens_state, result_term=result)
+                )
             return result
 
         if isinstance(expr, ast.ExprArrayAccess):
@@ -726,16 +880,15 @@ class Prover:
             )
             if not isinstance(arr, ArrayVal):
                 raise FrmlVerificationError(
-                    "array access target is not an array", expr.line, expr.col
+                    "array access target is not an array", expr.pos
                 )
-            if self._quant_depth == 0:
+            if self._quant_depth == 0 and self._assume_depth == 0:
                 self._emit(
                     "bounds",
                     f"array index in bounds: 0 <= {self._render(expr.index)} < length",
                     state.path,
                     z3.And(index >= 0, index < arr.length),
-                    expr.line,
-                    expr.col,
+                    expr.pos,
                 )
             return z3.Select(arr.term, index)
 
@@ -753,8 +906,7 @@ class Prover:
             if array_elem_sort is None:
                 raise FrmlVerificationError(
                     "cannot infer the element sort of an empty array literal",
-                    expr.line,
-                    expr.col,
+                    expr.pos,
                 )
             arr = z3.Array(self._fresh("array_lit"), z3.IntSort(), array_elem_sort)
             return ArrayVal(arr, z3.IntVal(0))
@@ -764,9 +916,7 @@ class Prover:
                 expr.arg, state, use_old=use_old, result_term=result_term
             )
             if not isinstance(arr, ArrayVal):
-                raise FrmlVerificationError(
-                    "length expects an array", expr.line, expr.col
-                )
+                raise FrmlVerificationError("length expects an array", expr.pos)
             return arr.length
 
         if isinstance(expr, ast.ExprOld):
@@ -778,7 +928,7 @@ class Prover:
             return self._eval_quantifier(expr, state, use_old, result_term)
 
         raise FrmlVerificationError(
-            f"unknown expression {type(expr).__name__}", expr.line, expr.col
+            f"unknown expression {type(expr).__name__}", expr.pos
         )
 
     # -- equality / quantifiers --------------------------------------------
@@ -833,6 +983,19 @@ class Prover:
         finally:
             self._quant_depth -= 1
 
+    def _eval_assumption(self, expr, state, result_term=None):
+        """Evaluate a postcondition as an assumption at a call site.
+
+        Well-formedness obligations (array bounds, non-zero divisors) inside the
+        postcondition are part of what is being assumed, not something the
+        caller must prove, so they are suppressed here.
+        """
+        self._assume_depth += 1
+        try:
+            return self.eval_expr(expr, state, result_term=result_term)
+        finally:
+            self._assume_depth -= 1
+
     # -- rendering ----------------------------------------------------------
 
     def _render(self, expr):
@@ -856,10 +1019,8 @@ class CheckOutcome:
 def _format_obligation(ob, hyp):
     """Render one proof obligation for `--trace` output."""
     loc = ""
-    if ob.line is not None:
-        loc = f":{ob.line}"
-        if ob.col is not None:
-            loc += f":{ob.col}"
+    if ob.pos is not None:
+        loc = f":{ob.pos}"
     lines = [f"--- {ob.kind}{loc}: {ob.description}"]
     if ob.hyp:
         lines.append(f"    given: {hyp.sexpr()}")

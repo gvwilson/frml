@@ -789,10 +789,12 @@ exit status is <code>main</code>'s return value.</p>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>String       a sequence of characters, written in double quotes
 </span></code></pre></div>
 <p>Frml supports homogeneous one-dimensional arrays:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Array&lt;Int&gt;    mutable, fixed-length, zero-indexed arrays
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Array&lt;Bool&gt;   mutable, fixed-length, zero-indexed arrays
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Array&lt;String&gt; mutable, fixed-length, zero-indexed arrays of strings
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Array&lt;Int&gt;    mutable, zero-indexed arrays
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>Array&lt;Bool&gt;   mutable, zero-indexed arrays
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>Array&lt;String&gt; mutable, zero-indexed arrays of strings
 </span></code></pre></div>
+<p>Arrays grow and shrink only through the <code>push</code> and <code>pop</code> built-ins; they
+cannot otherwise be resized.</p>
 <p>Nested arrays (<code>Array&lt;Array&lt;Int&gt;&gt;</code>) are not allowed, and Frml does not (yet)
 have a mapping (dictionary) type.</p>
 <h3 id="functions">Functions<a class="headerlink" href="#functions" title="Permanent link">&para;</a></h3>
@@ -826,20 +828,34 @@ have a mapping (dictionary) type.</p>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>}
 </span></code></pre></div>
 <ul>
+<li>A function may return an array, provided the returned array is <em>fresh</em>: an
+    array literal, another array-returning call, or a function-local array
+    variable. Returning an array parameter is rejected, since it would let the
+    caller alias the argument:</li>
+</ul>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>fn first_primes() -&gt; Array&lt;Int&gt;
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  ensures length(result) == 4
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  ensures result[0] == 2
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>  ensures result[3] == 7
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>{
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>  return [2, 3, 5, 7];
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>}
+</span></code></pre></div>
+<ul>
 <li>Recursive functions must declare a <code>decreases</code> measure.</li>
 </ul>
 <h3 id="statements">Statements<a class="headerlink" href="#statements" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>let NAME: TYPE = expr;       // local variable declaration
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>NAME = expr;                 // scalar assignment
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>a[i] = expr;                 // array element assignment
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>if expr { ... } else { ... } // conditional (else optional)
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>while expr
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>  invariant expr             // loop invariants (optional)
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>  decreases expr             // termination measure (optional)
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>{ ... }
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>return expr;                 // (value-returning functions only)
-</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a>assert expr;                 // runtime + static assertion
-</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a>f(args);                     // procedure call statement
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>let NAME: TYPE = expr;       // local variable declaration
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>NAME = expr;                 // scalar assignment
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>a[i] = expr;                 // array element assignment
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>if expr { ... } else { ... } // conditional (else optional)
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>while expr
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>  invariant expr             // loop invariants (optional)
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>  decreases expr             // termination measure (optional)
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>{ ... }
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>return expr;                 // (value-returning functions only)
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>assert expr;                 // runtime + static assertion
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>f(args);                     // procedure call statement
 </span></code></pre></div>
 <h3 id="expressions">Expressions<a class="headerlink" href="#expressions" title="Permanent link">&para;</a></h3>
 <p>Operators, from lowest to highest precedence: <code>=&gt;</code>, <code>or</code>, <code>and</code>, <code>==</code>/<code>!=</code>,
@@ -852,15 +868,37 @@ verification obligations.</p>
 backslash escapes (<code>\n</code>, <code>\t</code>, <code>\"</code>, <code>\\</code>, and so on). The <code>++</code> operator
 concatenates two strings, and a single backtick before a value converts it to a
 string (<code>`5</code> is <code>"5"</code>, <code>`x</code> is the string form of <code>x</code>'s value):</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>let greeting: String = "hello" ++ " " ++ "world";
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>let n: Int = 42;
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>let label: String = `n;  // "42"
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>let greeting: String = "hello" ++ " " ++ "world";
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>let n: Int = 42;
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>let label: String = `n;  // "42"
 </span></code></pre></div>
 <p>Quantifiers are available in specifications:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>exists i: Int :: 0 &lt;= i and i &lt; length(a) and a[i] == 0
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>forall i: Int :: 0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>exists i: Int :: 0 &lt;= i and i &lt; length(a) and a[i] == 0
 </span></code></pre></div>
-<p><code>length(a)</code> is the single built-in function.</p>
+<p><code>length(a)</code> is built into the language: it is a special construct with exact
+semantics that the verifier reasons about precisely, not an ordinary function.
+Frml also provides these built-in functions:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>read(path) -&gt; String               read a whole file and return its contents
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>write(path, text)                  write `text` to a file, overwriting it
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>split(text, sep) -&gt; Array&lt;String&gt;  split `text` on occurrences of `sep`
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>args() -&gt; Array&lt;String&gt;            the program's command-line arguments
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>push(array, item)                  append `item` to the end of `array`
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>pop(array) -&gt; T                    remove and return the last element of `array`
+</span></code></pre></div>
+<p><code>write</code> and <code>push</code> are procedures (they have no return value); <code>read</code>,
+<code>split</code>, <code>args</code> and <code>pop</code> are used in expressions. <code>split</code> and <code>args</code> return
+arrays of strings; they are built-ins because their results come from outside
+the program (the string being split and the command line), not because Frml
+lacks array-returning functions. <code>read</code> and <code>write</code> perform file I/O, which
+the verifier treats as uninterpreted: it can prove nothing about the file
+contents read or written. <code>args()</code> returns the arguments that follow the
+source file on the <code>frml run</code> or <code>frml checkrun</code> command line.</p>
+<p><code>push</code> and <code>pop</code> work on any <code>Array&lt;T&gt;</code> and change the array's length. <code>push</code>
+appends <code>item</code> (whose type must match the array's element type) to the end of
+a named array; <code>pop</code> returns and removes the last element, and popping an
+empty array is an error (<code>length(a) &gt; 0</code> is a verification obligation). They
+are the only built-ins that mutate a program array.</p>
 <h2 id="examples">Examples<a class="headerlink" href="#examples" title="Permanent link">&para;</a></h2>
 <p>The <code>examples/</code> directory contains small programs:</p>
 <ul>
@@ -869,14 +907,15 @@ string (<code>`5</code> is <code>"5"</code>, <code>`x</code> is the string form 
 <li><code>factorial.frml</code>: recursive function with <code>decreases</code>.</li>
 <li><code>all_nonnegative.frml</code>: array property proved with a quantifier loop invariant.</li>
 <li><code>increment_first.frml</code>: a procedure mutating an array, with <code>old</code>.</li>
+<li><code>array_return.frml</code>: functions returning fresh arrays.</li>
 <li><code>bad.frml</code>: a deliberately unprovable postcondition (<code>FAILED</code>).</li>
 <li><code>precondition.frml</code>: a runtime precondition violation.</li>
 </ul>
 <p>Try them:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/required.frml
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>frml<span class="w"> </span>checkrun<span class="w"> </span>examples/factorial.frml
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/bad.frml
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>frml<span class="w"> </span>run<span class="w"> </span>examples/precondition.frml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/required.frml
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>frml<span class="w"> </span>checkrun<span class="w"> </span>examples/factorial.frml
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/bad.frml
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>frml<span class="w"> </span>run<span class="w"> </span>examples/precondition.frml
 </span></code></pre></div>
 <h2 id="intentional-limitations">Intentional limitations<a class="headerlink" href="#intentional-limitations" title="Permanent link">&para;</a></h2>
 <p>These choices keep the verifier sound and the implementation small; they match
@@ -888,9 +927,11 @@ the specification's own "simplest recommended model":</p>
     aliasing ambiguity. Create fresh arrays with array literals instead.</p>
 </li>
 <li>
-<p><strong>Functions return <code>Int</code> or <code>Bool</code>.</strong>
-    Array-returning functions are not supported. Array mutation is expressed
-    with procedures, as shown earlier.</p>
+<p><strong>Returned arrays must be fresh.</strong>
+    A function may return an array, but only an array it created itself (a
+    literal, an array-returning call, or a function-local array variable).
+    Returning an array parameter is rejected to keep aliasing unambiguous.
+    Array mutation is expressed with procedures, as shown earlier.</p>
 </li>
 <li>
 <p><strong>A call that takes array arguments must appear on its own.</strong>
@@ -909,16 +950,17 @@ the specification's own "simplest recommended model":</p>
 decide an obligation it reports <code>UNKNOWN</code>, and a genuinely unprovable program is
 reported as <code>FAILED</code>: it is never silently accepted.</p>
 <h2 id="project-layout">Project layout<a class="headerlink" href="#project-layout" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>frml/
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  errors.py       error types and source-location formatting
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  lexer.py        tokenizer
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  parser.py       recursive-descent parser -&gt; AST
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>  ast_nodes.py    AST node definitions
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>  types.py        Int / Bool / Array&lt;T&gt; types
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>  typechecker.py  name resolution + static type checking
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>  interpreter.py  concrete executor with runtime checks
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>  prover.py       verification-condition generation + Z3 proof checking
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>  cli.py          the `frml` command-line interface
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>frml/
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  errors.py       error types and source-location formatting
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>  lexer.py        tokenizer
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>  parser.py       recursive-descent parser -&gt; AST
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>  ast_nodes.py    AST node definitions
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>  types.py        Int / Bool / Array&lt;T&gt; types
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a>  builtins.py     built-in function signatures
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>  typechecker.py  name resolution + static type checking
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>  interpreter.py  concrete executor with runtime checks
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a>  prover.py       verification-condition generation + Z3 proof checking
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a>  cli.py          the `frml` command-line interface
 </span></code></pre></div>
 
 

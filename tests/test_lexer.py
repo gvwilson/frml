@@ -4,6 +4,7 @@ import pytest
 
 from frml.errors import FrmlSyntaxError
 from frml.lexer import Token, is_digit, is_ident_char, is_ident_start, tokenize
+from frml.position import Position
 
 
 def kinds(source):
@@ -106,7 +107,7 @@ def test_string_literal_with_escapes():
 
 
 def test_token_repr():
-    tok = Token("int", 42, 3, 7)
+    tok = Token("int", 42, Position(3, 7))
     assert repr(tok) == "Token('int', 42, 3:7)"
 
 
@@ -115,10 +116,10 @@ def test_comment_is_skipped():
     assert [(t.kind, t.value) for t in tokens] == [("int", 1), ("eof", None)]
 
 
-def test_tracks_line_and_column():
+def test_tracks_position():
     tokens = tokenize("a\n  b")
-    assert tokens[0].line == 1 and tokens[0].col == 1
-    assert tokens[1].line == 2 and tokens[1].col == 3
+    assert tokens[0].pos == Position(1, 1)
+    assert tokens[1].pos == Position(2, 3)
 
 
 def test_unterminated_escape_sequence():

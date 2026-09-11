@@ -44,8 +44,7 @@ class Parser:
         if tok.kind != kind:
             raise FrmlSyntaxError(
                 f"expected {kind!r} but found {tok.value or tok.kind!r}",
-                tok.line,
-                tok.col,
+                tok.pos,
             )
         return self.advance()
 
@@ -101,15 +100,14 @@ class Parser:
             ensures,
             decreases,
             body,
-            fn_tok.line,
-            fn_tok.col,
+            fn_tok.pos,
         )
 
     def parse_parameter(self):
         name_tok = self.expect("ident")
         self.expect(":")
         type_ = self.parse_type()
-        return ast.Parameter(name_tok.value, type_, name_tok.line, name_tok.col)
+        return ast.Parameter(name_tok.value, type_, name_tok.pos)
 
     def parse_type(self):
         tok = self.peek()
@@ -126,12 +124,11 @@ class Parser:
             if not isinstance(elem, (IntType, BoolType, StringType)):
                 raise FrmlSyntaxError(
                     "array element type must be Int, Bool or String (nested arrays are not allowed)",
-                    tok.line,
-                    tok.col,
+                    tok.pos,
                 )
             return ArrayType(elem)
         raise FrmlSyntaxError(
-            f"expected a type but found {tok.value or tok.kind!r}", tok.line, tok.col
+            f"expected a type but found {tok.value or tok.kind!r}", tok.pos
         )
 
     # -- statements ---------------------------------------------------------
@@ -151,12 +148,12 @@ class Parser:
         if self.match("assert"):
             expr = self.parse_expr()
             self.expect(";")
-            return ast.StmtAssert(expr, tok.line, tok.col)
+            return ast.StmtAssert(expr, tok.pos)
 
         if self.match("return"):
             expr = self.parse_expr()
             self.expect(";")
-            return ast.StmtReturn(expr, tok.line, tok.col)
+            return ast.StmtReturn(expr, tok.pos)
 
         if self.match("if"):
             return self.parse_if(tok)
@@ -171,30 +168,27 @@ class Parser:
                 self.advance()  # =
                 expr = self.parse_expr()
                 self.expect(";")
-                return ast.StmtAssign(name_tok.value, expr, name_tok.line, name_tok.col)
+                return ast.StmtAssign(name_tok.value, expr, name_tok.pos)
             if self.peek(1).kind == "[":
                 name_tok = self.advance()  # ident
-                array = ast.ExprVar(name_tok.value, name_tok.line, name_tok.col)
+                array = ast.ExprVar(name_tok.value, name_tok.pos)
                 self.advance()  # [
                 index = self.parse_expr()
                 self.expect("]")
                 self.expect("=")
                 value = self.parse_expr()
                 self.expect(";")
-                return ast.StmtArrayAssign(
-                    array, index, value, name_tok.line, name_tok.col
-                )
+                return ast.StmtArrayAssign(array, index, value, name_tok.pos)
             if self.peek(1).kind == "(":
                 name_tok = self.advance()  # ident
                 self.advance()  # (
                 args = self.parse_args()
                 self.expect(";")
-                return ast.StmtCall(name_tok.value, args, name_tok.line, name_tok.col)
+                return ast.StmtCall(name_tok.value, args, name_tok.pos)
 
         raise FrmlSyntaxError(
             f"unexpected token {tok.value or tok.kind!r} at start of statement",
-            tok.line,
-            tok.col,
+            tok.pos,
         )
 
     def parse_let(self, tok):
@@ -204,7 +198,7 @@ class Parser:
         self.expect("=")
         init = self.parse_expr()
         self.expect(";")
-        return ast.StmtLet(name_tok.value, type_, init, tok.line, tok.col)
+        return ast.StmtLet(name_tok.value, type_, init, tok.pos)
 
     def parse_if(self, tok):
         cond = self.parse_expr()
@@ -221,10 +215,9 @@ class Parser:
             else:
                 raise FrmlSyntaxError(
                     "expected '{' or 'if' after 'else'",
-                    self.peek().line,
-                    self.peek().col,
+                    self.peek().pos,
                 )
-        return ast.StmtIf(cond, then, else_, tok.line, tok.col)
+        return ast.StmtIf(cond, then, else_, tok.pos)
 
     def parse_while(self, tok):
         cond = self.parse_expr()
@@ -237,7 +230,7 @@ class Parser:
         self.expect("{")
         body = self.parse_statements()
         self.expect("}")
-        return ast.StmtWhile(cond, invariants, decreases, body, tok.line, tok.col)
+        return ast.StmtWhile(cond, invariants, decreases, body, tok.pos)
 
     # -- expressions --------------------------------------------------------
 
@@ -258,7 +251,7 @@ class Parser:
         if self.match("=>"):
             tok = self.tokens[self.pos - 1]
             right = self.parse_implies()  # right associative
-            return ast.ExprBinary("=>", left, right, tok.line, tok.col)
+            return ast.ExprBinary("=>", left, right, tok.pos)
         return left
 
     def parse_or(self):
@@ -266,7 +259,7 @@ class Parser:
         while self.match("or"):
             tok = self.tokens[self.pos - 1]
             right = self.parse_and()
-            left = ast.ExprBinary("or", left, right, tok.line, tok.col)
+            left = ast.ExprBinary("or", left, right, tok.pos)
         return left
 
     def parse_and(self):
@@ -274,7 +267,7 @@ class Parser:
         while self.match("and"):
             tok = self.tokens[self.pos - 1]
             right = self.parse_equality()
-            left = ast.ExprBinary("and", left, right, tok.line, tok.col)
+            left = ast.ExprBinary("and", left, right, tok.pos)
         return left
 
     def parse_equality(self):
@@ -282,7 +275,7 @@ class Parser:
         while self.check("==") or self.check("!="):
             tok = self.advance()
             right = self.parse_comparison()
-            left = ast.ExprBinary(tok.kind, left, right, tok.line, tok.col)
+            left = ast.ExprBinary(tok.kind, left, right, tok.pos)
         return left
 
     def parse_comparison(self):
@@ -292,7 +285,7 @@ class Parser:
         ):
             tok = self.advance()
             right = self.parse_add()
-            left = ast.ExprBinary(tok.kind, left, right, tok.line, tok.col)
+            left = ast.ExprBinary(tok.kind, left, right, tok.pos)
         return left
 
     def parse_add(self):
@@ -300,7 +293,7 @@ class Parser:
         while self.check("+") or self.check("-") or self.check("++"):
             tok = self.advance()
             right = self.parse_mul()
-            left = ast.ExprBinary(tok.kind, left, right, tok.line, tok.col)
+            left = ast.ExprBinary(tok.kind, left, right, tok.pos)
         return left
 
     def parse_mul(self):
@@ -308,7 +301,7 @@ class Parser:
         while self.check("*") or self.check("/") or self.check("%"):
             tok = self.advance()
             right = self.parse_unary()
-            left = ast.ExprBinary(tok.kind, left, right, tok.line, tok.col)
+            left = ast.ExprBinary(tok.kind, left, right, tok.pos)
         return left
 
     def parse_unary(self):
@@ -316,8 +309,8 @@ class Parser:
             tok = self.advance()
             operand = self.parse_unary()
             if tok.kind == "`":
-                return ast.ExprStringify(operand, tok.line, tok.col)
-            return ast.ExprUnary(tok.kind, operand, tok.line, tok.col)
+                return ast.ExprStringify(operand, tok.pos)
+            return ast.ExprUnary(tok.kind, operand, tok.pos)
         return self.parse_postfix()
 
     def parse_postfix(self):
@@ -327,17 +320,16 @@ class Parser:
                 if not isinstance(expr, ast.ExprVar):
                     raise FrmlSyntaxError(
                         "only named functions can be called",
-                        self.peek().line,
-                        self.peek().col,
+                        self.peek().pos,
                     )
                 self.advance()  # (
                 args = self.parse_args()
-                expr = ast.ExprCall(expr.name, args, expr.line, expr.col)
+                expr = ast.ExprCall(expr.name, args, expr.pos)
             elif self.check("["):
                 tok = self.advance()  # [
                 index = self.parse_expr()
                 self.expect("]")
-                expr = ast.ExprArrayAccess(expr, index, tok.line, tok.col)
+                expr = ast.ExprArrayAccess(expr, index, tok.pos)
             else:
                 break
         return expr
@@ -346,27 +338,27 @@ class Parser:
         tok = self.peek()
 
         if self.match("int"):
-            return ast.LiteralInt(tok.value, tok.line, tok.col)
+            return ast.LiteralInt(tok.value, tok.pos)
 
         if self.match("string"):
-            return ast.LiteralString(tok.value, tok.line, tok.col)
+            return ast.LiteralString(tok.value, tok.pos)
 
         if self.match("true"):
-            return ast.LiteralBool(True, tok.line, tok.col)
+            return ast.LiteralBool(True, tok.pos)
         if self.match("false"):
-            return ast.LiteralBool(False, tok.line, tok.col)
+            return ast.LiteralBool(False, tok.pos)
 
         if self.match("old"):
             self.expect("(")
             arg = self.parse_expr()
             self.expect(")")
-            return ast.ExprOld(arg, tok.line, tok.col)
+            return ast.ExprOld(arg, tok.pos)
 
         if self.match("length"):
             self.expect("(")
             arg = self.parse_expr()
             self.expect(")")
-            return ast.ExprLength(arg, tok.line, tok.col)
+            return ast.ExprLength(arg, tok.pos)
 
         if self.match("forall") or self.match("exists"):
             quant = tok.kind
@@ -375,15 +367,13 @@ class Parser:
             var_type = self.parse_type()
             self.expect("::")
             body = self.parse_expr()
-            return ast.ExprQuantifier(
-                quant, var_tok.value, var_type, body, tok.line, tok.col
-            )
+            return ast.ExprQuantifier(quant, var_tok.value, var_type, body, tok.pos)
 
         if self.match("result"):
-            return ast.ExprVar("result", tok.line, tok.col)
+            return ast.ExprVar("result", tok.pos)
 
         if self.match("ident"):
-            return ast.ExprVar(tok.value, tok.line, tok.col)
+            return ast.ExprVar(tok.value, tok.pos)
 
         if self.match("("):
             expr = self.parse_expr()
@@ -397,12 +387,11 @@ class Parser:
                 while self.match(","):
                     elements.append(self.parse_expr())
             self.expect("]")
-            return ast.ExprArrayLiteral(elements, tok.line, tok.col)
+            return ast.ExprArrayLiteral(elements, tok.pos)
 
         raise FrmlSyntaxError(
             f"unexpected token {tok.value or tok.kind!r} in expression",
-            tok.line,
-            tok.col,
+            tok.pos,
         )
 
 

@@ -6,6 +6,7 @@ import z3
 from frml import ast_nodes as ast
 from frml.errors import FrmlVerificationError
 from frml.parser import parse
+from frml.position import Position
 from frml.prover import (
     Obligation,
     Prover,
@@ -39,15 +40,13 @@ def prover(source=""):
 
 def bare_expr():
     expr = ast.Expr()
-    expr.line = 0
-    expr.col = 0
+    expr.pos = Position(0, 0)
     return expr
 
 
 def bare_stmt():
     stmt = ast.Stmt()
-    stmt.line = 0
-    stmt.col = 0
+    stmt.pos = Position(0, 0)
     return stmt
 
 
@@ -540,44 +539,58 @@ def test_stringify_term_unsupported():
 
 def test_eval_result_outside_ensures():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprVar("result", 0, 0), State())
+        prover().eval_expr(ast.ExprVar("result", Position(0, 0)), State())
 
 
 def test_eval_old_unknown_variable():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprVar("x", 0, 0), State(), use_old=True)
+        prover().eval_expr(ast.ExprVar("x", Position(0, 0)), State(), use_old=True)
 
 
 def test_eval_unknown_variable():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprVar("x", 0, 0), State())
+        prover().eval_expr(ast.ExprVar("x", Position(0, 0)), State())
 
 
 def test_eval_unknown_unary_operator():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprUnary("~", ast.LiteralInt(1, 0, 0), 0, 0), State())
+        prover().eval_expr(
+            ast.ExprUnary("~", ast.LiteralInt(1, Position(0, 0)), Position(0, 0)),
+            State(),
+        )
 
 
 def test_eval_unknown_binary_operator():
-    expr = ast.ExprBinary("~", ast.LiteralInt(1, 0, 0), ast.LiteralInt(1, 0, 0), 0, 0)
+    expr = ast.ExprBinary(
+        "~",
+        ast.LiteralInt(1, Position(0, 0)),
+        ast.LiteralInt(1, Position(0, 0)),
+        Position(0, 0),
+    )
     with pytest.raises(FrmlVerificationError):
         prover().eval_expr(expr, State())
 
 
 def test_eval_array_access_on_non_array():
-    expr = ast.ExprArrayAccess(ast.LiteralInt(1, 0, 0), ast.LiteralInt(0, 0, 0), 0, 0)
+    expr = ast.ExprArrayAccess(
+        ast.LiteralInt(1, Position(0, 0)),
+        ast.LiteralInt(0, Position(0, 0)),
+        Position(0, 0),
+    )
     with pytest.raises(FrmlVerificationError):
         prover().eval_expr(expr, State())
 
 
 def test_eval_empty_array_literal_without_sort():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprArrayLiteral([], 0, 0), State())
+        prover().eval_expr(ast.ExprArrayLiteral([], Position(0, 0)), State())
 
 
 def test_eval_length_on_non_array():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprLength(ast.LiteralInt(1, 0, 0), 0, 0), State())
+        prover().eval_expr(
+            ast.ExprLength(ast.LiteralInt(1, Position(0, 0)), Position(0, 0)), State()
+        )
 
 
 def test_eval_unknown_expression():
@@ -592,15 +605,56 @@ def test_exec_unknown_statement():
 
 def test_exec_array_assignment_on_non_array():
     stmt = ast.StmtArrayAssign(
-        ast.LiteralInt(1, 0, 0), ast.LiteralInt(0, 0, 0), ast.LiteralInt(1, 0, 0), 0, 0
+        ast.LiteralInt(1, Position(0, 0)),
+        ast.LiteralInt(0, Position(0, 0)),
+        ast.LiteralInt(1, Position(0, 0)),
+        Position(0, 0),
     )
     with pytest.raises(FrmlVerificationError):
         prover().exec_stmt(stmt, State())
 
 
+def test_exec_push_on_non_array():
+    stmt = ast.StmtCall(
+        "push",
+        [ast.LiteralInt(1, Position(0, 0)), ast.LiteralInt(2, Position(0, 0))],
+        Position(0, 0),
+    )
+    with pytest.raises(FrmlVerificationError):
+        prover()._exec_push(stmt, State())
+
+
+def test_eval_pop_on_non_array():
+    expr = ast.ExprCall("pop", [ast.LiteralInt(1, Position(0, 0))], Position(0, 0))
+    with pytest.raises(FrmlVerificationError):
+        prover()._eval_pop(expr, State())
+
+
+def test_assigned_names_collects_pop_in_while_invariant():
+    scalars, arrays, resized = set(), set(), set()
+    inv = ast.ExprCall("pop", [ast.ExprVar("a", Position(0, 0))], Position(0, 0))
+    stmt = ast.StmtWhile(
+        ast.LiteralBool(True, Position(0, 0)), [inv], None, [], Position(0, 0)
+    )
+    prover()._assigned_names([stmt], scalars, arrays, resized)
+    assert "a" in resized
+
+
+def test_assigned_names_collects_pop_in_while_decreases():
+    scalars, arrays, resized = set(), set(), set()
+    dec = ast.ExprCall("pop", [ast.ExprVar("a", Position(0, 0))], Position(0, 0))
+    stmt = ast.StmtWhile(
+        ast.LiteralBool(True, Position(0, 0)), [], dec, [], Position(0, 0)
+    )
+    prover()._assigned_names([stmt], scalars, arrays, resized)
+    assert "a" in resized
+
+
 def test_check_obligations_reports_unknown(monkeypatch):
     monkeypatch.setattr(z3.Solver, "check", lambda self: z3.unknown)
-    ob = Obligation("postcondition", "x == x", [], z3.IntVal(1) == z3.IntVal(1), 0, 0)
+    ob = Obligation(
+        "postcondition", "x == x", [], z3.IntVal(1) == z3.IntVal(1), Position(0, 0)
+    )
     outcomes = check_obligations([ob], timeout_ms=100)
     assert outcomes[0].status == "UNKNOWN"
     assert outcomes[0].counterexample is None
@@ -661,8 +715,7 @@ def test_check_obligations_trace_prints_vc(capsys):
         "result >= x",
         [z3.IntVal(1) <= z3.IntVal(2)],
         z3.IntVal(3) >= z3.IntVal(2),
-        4,
-        5,
+        Position(4, 5),
     )
     outcomes = check_obligations([ob], trace=True)
     assert outcomes[0].status == "VERIFIED"
@@ -676,7 +729,7 @@ def test_check_obligations_trace_prints_vc(capsys):
 
 
 def test_check_obligations_trace_without_hyp(capsys):
-    ob = Obligation("postcondition", "true", [], z3.BoolVal(True), None, None)
+    ob = Obligation("postcondition", "true", [], z3.BoolVal(True), None)
     outcomes = check_obligations([ob], trace=True)
     assert outcomes[0].status == "VERIFIED"
     out = capsys.readouterr().out
@@ -686,7 +739,7 @@ def test_check_obligations_trace_without_hyp(capsys):
 
 
 def test_check_obligations_trace_line_without_col(capsys):
-    ob = Obligation("bounds", "0 <= i", [], z3.IntVal(0) >= z3.IntVal(0), 7, None)
+    ob = Obligation("bounds", "0 <= i", [], z3.IntVal(0) >= z3.IntVal(0), Position(7))
     check_obligations([ob], trace=True)
     out = capsys.readouterr().out
     assert "--- bounds:7: 0 <= i" in out
@@ -699,3 +752,244 @@ def test_verify_program_trace_prints_function_header(capsys):
     out = capsys.readouterr().out
     assert "fn main" in out
     assert "=> VERIFIED" in out
+
+
+# -- built-in functions ----------------------------------------------------
+
+
+def test_builtin_split_is_uninterpreted_array():
+    source = """
+fn main() -> Int
+{
+  let a: Array<String> = split("a,b", ",");
+  let n: Int = length(a);
+  assert n >= 0;
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_builtin_args_is_uninterpreted_array():
+    source = """
+fn main() -> Int
+{
+  let a: Array<String> = args();
+  assert length(a) >= 0;
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_builtin_read_is_uninterpreted_string():
+    source = """
+fn main() -> Int
+{
+  let s: String = read("x");
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_builtin_write_is_a_noop_statement():
+    source = """
+fn main() -> Int
+{
+  write("x", "y");
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_builtin_print_is_a_noop_statement():
+    source = """
+fn main() -> Int
+{
+  print("x");
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+# -- array-returning functions --------------------------------------------
+
+
+def test_array_returning_functions_verify():
+    source = """
+fn first_primes() -> Array<Int>
+  ensures length(result) == 4
+  ensures result[0] == 2
+  ensures result[3] == 7
+{
+  return [2, 3, 5, 7];
+}
+
+fn pair() -> Array<Int>
+  ensures length(result) == 2
+  ensures result[1] == result[0] + 1
+{
+  let a: Array<Int> = [6, 7];
+  return a;
+}
+
+fn main() -> Int
+{
+  let primes: Array<Int> = first_primes();
+  assert primes[3] == 7;
+  let p: Array<Int> = pair();
+  return p[1] - p[0] - 1;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_array_return_nested_in_length():
+    source = """
+fn two() -> Array<Int>
+  ensures length(result) == 2
+{
+  return [1, 2];
+}
+
+fn main() -> Int
+{
+  assert length(two()) == 2;
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_array_return_with_array_parameter_verifies():
+    source = """
+fn wrap(a: Array<Int>) -> Array<Int>
+  requires length(a) == 2
+  ensures length(result) == 2
+  ensures result[0] == a[0]
+{
+  return [a[0], a[1]];
+}
+
+fn main() -> Int
+{
+  let x: Array<Int> = [5, 6];
+  let y: Array<Int> = wrap(x);
+  assert y[0] == 5;
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+# -- push / pop -----------------------------------------------------------
+
+
+def test_push_and_pop_track_length():
+    source = """
+fn main() -> Int
+{
+  let a: Array<Int> = [1, 2];
+  push(a, 3);
+  let x: Int = pop(a);
+  assert x == 3;
+  assert length(a) == 2;
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_pop_from_empty_array_fails():
+    source = """
+fn main() -> Int
+{
+  let a: Array<Int> = [];
+  let x: Int = pop(a);
+  return x;
+}
+"""
+    assert "FAILED" in verify(source)
+
+
+def test_push_in_loop_with_length_invariant():
+    source = """
+fn main() -> Int
+{
+  let a: Array<Int> = [];
+  let i: Int = 0;
+  while i < 3
+    invariant length(a) == i
+    decreases 3 - i
+  {
+    push(a, i);
+    i = i + 1;
+  }
+  return length(a) - 3;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_pop_nested_in_expression_rejected():
+    source = """
+fn main() -> Int
+{
+  let a: Array<Int> = [1];
+  return pop(a) + 1;
+}
+"""
+    with pytest.raises(FrmlVerificationError):
+        verify(source)
+
+
+def test_resized_array_parameter_ensures_length_change():
+    source = """
+fn append_one(a: Array<Int>)
+  ensures length(a) == old(length(a)) + 1
+{
+  push(a, 9);
+}
+
+fn pop_last(a: Array<Int>) -> Int
+  requires length(a) > 0
+  ensures length(a) == old(length(a)) - 1
+{
+  return pop(a);
+}
+
+fn main() -> Int
+{
+  let a: Array<Int> = [1, 2, 3];
+  append_one(a);
+  assert length(a) == 4;
+  let x: Int = pop_last(a);
+  assert length(a) == 3;
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))
+
+
+def test_pop_returns_last_element_via_old():
+    source = """
+fn pop_last(a: Array<Int>) -> Int
+  requires length(a) > 0
+  ensures length(a) == old(length(a)) - 1
+  ensures result == old(a[length(a) - 1])
+{
+  return pop(a);
+}
+
+fn main() -> Int
+{
+  let a: Array<Int> = [1, 2, 3];
+  let x: Int = pop_last(a);
+  assert x == 3;
+  return 0;
+}
+"""
+    assert all(s == "VERIFIED" for s in verify(source))

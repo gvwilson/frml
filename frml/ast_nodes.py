@@ -2,6 +2,7 @@
 
 from dataclasses import dataclass, field
 
+from .position import Position
 from .types import Type
 
 # ---------------------------------------------------------------------------
@@ -12,9 +13,8 @@ from .types import Type
 class Node:
     """Base class carrying a source location."""
 
-    def __init__(self, line, col):
-        self.line = line
-        self.col = col
+    def __init__(self, pos):
+        self.pos = pos
 
 
 @dataclass
@@ -36,11 +36,10 @@ class Stmt(Node):
 class Parameter(Node):
     name: str
     type: Type
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, name, type_, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, name, type_, pos):
+        Node.__init__(self, pos)
         self.name = name
         self.type = type_
 
@@ -54,13 +53,12 @@ class Function(Node):
     ensures: list[Expr]
     decreases: Expr | None
     body: list[Stmt]
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
     def __init__(
-        self, name, params, return_type, requires, ensures, decreases, body, line, col
+        self, name, params, return_type, requires, ensures, decreases, body, pos
     ):
-        Node.__init__(self, line, col)
+        Node.__init__(self, pos)
         self.name = name
         self.params = params
         self.return_type = return_type
@@ -85,11 +83,10 @@ class StmtArrayAssign(Stmt):
     array: Expr
     index: Expr
     value: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, array, index, value, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, array, index, value, pos):
+        Node.__init__(self, pos)
         self.array = array
         self.index = index
         self.value = value
@@ -99,11 +96,10 @@ class StmtArrayAssign(Stmt):
 class StmtAssign(Stmt):
     name: str
     expr: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, name, expr, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, name, expr, pos):
+        Node.__init__(self, pos)
         self.name = name
         self.expr = expr
 
@@ -111,11 +107,10 @@ class StmtAssign(Stmt):
 @dataclass
 class StmtAssert(Stmt):
     expr: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, expr, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, expr, pos):
+        Node.__init__(self, pos)
         self.expr = expr
 
 
@@ -123,11 +118,10 @@ class StmtAssert(Stmt):
 class StmtCall(Stmt):
     name: str
     args: list[Expr]
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, name, args, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, name, args, pos):
+        Node.__init__(self, pos)
         self.name = name
         self.args = args
 
@@ -137,11 +131,10 @@ class StmtIf(Stmt):
     cond: Expr
     then: list[Stmt]
     else_: list[Stmt] | None
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, cond, then, else_, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, cond, then, else_, pos):
+        Node.__init__(self, pos)
         self.cond = cond
         self.then = then
         self.else_ = else_
@@ -152,11 +145,10 @@ class StmtLet(Stmt):
     name: str
     type: Type
     init: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, name, type_, init, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, name, type_, init, pos):
+        Node.__init__(self, pos)
         self.name = name
         self.type = type_
         self.init = init
@@ -165,11 +157,10 @@ class StmtLet(Stmt):
 @dataclass
 class StmtReturn(Stmt):
     expr: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, expr, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, expr, pos):
+        Node.__init__(self, pos)
         self.expr = expr
 
 
@@ -179,11 +170,10 @@ class StmtWhile(Stmt):
     invariants: list[Expr]
     decreases: Expr | None
     body: list[Stmt]
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, cond, invariants, decreases, body, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, cond, invariants, decreases, body, pos):
+        Node.__init__(self, pos)
         self.cond = cond
         self.invariants = invariants
         self.decreases = decreases
@@ -199,11 +189,10 @@ class StmtWhile(Stmt):
 class ExprArrayAccess(Expr):
     array: Expr
     index: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, array, index, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, array, index, pos):
+        Node.__init__(self, pos)
         self.array = array
         self.index = index
 
@@ -211,11 +200,10 @@ class ExprArrayAccess(Expr):
 @dataclass
 class ExprArrayLiteral(Expr):
     elements: list[Expr]
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, elements, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, elements, pos):
+        Node.__init__(self, pos)
         self.elements = elements
 
 
@@ -224,11 +212,10 @@ class ExprBinary(Expr):
     op: str
     left: Expr
     right: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, op, left, right, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, op, left, right, pos):
+        Node.__init__(self, pos)
         self.op = op
         self.left = left
         self.right = right
@@ -238,11 +225,10 @@ class ExprBinary(Expr):
 class ExprCall(Expr):
     name: str
     args: list[Expr]
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, name, args, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, name, args, pos):
+        Node.__init__(self, pos)
         self.name = name
         self.args = args
 
@@ -250,22 +236,20 @@ class ExprCall(Expr):
 @dataclass
 class ExprLength(Expr):
     arg: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, arg, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, arg, pos):
+        Node.__init__(self, pos)
         self.arg = arg
 
 
 @dataclass
 class ExprOld(Expr):
     arg: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, arg, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, arg, pos):
+        Node.__init__(self, pos)
         self.arg = arg
 
 
@@ -275,11 +259,10 @@ class ExprQuantifier(Expr):
     var_name: str
     var_type: Type
     body: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, quant, var_name, var_type, body, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, quant, var_name, var_type, body, pos):
+        Node.__init__(self, pos)
         self.quant = quant
         self.var_name = var_name
         self.var_type = var_type
@@ -289,11 +272,10 @@ class ExprQuantifier(Expr):
 @dataclass
 class ExprStringify(Expr):
     operand: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, operand, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, operand, pos):
+        Node.__init__(self, pos)
         self.operand = operand
 
 
@@ -301,11 +283,10 @@ class ExprStringify(Expr):
 class ExprUnary(Expr):
     op: str
     operand: Expr
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, op, operand, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, op, operand, pos):
+        Node.__init__(self, pos)
         self.op = op
         self.operand = operand
 
@@ -313,42 +294,38 @@ class ExprUnary(Expr):
 @dataclass
 class ExprVar(Expr):
     name: str
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, name, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, name, pos):
+        Node.__init__(self, pos)
         self.name = name
 
 
 @dataclass
 class LiteralBool(Expr):
     value: bool
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, value, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, value, pos):
+        Node.__init__(self, pos)
         self.value = value
 
 
 @dataclass
 class LiteralInt(Expr):
     value: int
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, value, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, value, pos):
+        Node.__init__(self, pos)
         self.value = value
 
 
 @dataclass
 class LiteralString(Expr):
     value: str
-    line: int = 0
-    col: int = 0
+    pos: Position = None
 
-    def __init__(self, value, line, col):
-        Node.__init__(self, line, col)
+    def __init__(self, value, pos):
+        Node.__init__(self, pos)
         self.value = value

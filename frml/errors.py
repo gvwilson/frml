@@ -5,26 +5,21 @@ class FrmlError(Exception):
     """Base class for all Frml errors.
 
     Each error carries a human-readable category (SyntaxError, TypeError, ...)
-    and an optional source location so the command-line tool can print
+    and an optional source position so the command-line tool can print
     `file.frml:line:col: message` diagnostics.
     """
 
     category = "Error"
 
-    def __init__(self, message, line=None, col=None):
+    def __init__(self, message, pos=None):
         self.message = message
-        self.line = line
-        self.col = col
+        self.pos = pos
         super().__init__(message)
 
     def format(self, filename=None):
-        prefix = ""
-        if filename:
-            prefix = filename
-        if self.line is not None:
-            loc = str(self.line)
-            if self.col is not None:
-                loc += f":{self.col}"
+        prefix = filename or ""
+        if self.pos is not None:
+            loc = str(self.pos)
             prefix = f"{prefix}:{loc}" if prefix else loc
         if prefix:
             return f"{prefix}: {self.category}: {self.message}"

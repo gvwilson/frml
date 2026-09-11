@@ -7,7 +7,9 @@ import math
 from typing import cast
 
 from . import ast_nodes as ast
+from .builtins import BUILTINS
 from .errors import FrmlContractError, FrmlRuntimeError, FrmlTerminationError
+from .position import Position
 from .types import BOOL, INT, STRING, ArrayType
 
 DEFAULT_MAX_ITER = 1_000_000
@@ -71,12 +73,13 @@ def _truthy(value):
 
 
 class Interpreter:
-    def __init__(self, program):
+    def __init__(self, program, argv=None):
         self.program = program
         self.functions = {f.name: f for f in program.functions}
         self.scopes = []
         self.snapshot = None
         self.max_iterations = DEFAULT_MAX_ITER
+        self.argv = list(argv) if argv is not None else []
 
     # -- entry point --------------------------------------------------------
 
@@ -85,6 +88,57 @@ class Interpreter:
             raise FrmlRuntimeError("no 'main' function to run")
         value = self.call("main", [])
         return _as_int(value)
+
+    # -- built-in functions -------------------------------------------------
+
+    def call_builtin(self, name, args, pos):
+        if name == "read":
+            return self._read_file(args[0], pos)
+        if name == "write":
+            return self._write_file(args[0], args[1], pos)
+        if name == "print":
+            print(str(args[0]))
+            return None
+        if name == "split":
+            return FrmlArray(STRING, str(args[0]).split(str(args[1])))
+        if name == "args":
+            return FrmlArray(STRING, list(self.argv))
+        if name == "push":
+            return self._push(args[0], args[1], pos)
+        if name == "pop":
+            return self._pop(args[0], pos)
+        raise FrmlRuntimeError(f"unknown built-in function {name!r}")
+
+    def _read_file(self, path, pos):
+        try:
+            with open(str(path), "r", encoding="utf-8") as f:
+                return f.read()
+        except OSError as e:
+            raise FrmlRuntimeError(
+                f"cannot read file {path!r}: {e.strerror or e}", pos
+            ) from e
+
+    def _write_file(self, path, text, pos):
+        try:
+            with open(str(path), "w", encoding="utf-8") as f:
+                f.write(str(text))
+                return
+        except OSError as e:
+            raise FrmlRuntimeError(
+                f"cannot write file {path!r}: {e.strerror or e}", pos
+            ) from e
+
+    def _push(self, arr, value, pos):
+        if not isinstance(arr, FrmlArray):
+            raise FrmlRuntimeError("push expects an array", pos)
+        arr.elements.append(value)
+
+    def _pop(self, arr, pos):
+        if not isinstance(arr, FrmlArray):
+            raise FrmlRuntimeError("pop expects an array", pos)
+        if arr.length == 0:
+            raise FrmlRuntimeError("pop from an empty array", pos)
+        return arr.elements.pop()
 
     # -- rendering for error messages --------------------------------------
 
@@ -136,7 +190,7 @@ class Interpreter:
             for req in fn.requires:
                 if not _truthy(self.eval_expr(req)):
                     raise FrmlContractError(
-                        f"precondition violated: {self.render(req)}", req.line, req.col
+                        f"precondition violated: {self.render(req)}", req.pos
                     )
 
             result = None
@@ -149,7 +203,7 @@ class Interpreter:
 
             if fn.return_type is not None and not returned:
                 raise FrmlRuntimeError(
-                    f"function {fn.name!r} did not return a value", fn.line, fn.col
+                    f"function {fn.name!r} did not return a value", fn.pos
                 )
 
             # Check postconditions.
@@ -171,8 +225,7 @@ class Interpreter:
                     if not ok:
                         raise FrmlContractError(
                             f"postcondition violated: {self.render(ens)}",
-                            ens.line,
-                            ens.col,
+                            ens.pos,
                         )
             finally:
                 self.snapshot = old_snapshot
@@ -192,13 +245,13 @@ class Interpreter:
             arr = self.eval_expr(stmt.array)
             index = self.eval_expr(stmt.index)
             value = self.eval_expr(stmt.value)
-            self._store(arr, index, value, stmt.line, stmt.col)
+            self._store(arr, index, value, stmt.pos)
 
         elif isinstance(stmt, ast.StmtAssert):
             value = _truthy(self.eval_expr(stmt.expr))
             if not value:
                 raise FrmlRuntimeError(
-                    f"assertion failed: {self.render(stmt.expr)}", stmt.line, stmt.col
+                    f"assertion failed: {self.render(stmt.expr)}", stmt.pos
                 )
 
         elif isinstance(stmt, ast.StmtAssign):
@@ -206,11 +259,15 @@ class Interpreter:
             self.assign_value(stmt.name, value)
 
         elif isinstance(stmt, ast.StmtCall):
-            args = [
-                self.eval_expr(a, elem_hint=self._param_elem_hint(stmt.name, i, a))
-                for i, a in enumerate(stmt.args)
-            ]
-            self.call(stmt.name, args)
+            if stmt.name in BUILTINS:
+                args = [self.eval_expr(a) for a in stmt.args]
+                self.call_builtin(stmt.name, args, stmt.pos)
+            else:
+                args = [
+                    self.eval_expr(a, elem_hint=self._param_elem_hint(stmt.name, i, a))
+                    for i, a in enumerate(stmt.args)
+                ]
+                self.call(stmt.name, args)
 
         elif isinstance(stmt, ast.StmtIf):
             if _truthy(self.eval_expr(stmt.cond)):
@@ -246,16 +303,14 @@ class Interpreter:
                     if d_before < 0:
                         raise FrmlTerminationError(
                             "loop decreases expression became negative",
-                            stmt.line,
-                            stmt.col,
+                            stmt.pos,
                         )
 
                 iterations += 1
                 if iterations > self.max_iterations:
                     raise FrmlTerminationError(
                         "loop did not terminate within the iteration limit",
-                        stmt.line,
-                        stmt.col,
+                        stmt.pos,
                     )
 
                 self.push_scope()
@@ -269,8 +324,7 @@ class Interpreter:
                     if not (d_after < d_before):
                         raise FrmlTerminationError(
                             "loop decreases expression did not strictly decrease",
-                            stmt.line,
-                            stmt.col,
+                            stmt.pos,
                         )
 
         else:  # pragma: no cover - defensive
@@ -300,7 +354,7 @@ class Interpreter:
             index = self.eval_expr(
                 expr.index, result_value=result_value, use_old=use_old
             )
-            return self._load(arr, index, expr.line, expr.col)
+            return self._load(arr, index, expr.pos)
 
         if isinstance(expr, ast.ExprArrayLiteral):
             elem_type = self._infer_array_elem(expr, elem_hint, use_old)
@@ -372,16 +426,22 @@ class Interpreter:
                 return _as_int(left) * _as_int(right)
             if op == "/":
                 if _as_int(right) == 0:
-                    raise FrmlRuntimeError("division by zero", expr.line, expr.col)
+                    raise FrmlRuntimeError("division by zero", expr.pos)
                 return _euclid_div(_as_int(left), _as_int(right))
             if op == "%":
                 if _as_int(right) == 0:
-                    raise FrmlRuntimeError("division by zero", expr.line, expr.col)
+                    raise FrmlRuntimeError("division by zero", expr.pos)
                 return _euclid_mod(_as_int(left), _as_int(right))
 
             raise FrmlRuntimeError(f"unknown binary operator {op!r}")
 
         if isinstance(expr, ast.ExprCall):
+            if expr.name in BUILTINS:
+                args = [
+                    self.eval_expr(a, result_value=result_value, use_old=use_old)
+                    for a in expr.args
+                ]
+                return self.call_builtin(expr.name, args, expr.pos)
             assert expr.name in self.functions
             args = [
                 self.eval_expr(
@@ -394,7 +454,7 @@ class Interpreter:
         if isinstance(expr, ast.ExprLength):
             arr = self.eval_expr(expr.arg, result_value=result_value, use_old=use_old)
             if not isinstance(arr, FrmlArray):
-                raise FrmlRuntimeError("length expects an array", expr.line, expr.col)
+                raise FrmlRuntimeError("length expects an array", expr.pos)
             return arr.length
 
         if isinstance(expr, ast.ExprQuantifier):
@@ -405,9 +465,7 @@ class Interpreter:
 
         if isinstance(expr, ast.ExprOld):
             if self.snapshot is None:
-                raise FrmlRuntimeError(
-                    "'old' used outside a postcondition", expr.line, expr.col
-                )
+                raise FrmlRuntimeError("'old' used outside a postcondition", expr.pos)
             return self.eval_expr(expr.arg, result_value=result_value, use_old=True)
 
         if isinstance(expr, ast.ExprStringify):
@@ -430,11 +488,11 @@ class Interpreter:
             if use_old:
                 if self.snapshot is None:
                     raise FrmlRuntimeError(
-                        "'old' used outside a postcondition", expr.line, expr.col
+                        "'old' used outside a postcondition", expr.pos
                     )
                 if expr.name not in self.snapshot:
                     raise FrmlRuntimeError(
-                        f"unknown variable {expr.name!r} in old()", expr.line, expr.col
+                        f"unknown variable {expr.name!r} in old()", expr.pos
                     )
                 return self.snapshot[expr.name]
             return self.lookup_value(expr.name)
@@ -463,21 +521,21 @@ class Interpreter:
             if isinstance(first, str):
                 return STRING
             raise FrmlRuntimeError(
-                "array elements must be Int, Bool or String", expr.line, expr.col
+                "array elements must be Int, Bool or String", expr.pos
             )
         if elem_hint is not None:
             return elem_hint
         raise FrmlRuntimeError(
-            "cannot infer element type of empty array literal", expr.line, expr.col
+            "cannot infer element type of empty array literal", expr.pos
         )
 
-    def _load(self, arr, index, line, col):
+    def _load(self, arr, index, pos):
         if not isinstance(arr, FrmlArray):
-            raise FrmlRuntimeError("array access target is not an array", line, col)
+            raise FrmlRuntimeError("array access target is not an array", pos)
         idx = int(index)
         if not (0 <= idx < arr.length):
             raise FrmlRuntimeError(
-                f"array index {idx} out of bounds (length {arr.length})", line, col
+                f"array index {idx} out of bounds (length {arr.length})", pos
             )
         return arr.elements[idx]
 
@@ -487,13 +545,13 @@ class Interpreter:
             return None
         return self._elem_hint(fn.params[index].type)
 
-    def _store(self, arr, index, value, line, col):
+    def _store(self, arr, index, value, pos):
         if not isinstance(arr, FrmlArray):
-            raise FrmlRuntimeError("array assignment target is not an array", line, col)
+            raise FrmlRuntimeError("array assignment target is not an array", pos)
         idx = int(index)
         if not (0 <= idx < arr.length):
             raise FrmlRuntimeError(
-                f"array index {idx} out of bounds (length {arr.length})", line, col
+                f"array index {idx} out of bounds (length {arr.length})", pos
             )
         arr.elements[idx] = value
 
@@ -510,10 +568,10 @@ class Interpreter:
 
     def _and_list(self, exprs):
         if not exprs:
-            return ast.LiteralBool(True, 0, 0)
+            return ast.LiteralBool(True, Position(0, 0))
         result = exprs[0]
         for e in exprs[1:]:
-            result = ast.ExprBinary("and", result, e, e.line, e.col)
+            result = ast.ExprBinary("and", result, e, e.pos)
         return result
 
     def _eval_quantifier(self, expr, result_value, use_old):

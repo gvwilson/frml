@@ -892,6 +892,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#array-returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array returns
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1654,6 +1665,17 @@
     <span class="md-ellipsis">
       <span class="md-typeset">
         Array arguments
+      </span>
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#array-returns" class="md-nav__link">
+    <span class="md-ellipsis">
+      <span class="md-typeset">
+        Array returns
       </span>
     </span>
   </a>
@@ -2663,6 +2685,27 @@ so the verifier must prove it from what came before.</p>
 </ul>
 </li>
 <li>After the call, the caller's array argument is updated to the callee's post-array.</li>
+</ul>
+<h3 id="array-returns">Array returns<a class="headerlink" href="#array-returns" title="Permanent link">&para;</a></h3>
+<ul>
+<li>A function may return an array, but only a <em>fresh</em> one:<ul>
+<li>an array literal,</li>
+<li>a call to another array-returning function, or</li>
+<li>a function-local array variable.</li>
+</ul>
+</li>
+<li>Returning an array parameter is rejected by the type checker.<ul>
+<li>Otherwise the caller would hold two names for the same array, which
+    reintroduces the aliasing the language avoids.</li>
+</ul>
+</li>
+<li>At a call site, the returned array is a fresh <code>ArrayVal</code> with an unknown
+    <code>length &gt;= 0</code>, exactly like any other result.</li>
+<li>The callee's <code>ensures</code> are assumed, and the well-formedness obligations
+    inside them (array bounds, non-zero divisors) are suppressed:<ul>
+<li>They are part of what is being assumed, not something the caller proves.</li>
+</ul>
+</li>
 </ul>
 <h2 id="19-recursion">19. Recursion<a class="headerlink" href="#19-recursion" title="Permanent link">&para;</a></h2>
 <ul>

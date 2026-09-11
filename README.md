@@ -82,10 +82,13 @@ String       a sequence of characters, written in double quotes
 Frml supports homogeneous one-dimensional arrays:
 
 ```
-Array<Int>    mutable, fixed-length, zero-indexed arrays
-Array<Bool>   mutable, fixed-length, zero-indexed arrays
-Array<String> mutable, fixed-length, zero-indexed arrays of strings
+Array<Int>    mutable, zero-indexed arrays
+Array<Bool>   mutable, zero-indexed arrays
+Array<String> mutable, zero-indexed arrays of strings
 ```
+
+Arrays grow and shrink only through the `push` and `pop` built-ins; they
+cannot otherwise be resized.
 
 Nested arrays (`Array<Array<Int>>`) are not allowed, and Frml does not (yet)
 have a mapping (dictionary) type.
@@ -119,6 +122,21 @@ fn increment_first(a: Array<Int>)
   ensures a[0] == old(a[0]) + 1
 {
   a[0] = a[0] + 1;
+}
+```
+
+-   A function may return an array, provided the returned array is *fresh*: an
+    array literal, another array-returning call, or a function-local array
+    variable. Returning an array parameter is rejected, since it would let the
+    caller alias the argument:
+
+```
+fn first_primes() -> Array<Int>
+  ensures length(result) == 4
+  ensures result[0] == 2
+  ensures result[3] == 7
+{
+  return [2, 3, 5, 7];
 }
 ```
 
@@ -168,7 +186,33 @@ forall i: Int :: 0 <= i and i < length(a) => a[i] >= 0
 exists i: Int :: 0 <= i and i < length(a) and a[i] == 0
 ```
 
-`length(a)` is the single built-in function.
+`length(a)` is built into the language: it is a special construct with exact
+semantics that the verifier reasons about precisely, not an ordinary function.
+Frml also provides these built-in functions:
+
+```
+read(path) -> String               read a whole file and return its contents
+write(path, text)                  write `text` to a file, overwriting it
+split(text, sep) -> Array<String>  split `text` on occurrences of `sep`
+args() -> Array<String>            the program's command-line arguments
+push(array, item)                  append `item` to the end of `array`
+pop(array) -> T                    remove and return the last element of `array`
+```
+
+`write` and `push` are procedures (they have no return value); `read`,
+`split`, `args` and `pop` are used in expressions. `split` and `args` return
+arrays of strings; they are built-ins because their results come from outside
+the program (the string being split and the command line), not because Frml
+lacks array-returning functions. `read` and `write` perform file I/O, which
+the verifier treats as uninterpreted: it can prove nothing about the file
+contents read or written. `args()` returns the arguments that follow the
+source file on the `frml run` or `frml checkrun` command line.
+
+`push` and `pop` work on any `Array<T>` and change the array's length. `push`
+appends `item` (whose type must match the array's element type) to the end of
+a named array; `pop` returns and removes the last element, and popping an
+empty array is an error (`length(a) > 0` is a verification obligation). They
+are the only built-ins that mutate a program array.
 
 ## Examples
 
@@ -179,6 +223,7 @@ The `examples/` directory contains small programs:
 -   `factorial.frml`: recursive function with `decreases`.
 -   `all_nonnegative.frml`: array property proved with a quantifier loop invariant.
 -   `increment_first.frml`: a procedure mutating an array, with `old`.
+-   `array_return.frml`: functions returning fresh arrays.
 -   `bad.frml`: a deliberately unprovable postcondition (`FAILED`).
 -   `precondition.frml`: a runtime precondition violation.
 
@@ -200,9 +245,11 @@ the specification's own "simplest recommended model":
     `let b: Array<Int> = a;` (array-to-array assignment) is rejected to avoid
     aliasing ambiguity. Create fresh arrays with array literals instead.
 
--   **Functions return `Int` or `Bool`.**
-    Array-returning functions are not supported. Array mutation is expressed
-    with procedures, as shown earlier.
+-   **Returned arrays must be fresh.**
+    A function may return an array, but only an array it created itself (a
+    literal, an array-returning call, or a function-local array variable).
+    Returning an array parameter is rejected to keep aliasing unambiguous.
+    Array mutation is expressed with procedures, as shown earlier.
 
 -   **A call that takes array arguments must appear on its own.**
     It may be a statement, or the whole right-hand side of, `let`, `return`, or
@@ -227,6 +274,7 @@ frml/
   parser.py       recursive-descent parser -> AST
   ast_nodes.py    AST node definitions
   types.py        Int / Bool / Array<T> types
+  builtins.py     built-in function signatures
   typechecker.py  name resolution + static type checking
   interpreter.py  concrete executor with runtime checks
   prover.py       verification-condition generation + Z3 proof checking

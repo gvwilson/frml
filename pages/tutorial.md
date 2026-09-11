@@ -773,6 +773,21 @@ fn main() -> Int
     -   A read-only array keeps the caller's array unchanged.
 -   After the call, the caller's array argument is updated to the callee's post-array.
 
+### Array returns
+
+-   A function may return an array, but only a *fresh* one:
+    -   an array literal,
+    -   a call to another array-returning function, or
+    -   a function-local array variable.
+-   Returning an array parameter is rejected by the type checker.
+    -   Otherwise the caller would hold two names for the same array, which
+        reintroduces the aliasing the language avoids.
+-   At a call site, the returned array is a fresh `ArrayVal` with an unknown
+    `length >= 0`, exactly like any other result.
+-   The callee's `ensures` are assumed, and the well-formedness obligations
+    inside them (array bounds, non-zero divisors) are suppressed:
+    -   They are part of what is being assumed, not something the caller proves.
+
 ## 19. Recursion
 
 -   Recursive functions need a `decreases` clause.

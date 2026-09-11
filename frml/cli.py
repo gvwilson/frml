@@ -46,12 +46,22 @@ def build_parser():
         "run", help="type-check and execute main()", allow_abbrev=False
     )
     run.add_argument("file", metavar="FILE.frml", help="program to run")
+    run.add_argument(
+        "args",
+        nargs="*",
+        metavar="ARG",
+        help="command-line arguments visible to args()",
+    )
 
     checkrun = subparsers.add_parser(
         "checkrun", help="verify, then execute main()", allow_abbrev=False
     )
+    checkrun.add_argument("file", metavar="FILE.frml", help="program to verify and run")
     checkrun.add_argument(
-        "file", metavar="FILE.frml", help="program to verify and run"
+        "args",
+        nargs="*",
+        metavar="ARG",
+        help="command-line arguments visible to args()",
     )
     checkrun.add_argument(
         "--trace",
@@ -73,8 +83,10 @@ def main(argv=None):
     if args.command == "check":
         return do_check(args.file, trace=args.trace, example=args.example)
     if args.command == "run":
-        return do_run(args.file)
-    return do_checkrun(args.file, trace=args.trace, example=args.example)
+        return do_run(args.file, argv=args.args)
+    return do_checkrun(
+        args.file, trace=args.trace, example=args.example, argv=args.args
+    )
 
 
 def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False, example=False):
@@ -104,7 +116,7 @@ def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False, example=False
     return 0
 
 
-def do_run(filename):
+def do_run(filename, argv=None):
     try:
         program = load_program(filename)
     except FrmlError as e:
@@ -112,7 +124,7 @@ def do_run(filename):
         return 1
 
     try:
-        code = Interpreter(program).run_main()
+        code = Interpreter(program, argv=argv).run_main()
     except FrmlError as e:
         print(e.format(filename), file=sys.stderr)
         return 1
@@ -120,11 +132,13 @@ def do_run(filename):
     return int(code)
 
 
-def do_checkrun(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False, example=False):
+def do_checkrun(
+    filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False, example=False, argv=None
+):
     status = do_check(filename, timeout_ms=timeout_ms, trace=trace, example=example)
     if status != 0:
         return status
-    return do_run(filename)
+    return do_run(filename, argv=argv)
 
 
 def load_program(filename):
@@ -138,10 +152,8 @@ def load_program(filename):
 def _format_outcome(filename, outcome, example=False):
     ob = outcome.obligation
     loc = filename
-    if ob.line is not None:
-        loc += f":{ob.line}"
-        if ob.col is not None:
-            loc += f":{ob.col}"
+    if ob.pos is not None:
+        loc += f":{ob.pos}"
     if outcome.status == "FAILED":
         text = f"{loc}: FAILED\n{ob.kind} may not hold:\n    {ob.description}"
         if example:
