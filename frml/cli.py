@@ -36,6 +36,11 @@ def build_parser():
         action="store_true",
         help="show the verification conditions sent to Z3",
     )
+    check.add_argument(
+        "--example",
+        action="store_true",
+        help="show a concrete counterexample for each failed obligation",
+    )
 
     run = subparsers.add_parser(
         "run", help="type-check and execute main()", allow_abbrev=False
@@ -53,6 +58,11 @@ def build_parser():
         action="store_true",
         help="show the verification conditions sent to Z3",
     )
+    checkrun.add_argument(
+        "--example",
+        action="store_true",
+        help="show a concrete counterexample for each failed obligation",
+    )
 
     return parser
 
@@ -61,13 +71,13 @@ def main(argv=None):
     args = build_parser().parse_args(sys.argv[1:] if argv is None else argv)
 
     if args.command == "check":
-        return do_check(args.file, trace=args.trace)
+        return do_check(args.file, trace=args.trace, example=args.example)
     if args.command == "run":
         return do_run(args.file)
-    return do_checkrun(args.file, trace=args.trace)
+    return do_checkrun(args.file, trace=args.trace, example=args.example)
 
 
-def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
+def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False, example=False):
     try:
         program = load_program(filename)
     except FrmlError as e:
@@ -80,7 +90,7 @@ def do_check(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
     unknown = [oc for oc in outcomes if oc.status == "UNKNOWN"]
 
     for oc in failed:
-        print(_format_outcome(filename, oc), file=sys.stderr)
+        print(_format_outcome(filename, oc, example=example), file=sys.stderr)
     for oc in unknown:
         print(_format_outcome(filename, oc), file=sys.stderr)
 
@@ -110,8 +120,8 @@ def do_run(filename):
     return int(code)
 
 
-def do_checkrun(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False):
-    status = do_check(filename, timeout_ms=timeout_ms, trace=trace)
+def do_checkrun(filename, timeout_ms=DEFAULT_TIMEOUT_MS, trace=False, example=False):
+    status = do_check(filename, timeout_ms=timeout_ms, trace=trace, example=example)
     if status != 0:
         return status
     return do_run(filename)
@@ -125,7 +135,7 @@ def load_program(filename):
     return program
 
 
-def _format_outcome(filename, outcome):
+def _format_outcome(filename, outcome, example=False):
     ob = outcome.obligation
     loc = filename
     if ob.line is not None:
@@ -133,8 +143,21 @@ def _format_outcome(filename, outcome):
         if ob.col is not None:
             loc += f":{ob.col}"
     if outcome.status == "FAILED":
-        return f"{loc}: FAILED\n{ob.kind} may not hold:\n    {ob.description}"
+        text = f"{loc}: FAILED\n{ob.kind} may not hold:\n    {ob.description}"
+        if example:
+            text += _format_counterexample(outcome.counterexample)
+        return text
     return f"{loc}: UNKNOWN\n{ob.kind} could not be decided:\n    {ob.description}"
+
+
+def _format_counterexample(counterexample):
+    """Render the concrete values that refute an obligation."""
+    lines = ["\nCounterexample:"]
+    if counterexample:
+        lines.extend(f"    {entry}" for entry in counterexample)
+    else:
+        lines.append("    (any values)")
+    return "\n".join(lines)
 
 
 if __name__ == "__main__":  # pragma: no cover

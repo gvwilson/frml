@@ -278,6 +278,65 @@ VERIFIED
 
 -   `(< 3 (+ 3 2))` is Z3's prefix notation for `3 < 3 + 2`, which is the same logical claim as `(3 + 2) > 3`.
 
+## A broken loop invariant
+
+-   A loop invariant must hold before the first iteration *and* survive every
+    execution of the loop body.
+-   The example below survives the first iteration but not the second.
+
+```
+fn bad() -> Bool
+{
+  let i: Int = 0;
+  while i < 3
+    invariant i <= 2
+  {
+    i = i + 1;
+  }
+  return true;
+}
+```
+
+-   The initialization obligation is `0 <= 2`, which holds.
+-   The preservation obligation is:
+
+```
+(i <= 2 and i < 3) => (i + 1) <= 2
+```
+
+-   Z3 finds a counterexample to this implication: `i = 2`.
+    -   `2 <= 2` is true, so the invariant holds *before* the iteration.
+    -   `2 < 3` is true, so the loop body runs once more.
+    -   `2 + 1 <= 2` is false, so the invariant is broken *after* the iteration.
+-   Running `uv run frml check --trace examples/ex03_while_count_up_bad.frml`
+    prints:
+
+```
+fn bad
+--- invariant:5:17: loop invariant initially: (i <= 2)
+    prove: (<= 0 2)
+    => VERIFIED
+--- invariant:5:17: loop invariant preserved: (i <= 2)
+    given: (and (>= 2 i!1) (> 3 i!1))
+    prove: (>= 2 (+ i!1 1))
+    => FAILED
+```
+
+-   Adding `--example` makes the CLI show the witness:
+
+```
+Counterexample:
+    i = 2
+```
+
+-   The counterexample `i = 2` does not mean `i <= 2` is false when `i` is `2`.
+    -   It means "if the loop reaches `i = 2`, the next iteration violates the
+      invariant".
+-   The loop can reach `i = 2` along the way: `0`, `1`, `2`.
+    -   Then, because `2 < 3`, it increments to `3`, and `3 <= 2` is false.
+-   The correct upper bound is `i <= 3`, because `i` reaches `3` before the loop
+    exits.
+
 ## A more complex example: `abs`
 
 -   Frml program:
@@ -294,45 +353,35 @@ fn abs(x: Int) -> Int
 }
 ```
 
--   Here is what the prover does, statement by statement.
-
-### Entry
-
--   Create a fresh integer symbol `x!1` for the parameter `x`.
--   Put it in `state.vars["x"]`.
--   Snapshot it into `state.old_vars["x"]`.
--   There are no `requires` clauses, so the path starts empty.
-
-### The `if`
-
--   Evaluate the condition `x >= 0` to the term `x!1 >= 0`.
--   Make two copies of the state.
--   Then branch:
-    -   `then_state.path` gets `x!1 >= 0`.
-    -   `else_state.path` gets `not (x!1 >= 0)`, which means `x!1 < 0`.
-
-### The first `return`
-
--   Evaluate `x` to `x!1`.
--   Evaluate the `ensures` clause `result >= 0` with `result` replaced by `x!1`.
--   Emit an obligation:
+-   Entry
+    -   There are no `requires` clauses, so the path starts empty.
+    -   Create a fresh integer symbol `x!1` for the parameter `x`.
+    -   Put it in `state.vars["x"]`.
+    -   Snapshot it into `state.old_vars["x"]`.
+-   The `if`
+    -   Evaluate the condition `x >= 0` to the term `x!1 >= 0`.
+    -   Make two copies of the state.
+    -   Then branch:
+        -   `then_state.path` gets `x!1 >= 0`.
+        -   `else_state.path` gets `not (x!1 >= 0)`, which means `x!1 < 0`.
+-   The first `return`
+    -   Evaluate `x` to `x!1`.
+    -   Evaluate the `ensures` clause `result >= 0` with `result` replaced by `x!1`.
+    -   Emit an obligation:
 
 ```
 hypotheses:  x!1 >= 0
 goal:        0 <= x!1
 ```
 
-### The second `return`
-
--   Evaluate `-x` to `-x!1`.
--   Emit an obligation:
+-   The second `return`
+    -   Evaluate `-x` to `-x!1`.
+    -   Emit an obligation:
 
 ```
 hypotheses:  not (x!1 >= 0)
 goal:        0 <= -x!1
 ```
-
-### The two checks
 
 -   For the first obligation, Z3 is asked:
 
@@ -343,15 +392,13 @@ not ((x!1 >= 0) => (0 <= x!1))
 -   There is no value of `x!1` that makes this true.
     -   So Z3 returns `unsat`.
     -   The obligation is `VERIFIED`.
--   For the second obligation:
+-   The second obligation is:
 
 ```
 not ((x!1 < 0) => (0 <= -x!1))
 ```
 
--   Again `unsat`.
-    -   The program is `VERIFIED`.
--   That is the whole verifier in miniature: build hypotheses, build a goal, ask Z3.
+-   This is also `unsat`, so the program is `VERIFIED`.
 
 ## Translating expressions to Z3
 
@@ -382,7 +429,6 @@ The `eval_expr` method maps each Frml expression node to a Z3 term.
 
 -   Frml: `0 <= i and i < n`
 -   Z3: `And(0 <= i, i < n)`
-
 -   The prover does not compute the expression.
 -   It builds a formula describing the expression.
 
@@ -623,10 +669,13 @@ fn count(n: Int) -> Int
 
 ### Preservation obligations
 
--   Assume the invariants and the loop condition, run the body, and prove the invariants again.
-    -   Run `i = i + 1` to get `i = 0 + 1`.
-    -   `0 <= i` becomes `0 <= 0 + 1`.
-    -   `i <= n` becomes `0 + 1 <= n`, proved from `i < n` and `i <= n`.
+-   This check is an inductive step over an *arbitrary* loop iteration, not just the first one.
+    -   Havoc `i`, turning it into a fresh symbol.
+    -   Assume the invariants and the loop condition: `0 <= i`, `i <= n`, and `i < n`.
+    -   Run the body `i = i + 1`, so the new value is `i + 1`.
+    -   Prove each invariant again for the new value:
+        -   `0 <= i + 1` follows from `0 <= i`.
+        -   `i + 1 <= n` follows from `i < n`.
 
 ### Exit state
 
@@ -675,9 +724,10 @@ new_decreases < old_decreases
 ```
 
 -   For `count`, the measure is `n - i`.
-    -   Entry: `n - 0 >= 0`.
-    -   After body: `n - (0 + 1) < n - 0`.
--   Both are proved from the path facts.
+    -   Entry: `n - 0 >= 0`, proved from `requires n >= 0`.
+    -   After body, with the havoced `i` and the invariant/condition facts assumed:
+        `n - (i + 1) < n - i`, which simplifies to `-1 < 0`.
+-   The strict-decrease check uses the same havoced `i` as the preservation check.
 
 ## Function calls
 
@@ -867,6 +917,15 @@ goal:        x!1 > x!1
 ```
 
 -   Z3 finds any value making `not (x > x)` true, which is every value, so `FAILED`.
+-   `frml check --example` adds the concrete counterexample values to this output:
+
+```
+Counterexample:
+    (any values)
+```
+
+-   When the refutation has a specific witness, it shows that instead.  For example,
+    a loop invariant that only holds for the first iteration prints `i = 1`.
 
 ### `UNKNOWN`
 

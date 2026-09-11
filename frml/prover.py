@@ -361,8 +361,19 @@ class Prover:
             )
 
         # Body verification (preservation + termination step).
+        # Havoc the variables modified by the loop body, then assume the
+        # invariant and loop condition.  This makes the check an inductive
+        # step over an arbitrary iteration, not just the concrete entry state.
         body_state = state.copy()
-        body_state.path += inv_terms + [cond]
+        self._havoc_loop_vars(stmt.body, body_state)
+        body_invs = [self.eval_expr(inv, body_state) for inv in stmt.invariants]
+        body_cond, _ = self.eval_rhs(stmt.cond, body_state)
+        body_state.path += body_invs + [body_cond]
+        d_before_body = (
+            self.eval_expr(stmt.decreases, body_state)
+            if stmt.decreases is not None
+            else None
+        )
         body_ends = self.exec_block(stmt.body, body_state)
         for end in body_ends:
             for inv in stmt.invariants:
@@ -381,7 +392,7 @@ class Prover:
                     "termination",
                     f"loop decreases {self._render(stmt.decreases)} strictly decreases",
                     end.path,
-                    d_after < d_before,
+                    d_after < d_before_body,
                     stmt.decreases.line,
                     stmt.decreases.col,
                 )
@@ -856,6 +867,50 @@ def _format_obligation(ob, hyp):
     return "\n".join(lines)
 
 
+def _render_model_value(value):
+    """Render one Z3 model value in a compact, Frml-friendly form."""
+    head = value.decl().name()
+    if head == "const":
+        return f"all -> {_render_model_value(value.arg(0))}"
+    if head == "store":
+        entries = []
+        cur = value
+        while cur.decl().name() == "store":
+            index = _render_model_value(cur.arg(1))
+            item = _render_model_value(cur.arg(2))
+            entries.append(f"{index}: {item}")
+            cur = cur.arg(0)
+        if cur.decl().name() == "const":
+            entries.append(f"else: {_render_model_value(cur.arg(0))}")
+        return "{" + ", ".join(entries) + "}"
+    if z3.is_int_value(value):
+        return str(value.as_long())
+    if z3.is_bool(value):
+        return "true" if z3.is_true(value) else "false"
+    if z3.is_string_value(value):
+        return f'"{value.as_string()}"'
+    return value.sexpr()
+
+
+def _render_model(model):
+    """Turn a Z3 model into a list of readable `name = value` entries."""
+    entries = []
+    for decl in model.decls():
+        name = decl.name()
+        if "!" not in name:
+            # Skip Z3-internal constants (e.g. div0/mod0) and other
+            # declarations that do not correspond to a Frml source symbol.
+            continue
+        base = name.rsplit("!", 1)[0]
+        value = model[decl]
+        if base.endswith("_len"):
+            label = f"length({base[:-4]})"
+        else:
+            label = base
+        entries.append(f"{label} = {_render_model_value(value)}")
+    return sorted(entries)
+
+
 def check_obligations(obligations, timeout_ms=10000, trace=False):
     outcomes = []
     solver = z3.Solver()
@@ -873,7 +928,7 @@ def check_obligations(obligations, timeout_ms=10000, trace=False):
         elif result == z3.sat:
             status = "FAILED"
             model = solver.model()
-            outcomes.append(CheckOutcome(ob, "FAILED", str(model)))
+            outcomes.append(CheckOutcome(ob, "FAILED", _render_model(model)))
         else:
             status = "UNKNOWN"
             outcomes.append(CheckOutcome(ob, "UNKNOWN"))

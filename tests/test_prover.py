@@ -10,6 +10,8 @@ from frml.prover import (
     Obligation,
     Prover,
     State,
+    _render_model,
+    _render_model_value,
     check_obligations,
     verify_program,
 )
@@ -95,6 +97,43 @@ fn bad(x: Int) -> Int
 }
 """
     assert verify(source) == ["FAILED"]
+
+
+def test_loop_invariant_checked_inductively():
+    source = """
+fn simple() -> Bool
+{
+  let i: Int = 0;
+  while i < 3
+    invariant i <= 1
+  {
+    i = i + 1;
+  }
+  return true;
+}
+"""
+    assert verify(source) == ["VERIFIED", "FAILED"]
+
+
+def test_failed_obligation_reports_counterexample():
+    source = """
+fn simple() -> Bool
+{
+  let i: Int = 0;
+  while i < 3
+    invariant i <= 1
+  {
+    i = i + 1;
+  }
+  return true;
+}
+"""
+    program = parse(source)
+    TypeChecker(program).check()
+    _, outcomes = verify_program(program)
+    failed = [oc for oc in outcomes if oc.status == "FAILED"]
+    assert len(failed) == 1
+    assert failed[0].counterexample == ["i = 1"]
 
 
 def test_recursion():
@@ -565,6 +604,52 @@ def test_check_obligations_reports_unknown(monkeypatch):
     outcomes = check_obligations([ob], timeout_ms=100)
     assert outcomes[0].status == "UNKNOWN"
     assert outcomes[0].counterexample is None
+
+
+# -- counterexample model rendering ---------------------------------------
+
+
+def test_render_model_value_scalars():
+    assert _render_model_value(z3.IntVal(3)) == "3"
+    assert _render_model_value(z3.BoolVal(True)) == "true"
+    assert _render_model_value(z3.BoolVal(False)) == "false"
+    assert _render_model_value(z3.StringVal("hi")) == '"hi"'
+    # A symbolic (non-numeral) value falls back to its S-expression.
+    assert _render_model_value(z3.Int("x")) == "x"
+
+
+def test_render_model_value_constant_array():
+    value = z3.K(z3.IntSort(), z3.IntVal(2))
+    assert _render_model_value(value) == "all -> 2"
+
+
+def test_render_model_value_store_array():
+    value = z3.Store(z3.K(z3.IntSort(), z3.IntVal(2)), z3.IntVal(0), z3.IntVal(7))
+    assert _render_model_value(value) == "{0: 7, else: 2}"
+
+
+def test_render_model_skips_internal_declarations():
+    x = z3.Int("x")
+    solver = z3.Solver()
+    solver.add(x == 1)
+    assert solver.check() == z3.sat
+    assert _render_model(solver.model()) == []
+
+
+def test_render_model_renders_length_symbol():
+    length = z3.Int("a_len!1")
+    solver = z3.Solver()
+    solver.add(length == 2)
+    assert solver.check() == z3.sat
+    assert _render_model(solver.model()) == ["length(a) = 2"]
+
+
+def test_render_model_renders_scalar_symbol():
+    value = z3.Int("i!1")
+    solver = z3.Solver()
+    solver.add(value == 1)
+    assert solver.check() == z3.sat
+    assert _render_model(solver.model()) == ["i = 1"]
 
 
 # -- trace output ----------------------------------------------------------

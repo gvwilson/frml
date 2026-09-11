@@ -84,6 +84,43 @@ def test_do_check_failed(capsys, write_frml):
     assert "FAILED" in capsys.readouterr().err
 
 
+def test_do_check_example_shows_counterexample(capsys, write_frml):
+    path = write_frml("fn bad(x: Int) -> Int ensures result > x { return x; }")
+    assert do_check(path, example=True) == 1
+    err = capsys.readouterr().err
+    assert "Counterexample:" in err
+    assert "(any values)" in err
+
+
+def test_do_check_example_shows_concrete_value(capsys, write_frml):
+    path = write_frml(
+        "fn simple() -> Bool { let i: Int = 0;"
+        " while i < 3 invariant i <= 1 { i = i + 1; } return true; }"
+    )
+    assert do_check(path, example=True) == 1
+    err = capsys.readouterr().err
+    assert "Counterexample:" in err
+    assert "i = 1" in err
+
+
+def test_do_check_example_off_by_default(capsys, write_frml):
+    path = write_frml(
+        "fn simple() -> Bool { let i: Int = 0;"
+        " while i < 3 invariant i <= 1 { i = i + 1; } return true; }"
+    )
+    assert do_check(path) == 1
+    assert "Counterexample:" not in capsys.readouterr().err
+
+
+def test_main_check_example(capsys, write_frml):
+    path = write_frml(
+        "fn simple() -> Bool { let i: Int = 0;"
+        " while i < 3 invariant i <= 1 { i = i + 1; } return true; }"
+    )
+    assert main(["check", "--example", path]) == 1
+    assert "Counterexample:" in capsys.readouterr().err
+
+
 def test_do_check_syntax_error(capsys, write_frml):
     path = write_frml("fn main() -> Int { return 0;")
     assert do_check(path) == 1
