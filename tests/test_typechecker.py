@@ -8,9 +8,6 @@ from frml.parser import parse
 from frml.position import Position
 from frml.typechecker import (
     TypeChecker,
-    _expr_children,
-    _stmt_exprs,
-    _stmt_stmts,
     calls_itself,
     definitely_returns,
 )
@@ -320,27 +317,28 @@ def test_check_empty_array_literal_without_hint():
 
 def test_expr_children_old():
     arg = ast.LiteralInt(1, Position(0, 0))
-    assert _expr_children(ast.ExprOld(arg, Position(0, 0))) == [arg]
+    assert ast.ExprOld(arg, Position(0, 0)).children() == [arg]
 
 
 def test_stmt_exprs_call_statement():
     arg = ast.LiteralInt(1, Position(0, 0))
     stmt = ast.StmtCall("f", [arg], Position(0, 0))
-    assert _stmt_exprs(stmt) == [arg]
+    assert stmt.children() == [arg]
 
 
 def test_stmt_exprs_falls_back_for_unknown_statement():
-    assert _stmt_exprs(ast.Stmt()) == []
+    assert ast.Stmt().children() == []
 
 
 def test_stmt_stmts_collects_branches():
+    branch = ast.StmtAssert(ast.LiteralBool(True, Position(0, 0)), Position(0, 0))
     if_stmt = ast.StmtIf(
         ast.LiteralBool(True, Position(0, 0)),
-        [ast.StmtAssert(ast.LiteralBool(True, Position(0, 0)), Position(0, 0))],
+        [branch],
         None,
         Position(0, 0),
     )
-    assert len(_stmt_stmts(if_stmt)) == 1
+    assert branch in if_stmt.children()
 
 
 def test_definitely_returns_false_for_non_returning_sequence():

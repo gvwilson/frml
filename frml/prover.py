@@ -8,10 +8,8 @@ checked for validity with a fresh solver push.
 
 import z3
 
-from . import ast_nodes as ast
 from .builtins import BUILTINS
 from .errors import FrmlVerificationError
-from .types import ArrayType, BoolType, IntType, StringType
 
 
 class ArrayVal:
@@ -59,26 +57,71 @@ class ProverResult:
 
 def _collect_pop_arrays(expr, names):
     """Add to `names` every array variable that a nested `pop` call mutates."""
-    if isinstance(expr, ast.ExprCall):
-        if expr.name == "pop" and isinstance(expr.args[0], ast.ExprVar):
-            names.add(expr.args[0].name)
-        for a in expr.args:
-            _collect_pop_arrays(a, names)
-    elif isinstance(expr, (ast.ExprUnary, ast.ExprStringify)):
-        _collect_pop_arrays(expr.operand, names)
-    elif isinstance(expr, ast.ExprBinary):
-        _collect_pop_arrays(expr.left, names)
-        _collect_pop_arrays(expr.right, names)
-    elif isinstance(expr, ast.ExprArrayAccess):
-        _collect_pop_arrays(expr.array, names)
-        _collect_pop_arrays(expr.index, names)
-    elif isinstance(expr, ast.ExprArrayLiteral):
-        for e in expr.elements:
-            _collect_pop_arrays(e, names)
-    elif isinstance(expr, (ast.ExprLength, ast.ExprOld)):
-        _collect_pop_arrays(expr.arg, names)
-    elif isinstance(expr, ast.ExprQuantifier):
-        _collect_pop_arrays(expr.body, names)
+    if expr.is_call("pop"):
+        name = expr.args[0].variable_name()
+        if name is not None:
+            names.add(name)
+    for child in expr.children():
+        _collect_pop_arrays(child, names)
+
+
+class _EffectCollector:
+    """Collect the scalars, arrays and resized arrays a statement block touches."""
+
+    def __init__(self):
+        self.scalars = set()
+        self.arrays = set()
+        self.resized = set()
+
+    def collect(self, stmts):
+        for stmt in stmts:
+            stmt.accept(self)
+
+    def visit_StmtAssign(self, stmt):
+        self.scalars.add(stmt.name)
+        _collect_pop_arrays(stmt.expr, self.resized)
+
+    def visit_StmtArrayAssign(self, stmt):
+        name = stmt.array.variable_name()
+        if name is not None:
+            self.arrays.add(name)
+        _collect_pop_arrays(stmt.index, self.resized)
+        _collect_pop_arrays(stmt.value, self.resized)
+
+    def visit_StmtCall(self, stmt):
+        if stmt.is_call("push"):
+            name = stmt.args[0].variable_name()
+            if name is not None:
+                self.arrays.add(name)
+                self.resized.add(name)
+        for a in stmt.args:
+            _collect_pop_arrays(a, self.resized)
+
+    def visit_StmtLet(self, stmt):
+        _collect_pop_arrays(stmt.init, self.resized)
+
+    def visit_StmtReturn(self, stmt):
+        _collect_pop_arrays(stmt.expr, self.resized)
+
+    def visit_StmtAssert(self, stmt):
+        _collect_pop_arrays(stmt.expr, self.resized)
+
+    def visit_StmtIf(self, stmt):
+        _collect_pop_arrays(stmt.cond, self.resized)
+        self.collect(stmt.then)
+        if stmt.else_:
+            self.collect(stmt.else_)
+
+    def visit_StmtWhile(self, stmt):
+        _collect_pop_arrays(stmt.cond, self.resized)
+        for inv in stmt.invariants:
+            _collect_pop_arrays(inv, self.resized)
+        if stmt.decreases is not None:
+            _collect_pop_arrays(stmt.decreases, self.resized)
+        self.collect(stmt.body)
+
+    def visit_Stmt(self, stmt):
+        pass
 
 
 class Prover:
@@ -104,43 +147,25 @@ class Prover:
         self._counter += 1
         return f"{base}!{self._counter}"
 
-    @staticmethod
-    def _sort(type_):
-        if isinstance(type_, ArrayType):
-            return z3.ArraySort(z3.IntSort(), Prover._sort(type_.elem))
-        if isinstance(type_, BoolType):
-            return z3.BoolSort()
-        if isinstance(type_, IntType):
-            return z3.IntSort()
-        if isinstance(type_, StringType):
-            return z3.StringSort()
-        raise FrmlVerificationError(f"unsupported type {type_}")
-
     def _array_sort(self, elem):
-        return z3.ArraySort(z3.IntSort(), self._sort(elem))
+        return z3.ArraySort(z3.IntSort(), elem.sort())
 
     def _fresh_scalar(self, type_, name):
-        if isinstance(type_, BoolType):
-            return z3.Bool(self._fresh(name))
-        if isinstance(type_, IntType):
-            return z3.Int(self._fresh(name))
-        if isinstance(type_, StringType):
-            return z3.String(self._fresh(name))
-        raise FrmlVerificationError(f"unsupported scalar type {type_}")
+        return type_.fresh(self._fresh(name))
 
     def _fresh_array(self, elem, name):
-        term = z3.Array(self._fresh(name), z3.IntSort(), self._sort(elem))
+        term = z3.Array(self._fresh(name), z3.IntSort(), elem.sort())
         return ArrayVal(term, z3.Int(self._fresh(name + "_len")))
 
     def _fresh_result(self, type_, name):
         """Create a fresh result term for a function's return type."""
-        if isinstance(type_, ArrayType):
+        if type_.is_array():
             return self._fresh_array(type_.elem, name)
         return self._fresh_scalar(type_, name)
 
     def _elem_sort_hint(self, type_):
-        if isinstance(type_, ArrayType):
-            return self._sort(type_.elem)
+        if type_.is_array():
+            return type_.elem.sort()
         return None
 
     # -- obligations --------------------------------------------------------
@@ -155,7 +180,7 @@ class Prover:
         return {
             name
             for name in (written | resized)
-            if any(p.name == name and isinstance(p.type, ArrayType) for p in fn.params)
+            if any(p.name == name and p.type.is_array() for p in fn.params)
         }
 
     def _resized_array_params(self, fn):
@@ -163,47 +188,13 @@ class Prover:
         return {
             name
             for name in resized
-            if any(p.name == name and isinstance(p.type, ArrayType) for p in fn.params)
+            if any(p.name == name and p.type.is_array() for p in fn.params)
         }
 
     def _collect_body_writes(self, stmts):
-        written = set()
-        resized = set()
-        for stmt in stmts:
-            self._collect_writes(stmt, written, resized)
-        return written, resized
-
-    def _collect_writes(self, stmt, written, resized):
-        if isinstance(stmt, ast.StmtArrayAssign):
-            if isinstance(stmt.array, ast.ExprVar):
-                written.add(stmt.array.name)
-            _collect_pop_arrays(stmt.index, resized)
-            _collect_pop_arrays(stmt.value, resized)
-        elif isinstance(stmt, ast.StmtCall):
-            if stmt.name == "push" and isinstance(stmt.args[0], ast.ExprVar):
-                written.add(stmt.args[0].name)
-                resized.add(stmt.args[0].name)
-            for a in stmt.args:
-                _collect_pop_arrays(a, resized)
-        elif isinstance(stmt, ast.StmtLet):
-            _collect_pop_arrays(stmt.init, resized)
-        elif isinstance(stmt, (ast.StmtAssign, ast.StmtReturn, ast.StmtAssert)):
-            _collect_pop_arrays(stmt.expr, resized)
-        elif isinstance(stmt, ast.StmtIf):
-            _collect_pop_arrays(stmt.cond, resized)
-            for s in stmt.then:
-                self._collect_writes(s, written, resized)
-            if stmt.else_:
-                for s in stmt.else_:
-                    self._collect_writes(s, written, resized)
-        elif isinstance(stmt, ast.StmtWhile):
-            _collect_pop_arrays(stmt.cond, resized)
-            for inv in stmt.invariants:
-                _collect_pop_arrays(inv, resized)
-            if stmt.decreases is not None:
-                _collect_pop_arrays(stmt.decreases, resized)
-            for s in stmt.body:
-                self._collect_writes(s, written, resized)
+        collector = _EffectCollector()
+        collector.collect(stmts)
+        return collector.arrays, collector.resized
 
     # -- entry point --------------------------------------------------------
 
@@ -225,7 +216,7 @@ class Prover:
 
         # Entry state: fresh constants for parameters.
         for p in fn.params:
-            if isinstance(p.type, ArrayType):
+            if p.type.is_array():
                 state.arrays[p.name] = self._fresh_array(p.type.elem, p.name)
             else:
                 state.vars[p.name] = self._fresh_scalar(p.type, p.name)
@@ -292,95 +283,92 @@ class Prover:
         return states
 
     def exec_stmt(self, stmt, state):
-        if isinstance(stmt, ast.StmtLet):
-            value, state = self.eval_rhs(
-                stmt.init, state, self._elem_sort_hint(stmt.type)
-            )
-            if isinstance(value, ArrayVal):
-                state.arrays[stmt.name] = value
-            else:
-                state.vars[stmt.name] = value
-            return [state]
+        return stmt.accept(self, state)
 
-        if isinstance(stmt, ast.StmtAssign):
-            value, state = self.eval_rhs(stmt.expr, state)
+    def visit_StmtLet(self, stmt, state):
+        value, state = self.eval_rhs(stmt.init, state, self._elem_sort_hint(stmt.type))
+        if isinstance(value, ArrayVal):
+            state.arrays[stmt.name] = value
+        else:
             state.vars[stmt.name] = value
-            return [state]
+        return [state]
 
-        if isinstance(stmt, ast.StmtArrayAssign):
-            arr = self.eval_expr(stmt.array, state)
-            index = self.eval_expr(stmt.index, state)
-            value = self.eval_expr(stmt.value, state)
-            if not isinstance(arr, ArrayVal):
-                raise FrmlVerificationError(
-                    "array assignment target is not an array", stmt.pos
-                )
-            self._emit(
-                "bounds",
-                f"array index in bounds: 0 <= {self._render(stmt.index)} < length",
-                state.path,
-                z3.And(index >= 0, index < arr.length),
-                stmt.pos,
+    def visit_StmtAssign(self, stmt, state):
+        value, state = self.eval_rhs(stmt.expr, state)
+        state.vars[stmt.name] = value
+        return [state]
+
+    def visit_StmtArrayAssign(self, stmt, state):
+        arr = self.eval_expr(stmt.array, state)
+        index = self.eval_expr(stmt.index, state)
+        value = self.eval_expr(stmt.value, state)
+        if not isinstance(arr, ArrayVal):
+            raise FrmlVerificationError(
+                "array assignment target is not an array", stmt.pos
             )
-            new_arr = ArrayVal(z3.Store(arr.term, index, value), arr.length)
-            target_name = (
-                stmt.array.name if isinstance(stmt.array, ast.ExprVar) else None
-            )
-            if target_name is not None:
-                state.arrays[target_name] = new_arr
+        self._emit(
+            "bounds",
+            f"array index in bounds: 0 <= {self._render(stmt.index)} < length",
+            state.path,
+            z3.And(index >= 0, index < arr.length),
+            stmt.pos,
+        )
+        new_arr = ArrayVal(z3.Store(arr.term, index, value), arr.length)
+        target_name = stmt.array.variable_name()
+        if target_name is not None:
+            state.arrays[target_name] = new_arr
+        return [state]
+
+    def visit_StmtCall(self, stmt, state):
+        if stmt.is_call("push"):
+            return self._exec_push(stmt, state)
+        if stmt.name in BUILTINS:
+            for a in stmt.args:
+                self.eval_expr(a, state)
             return [state]
+        fn = self.functions[stmt.name]
+        arg_vals = [self.eval_expr(a, state) for a in stmt.args]
+        _, state = self.model_call(fn, stmt.args, arg_vals, state, return_result=False)
+        return [state]
 
-        if isinstance(stmt, ast.StmtCall):
-            if stmt.name == "push":
-                return self._exec_push(stmt, state)
-            if stmt.name in BUILTINS:
-                for a in stmt.args:
-                    self.eval_expr(a, state)
-                return [state]
-            fn = self.functions[stmt.name]
-            arg_vals = [self.eval_expr(a, state) for a in stmt.args]
-            _, state = self.model_call(
-                fn, stmt.args, arg_vals, state, return_result=False
-            )
-            return [state]
+    def visit_StmtIf(self, stmt, state):
+        cond, state = self.eval_rhs(stmt.cond, state)
+        then_state = state.copy()
+        then_state.path.append(cond)
+        then_ends = self.exec_block(stmt.then, then_state)
+        ends = list(then_ends)
+        if stmt.else_ is not None:
+            else_state = state.copy()
+            else_state.path.append(z3.Not(cond))
+            ends.extend(self.exec_block(stmt.else_, else_state))
+        else:
+            else_state = state.copy()
+            else_state.path.append(z3.Not(cond))
+            ends.append(else_state)
+        return ends
 
-        if isinstance(stmt, ast.StmtIf):
-            cond, state = self.eval_rhs(stmt.cond, state)
-            then_state = state.copy()
-            then_state.path.append(cond)
-            then_ends = self.exec_block(stmt.then, then_state)
-            ends = list(then_ends)
-            if stmt.else_ is not None:
-                else_state = state.copy()
-                else_state.path.append(z3.Not(cond))
-                ends.extend(self.exec_block(stmt.else_, else_state))
-            else:
-                else_state = state.copy()
-                else_state.path.append(z3.Not(cond))
-                ends.append(else_state)
-            return ends
+    def visit_StmtWhile(self, stmt, state):
+        return self.exec_while(stmt, state)
 
-        if isinstance(stmt, ast.StmtWhile):
-            return self.exec_while(stmt, state)
+    def visit_StmtReturn(self, stmt, state):
+        value, state = self.eval_rhs(stmt.expr, state)
+        assert self.current_fn is not None
+        for ens in self.current_fn.ensures:
+            self.check_postcondition(ens, state, value)
+        return []
 
-        if isinstance(stmt, ast.StmtReturn):
-            value, state = self.eval_rhs(stmt.expr, state)
-            assert self.current_fn is not None
-            for ens in self.current_fn.ensures:
-                self.check_postcondition(ens, state, value)
-            return []
+    def visit_StmtAssert(self, stmt, state):
+        goal, state = self.eval_rhs(stmt.expr, state)
+        self._emit(
+            "assert",
+            f"assert {self._render(stmt.expr)}",
+            state.path,
+            goal,
+            stmt.pos,
+        )
+        return [state]
 
-        if isinstance(stmt, ast.StmtAssert):
-            goal, state = self.eval_rhs(stmt.expr, state)
-            self._emit(
-                "assert",
-                f"assert {self._render(stmt.expr)}",
-                state.path,
-                goal,
-                stmt.pos,
-            )
-            return [state]
-
+    def visit_Stmt(self, stmt, state):
         raise FrmlVerificationError(
             f"unknown statement {type(stmt).__name__}", stmt.pos
         )
@@ -388,11 +376,11 @@ class Prover:
     def eval_rhs(self, expr, state, elem_sort_hint=None):
         """Evaluate a right-hand-side expression, allowing a call with array
         parameters to update the symbolic state (returned alongside the value)."""
-        if isinstance(expr, ast.ExprCall) and expr.name == "pop":
+        if expr.is_call("pop"):
             return self._eval_pop(expr, state)
-        if isinstance(expr, ast.ExprCall) and expr.name in self.functions:
+        if expr.is_call_node() and expr.name in self.functions:
             fn = self.functions[expr.name]
-            if any(isinstance(p.type, ArrayType) for p in fn.params):
+            if any(p.type.is_array() for p in fn.params):
                 arg_vals = [self.eval_expr(a, state) for a in expr.args]
                 return self.model_call(
                     fn, expr.args, arg_vals, state, return_result=True
@@ -470,44 +458,12 @@ class Prover:
         exit_state.path += exit_invs + [z3.Not(exit_cond)]
         return [exit_state]
 
-    def _assigned_names(self, stmts, scalars, arrays, resized):
-        for stmt in stmts:
-            if isinstance(stmt, ast.StmtAssign):
-                scalars.add(stmt.name)
-                _collect_pop_arrays(stmt.expr, resized)
-            elif isinstance(stmt, ast.StmtArrayAssign):
-                if isinstance(stmt.array, ast.ExprVar):
-                    arrays.add(stmt.array.name)
-                _collect_pop_arrays(stmt.index, resized)
-                _collect_pop_arrays(stmt.value, resized)
-            elif isinstance(stmt, ast.StmtCall):
-                if stmt.name == "push" and isinstance(stmt.args[0], ast.ExprVar):
-                    arrays.add(stmt.args[0].name)
-                    resized.add(stmt.args[0].name)
-                for a in stmt.args:
-                    _collect_pop_arrays(a, resized)
-            elif isinstance(stmt, ast.StmtLet):
-                _collect_pop_arrays(stmt.init, resized)
-            elif isinstance(stmt, (ast.StmtReturn, ast.StmtAssert)):
-                _collect_pop_arrays(stmt.expr, resized)
-            elif isinstance(stmt, ast.StmtIf):
-                _collect_pop_arrays(stmt.cond, resized)
-                self._assigned_names(stmt.then, scalars, arrays, resized)
-                if stmt.else_:
-                    self._assigned_names(stmt.else_, scalars, arrays, resized)
-            elif isinstance(stmt, ast.StmtWhile):
-                _collect_pop_arrays(stmt.cond, resized)
-                for inv in stmt.invariants:
-                    _collect_pop_arrays(inv, resized)
-                if stmt.decreases is not None:
-                    _collect_pop_arrays(stmt.decreases, resized)
-                self._assigned_names(stmt.body, scalars, arrays, resized)
-
     def _havoc_loop_vars(self, body, state):
-        scalars = set()
-        arrays = set()
-        resized = set()
-        self._assigned_names(body, scalars, arrays, resized)
+        collector = _EffectCollector()
+        collector.collect(body)
+        scalars = collector.scalars
+        arrays = collector.arrays
+        resized = collector.resized
         arrays |= resized  # resized arrays are also mutated, so havoc their contents
         for name in scalars:
             if name in state.vars:
@@ -552,7 +508,7 @@ class Prover:
         req_state = State()
         req_state.path = []
         for p, val in zip(fn.params, arg_vals):
-            if isinstance(p.type, ArrayType):
+            if p.type.is_array():
                 req_state.arrays[p.name] = val
             else:
                 req_state.vars[p.name] = val
@@ -587,7 +543,7 @@ class Prover:
         post_state.path = []
         resized_lens = []
         for p, val in zip(fn.params, arg_vals):
-            if isinstance(p.type, ArrayType):
+            if p.type.is_array():
                 if p.name in self.written_params.get(fn.name, set()):
                     if p.name in self.resized_params.get(fn.name, set()):
                         arr = self._fresh_array(p.type.elem, p.name + "_post")
@@ -598,7 +554,7 @@ class Prover:
                             z3.Array(
                                 self._fresh(p.name + "_post"),
                                 z3.IntSort(),
-                                self._sort(p.type.elem),
+                                p.type.elem.sort(),
                             ),
                             val.length,
                         )
@@ -624,8 +580,8 @@ class Prover:
         new_state = caller_state.copy()
         new_state.path += assumes
         for arg, p in zip(arg_exprs, fn.params):
-            if isinstance(p.type, ArrayType) and isinstance(arg, ast.ExprVar):
-                new_state.arrays[arg.name] = post_state.arrays[p.name]
+            if p.type.is_array() and arg.variable_name() is not None:
+                new_state.arrays[arg.variable_name()] = post_state.arrays[p.name]
 
         return (result, new_state)
 
@@ -680,7 +636,7 @@ class Prover:
         # Evaluate arguments so any nested proof obligations are still emitted.
         for a in expr.args:
             self.eval_expr(a, state, use_old=use_old, result_term=result_term)
-        if isinstance(builtin.return_type, ArrayType):
+        if builtin.return_type is not None and builtin.return_type.is_array():
             arr = self._fresh_array(builtin.return_type.elem, expr.name)
             if not use_old:
                 state.path.append(arr.length >= 0)
@@ -698,235 +654,264 @@ class Prover:
         result_term=None,
         array_elem_sort=None,
     ):
-        if isinstance(expr, ast.LiteralInt):
-            return z3.IntVal(expr.value)
+        return expr.accept(
+            self,
+            state,
+            use_old=use_old,
+            result_term=result_term,
+            array_elem_sort=array_elem_sort,
+        )
 
-        if isinstance(expr, ast.LiteralBool):
-            return z3.BoolVal(expr.value)
+    def visit_LiteralInt(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        return z3.IntVal(expr.value)
 
-        if isinstance(expr, ast.LiteralString):
-            return z3.StringVal(expr.value)
+    def visit_LiteralBool(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        return z3.BoolVal(expr.value)
 
-        if isinstance(expr, ast.ExprVar):
-            if expr.name == "result":
-                if result_term is None:
-                    raise FrmlVerificationError(
-                        "'result' is only allowed inside an ensures clause",
-                        expr.pos,
-                    )
-                return result_term
-            if use_old:
-                if expr.name in state.old_arrays:
-                    return state.old_arrays[expr.name]
-                if expr.name in state.old_vars:
-                    return state.old_vars[expr.name]
+    def visit_LiteralString(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        return z3.StringVal(expr.value)
+
+    def visit_ExprVar(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        if expr.name == "result":
+            if result_term is None:
                 raise FrmlVerificationError(
-                    f"unknown variable {expr.name!r} in old()", expr.pos
-                )
-            if expr.name in state.arrays:
-                return state.arrays[expr.name]
-            if expr.name in state.vars:
-                return state.vars[expr.name]
-            raise FrmlVerificationError(f"unknown variable {expr.name!r}", expr.pos)
-
-        if isinstance(expr, ast.ExprUnary):
-            v = self.eval_expr(
-                expr.operand, state, use_old=use_old, result_term=result_term
-            )
-            if expr.op == "!":
-                return z3.Not(v)
-            if expr.op == "-":
-                return -v
-            raise FrmlVerificationError(f"unknown unary operator {expr.op!r}", expr.pos)
-
-        if isinstance(expr, ast.ExprStringify):
-            v = self.eval_expr(
-                expr.operand, state, use_old=use_old, result_term=result_term
-            )
-            return self._stringify_term(v)
-
-        if isinstance(expr, ast.ExprBinary):
-            op = expr.op
-            if op in ("and", "or", "=>"):
-                left = self.eval_expr(
-                    expr.left, state, use_old=use_old, result_term=result_term
-                )
-                right = self.eval_expr(
-                    expr.right, state, use_old=use_old, result_term=result_term
-                )
-                if op == "and":
-                    return z3.And(left, right)
-                if op == "or":
-                    return z3.Or(left, right)
-                return z3.Implies(left, right)
-
-            if op == "++":
-                left = self.eval_expr(
-                    expr.left, state, use_old=use_old, result_term=result_term
-                )
-                right = self.eval_expr(
-                    expr.right, state, use_old=use_old, result_term=result_term
-                )
-                return z3.Concat(left, right)
-
-            if op in ("<", "<=", ">", ">=", "+", "-", "*"):
-                left = self.eval_expr(
-                    expr.left, state, use_old=use_old, result_term=result_term
-                )
-                right = self.eval_expr(
-                    expr.right, state, use_old=use_old, result_term=result_term
-                )
-                if op == "<":
-                    return left < right
-                if op == "<=":
-                    return left <= right
-                if op == ">":
-                    return left > right
-                if op == ">=":
-                    return left >= right
-                if op == "+":
-                    return left + right
-                if op == "-":
-                    return left - right
-                return left * right
-
-            if op in ("/", "%"):
-                left = self.eval_expr(
-                    expr.left, state, use_old=use_old, result_term=result_term
-                )
-                right = self.eval_expr(
-                    expr.right, state, use_old=use_old, result_term=result_term
-                )
-                if self._quant_depth == 0 and self._assume_depth == 0:
-                    self._emit(
-                        "division",
-                        f"divisor is non-zero in {self._render(expr)}",
-                        state.path,
-                        right != 0,
-                        expr.pos,
-                    )
-                if op == "/":
-                    return left / right
-                return left % right
-
-            if op in ("==", "!="):
-                left = self.eval_expr(
-                    expr.left, state, use_old=use_old, result_term=result_term
-                )
-                right = self.eval_expr(
-                    expr.right, state, use_old=use_old, result_term=result_term
-                )
-                eq = self._symbolic_eq(left, right)
-                if op == "!=":
-                    eq = z3.Not(eq)
-                return eq
-
-            raise FrmlVerificationError(f"unknown binary operator {op!r}", expr.pos)
-
-        if isinstance(expr, ast.ExprCall):
-            if expr.name == "pop":
-                raise FrmlVerificationError(
-                    "pop is only allowed as the whole right-hand side of a let, "
-                    "return, assignment or assert",
+                    "'result' is only allowed inside an ensures clause",
                     expr.pos,
                 )
-            if expr.name in BUILTINS:
-                return self._eval_builtin_call(expr, state, use_old, result_term)
-            fn = self.functions[expr.name]
-            if any(isinstance(p.type, ArrayType) for p in fn.params):
-                raise FrmlVerificationError(
-                    f"call to {expr.name} with array parameters is only allowed as a "
-                    f"statement or the whole right-hand side of an assignment",
-                    expr.pos,
-                )
-            # Scalar-pure call: prove requires, assume ensures via a fresh result.
-            arg_vals = [
-                self.eval_expr(a, state, use_old=use_old, result_term=result_term)
-                for a in expr.args
-            ]
-            req_state = State()
-            req_state.path = []
-            for p, val in zip(fn.params, arg_vals):
-                req_state.vars[p.name] = val
-            for req in fn.requires:
-                goal = self.eval_expr(req, req_state)
-                self._emit(
-                    "precondition",
-                    f"precondition of {fn.name}: {self._render(req)}",
-                    state.path,
-                    goal,
-                    req.pos,
-                )
-            assert fn.return_type is not None
-            result = self._fresh_result(fn.return_type, fn.name + "_result")
-            ens_state = State()
-            ens_state.path = []
-            ens_state.vars = dict(req_state.vars)
-            ens_state.old_vars = dict(req_state.vars)
-            if isinstance(result, ArrayVal):
-                state.path.append(result.length >= 0)
-            for ens in fn.ensures:
-                state.path.append(
-                    self._eval_assumption(ens, ens_state, result_term=result)
-                )
-            return result
+            return result_term
+        if use_old:
+            if expr.name in state.old_arrays:
+                return state.old_arrays[expr.name]
+            if expr.name in state.old_vars:
+                return state.old_vars[expr.name]
+            raise FrmlVerificationError(
+                f"unknown variable {expr.name!r} in old()", expr.pos
+            )
+        if expr.name in state.arrays:
+            return state.arrays[expr.name]
+        if expr.name in state.vars:
+            return state.vars[expr.name]
+        raise FrmlVerificationError(f"unknown variable {expr.name!r}", expr.pos)
 
-        if isinstance(expr, ast.ExprArrayAccess):
-            arr = self.eval_expr(
-                expr.array, state, use_old=use_old, result_term=result_term
+    def visit_ExprUnary(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        v = self.eval_expr(
+            expr.operand, state, use_old=use_old, result_term=result_term
+        )
+        if expr.op == "!":
+            return z3.Not(v)
+        if expr.op == "-":
+            return -v
+        raise FrmlVerificationError(f"unknown unary operator {expr.op!r}", expr.pos)
+
+    def visit_ExprStringify(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        v = self.eval_expr(
+            expr.operand, state, use_old=use_old, result_term=result_term
+        )
+        return self._stringify_term(v)
+
+    def visit_ExprBinary(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        op = expr.op
+        if op in ("and", "or", "=>"):
+            left = self.eval_expr(
+                expr.left, state, use_old=use_old, result_term=result_term
             )
-            index = self.eval_expr(
-                expr.index, state, use_old=use_old, result_term=result_term
+            right = self.eval_expr(
+                expr.right, state, use_old=use_old, result_term=result_term
             )
-            if not isinstance(arr, ArrayVal):
-                raise FrmlVerificationError(
-                    "array access target is not an array", expr.pos
-                )
+            if op == "and":
+                return z3.And(left, right)
+            if op == "or":
+                return z3.Or(left, right)
+            return z3.Implies(left, right)
+
+        if op == "++":
+            left = self.eval_expr(
+                expr.left, state, use_old=use_old, result_term=result_term
+            )
+            right = self.eval_expr(
+                expr.right, state, use_old=use_old, result_term=result_term
+            )
+            return z3.Concat(left, right)
+
+        if op in ("<", "<=", ">", ">=", "+", "-", "*"):
+            left = self.eval_expr(
+                expr.left, state, use_old=use_old, result_term=result_term
+            )
+            right = self.eval_expr(
+                expr.right, state, use_old=use_old, result_term=result_term
+            )
+            if op == "<":
+                return left < right
+            if op == "<=":
+                return left <= right
+            if op == ">":
+                return left > right
+            if op == ">=":
+                return left >= right
+            if op == "+":
+                return left + right
+            if op == "-":
+                return left - right
+            return left * right
+
+        if op in ("/", "%"):
+            left = self.eval_expr(
+                expr.left, state, use_old=use_old, result_term=result_term
+            )
+            right = self.eval_expr(
+                expr.right, state, use_old=use_old, result_term=result_term
+            )
             if self._quant_depth == 0 and self._assume_depth == 0:
                 self._emit(
-                    "bounds",
-                    f"array index in bounds: 0 <= {self._render(expr.index)} < length",
+                    "division",
+                    f"divisor is non-zero in {self._render(expr)}",
                     state.path,
-                    z3.And(index >= 0, index < arr.length),
+                    right != 0,
                     expr.pos,
                 )
-            return z3.Select(arr.term, index)
+            if op == "/":
+                return left / right
+            return left % right
 
-        if isinstance(expr, ast.ExprArrayLiteral):
-            if expr.elements:
-                elems = [
-                    self.eval_expr(e, state, use_old=use_old, result_term=result_term)
-                    for e in expr.elements
-                ]
-                elem_sort = elems[0].sort()
-                arr = z3.Array(self._fresh("array_lit"), z3.IntSort(), elem_sort)
-                for i, e in enumerate(elems):
-                    arr = z3.Store(arr, i, e)
-                return ArrayVal(arr, z3.IntVal(len(elems)))
-            if array_elem_sort is None:
-                raise FrmlVerificationError(
-                    "cannot infer the element sort of an empty array literal",
-                    expr.pos,
-                )
-            arr = z3.Array(self._fresh("array_lit"), z3.IntSort(), array_elem_sort)
-            return ArrayVal(arr, z3.IntVal(0))
-
-        if isinstance(expr, ast.ExprLength):
-            arr = self.eval_expr(
-                expr.arg, state, use_old=use_old, result_term=result_term
+        if op in ("==", "!="):
+            left = self.eval_expr(
+                expr.left, state, use_old=use_old, result_term=result_term
             )
-            if not isinstance(arr, ArrayVal):
-                raise FrmlVerificationError("length expects an array", expr.pos)
-            return arr.length
-
-        if isinstance(expr, ast.ExprOld):
-            return self.eval_expr(
-                expr.arg, state, use_old=True, result_term=result_term
+            right = self.eval_expr(
+                expr.right, state, use_old=use_old, result_term=result_term
             )
+            eq = self._symbolic_eq(left, right)
+            if op == "!=":
+                eq = z3.Not(eq)
+            return eq
 
-        if isinstance(expr, ast.ExprQuantifier):
-            return self._eval_quantifier(expr, state, use_old, result_term)
+        raise FrmlVerificationError(f"unknown binary operator {op!r}", expr.pos)
 
+    def visit_ExprCall(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        if expr.name == "pop":
+            raise FrmlVerificationError(
+                "pop is only allowed as the whole right-hand side of a let, "
+                "return, assignment or assert",
+                expr.pos,
+            )
+        if expr.name in BUILTINS:
+            return self._eval_builtin_call(expr, state, use_old, result_term)
+        fn = self.functions[expr.name]
+        if any(p.type.is_array() for p in fn.params):
+            raise FrmlVerificationError(
+                f"call to {expr.name} with array parameters is only allowed as a "
+                f"statement or the whole right-hand side of an assignment",
+                expr.pos,
+            )
+        # Scalar-pure call: prove requires, assume ensures via a fresh result.
+        arg_vals = [
+            self.eval_expr(a, state, use_old=use_old, result_term=result_term)
+            for a in expr.args
+        ]
+        req_state = State()
+        req_state.path = []
+        for p, val in zip(fn.params, arg_vals):
+            req_state.vars[p.name] = val
+        for req in fn.requires:
+            goal = self.eval_expr(req, req_state)
+            self._emit(
+                "precondition",
+                f"precondition of {fn.name}: {self._render(req)}",
+                state.path,
+                goal,
+                req.pos,
+            )
+        assert fn.return_type is not None
+        result = self._fresh_result(fn.return_type, fn.name + "_result")
+        ens_state = State()
+        ens_state.path = []
+        ens_state.vars = dict(req_state.vars)
+        ens_state.old_vars = dict(req_state.vars)
+        if isinstance(result, ArrayVal):
+            state.path.append(result.length >= 0)
+        for ens in fn.ensures:
+            state.path.append(self._eval_assumption(ens, ens_state, result_term=result))
+        return result
+
+    def visit_ExprArrayAccess(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        arr = self.eval_expr(
+            expr.array, state, use_old=use_old, result_term=result_term
+        )
+        index = self.eval_expr(
+            expr.index, state, use_old=use_old, result_term=result_term
+        )
+        if not isinstance(arr, ArrayVal):
+            raise FrmlVerificationError("array access target is not an array", expr.pos)
+        if self._quant_depth == 0 and self._assume_depth == 0:
+            self._emit(
+                "bounds",
+                f"array index in bounds: 0 <= {self._render(expr.index)} < length",
+                state.path,
+                z3.And(index >= 0, index < arr.length),
+                expr.pos,
+            )
+        return z3.Select(arr.term, index)
+
+    def visit_ExprArrayLiteral(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        if expr.elements:
+            elems = [
+                self.eval_expr(e, state, use_old=use_old, result_term=result_term)
+                for e in expr.elements
+            ]
+            elem_sort = elems[0].sort()
+            arr = z3.Array(self._fresh("array_lit"), z3.IntSort(), elem_sort)
+            for i, e in enumerate(elems):
+                arr = z3.Store(arr, i, e)
+            return ArrayVal(arr, z3.IntVal(len(elems)))
+        if array_elem_sort is None:
+            raise FrmlVerificationError(
+                "cannot infer the element sort of an empty array literal",
+                expr.pos,
+            )
+        arr = z3.Array(self._fresh("array_lit"), z3.IntSort(), array_elem_sort)
+        return ArrayVal(arr, z3.IntVal(0))
+
+    def visit_ExprLength(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        arr = self.eval_expr(expr.arg, state, use_old=use_old, result_term=result_term)
+        if not isinstance(arr, ArrayVal):
+            raise FrmlVerificationError("length expects an array", expr.pos)
+        return arr.length
+
+    def visit_ExprOld(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        return self.eval_expr(expr.arg, state, use_old=True, result_term=result_term)
+
+    def visit_ExprQuantifier(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        return self._eval_quantifier(expr, state, use_old, result_term)
+
+    def visit_Expr(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
         raise FrmlVerificationError(
             f"unknown expression {type(expr).__name__}", expr.pos
         )
@@ -957,11 +942,7 @@ class Prover:
         return left == right
 
     def _eval_quantifier(self, expr, state, use_old, result_term):
-        var = (
-            z3.Int(self._fresh(expr.var_name))
-            if isinstance(expr.var_type, IntType)
-            else z3.Bool(self._fresh(expr.var_name))
-        )
+        var = expr.var_type.fresh(self._fresh(expr.var_name))
         inner = State()
         inner.vars = dict(state.vars)
         inner.arrays = dict(state.arrays)

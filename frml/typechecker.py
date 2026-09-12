@@ -1,9 +1,8 @@
 """Static type checking and name resolution for Frml."""
 
-from . import ast_nodes as ast
 from .builtins import BUILTINS
 from .errors import FrmlNameError, FrmlTypeError
-from .types import BOOL, INT, STRING, ArrayType, BoolType, IntType, StringType
+from .types import BOOL, INT, STRING, ArrayType
 
 
 class TypeChecker:
@@ -107,96 +106,89 @@ class TypeChecker:
     # -- statements ---------------------------------------------------------
 
     def check_stmt(self, stmt, ret):
-        if isinstance(stmt, ast.StmtLet):
-            if isinstance(stmt.type, ArrayType) and not (
-                isinstance(stmt.init, ast.ExprArrayLiteral)
-                or self._is_array_valued_call(stmt.init)
-            ):
-                raise FrmlTypeError(
-                    "array-to-array assignment is not supported (arrays are references); "
-                    "initialize an array with an array literal",
-                    stmt.pos,
-                )
-            self.check_expr(
-                stmt.init, expected=stmt.type, allow_old=False, result_type=None
+        return stmt.accept(self, ret)
+
+    def visit_StmtLet(self, stmt, ret):
+        if stmt.type.is_array() and not (
+            stmt.init.is_array_literal() or self._is_array_valued_call(stmt.init)
+        ):
+            raise FrmlTypeError(
+                "array-to-array assignment is not supported (arrays are references); "
+                "initialize an array with an array literal",
+                stmt.pos,
             )
-            self.declare(stmt.name, stmt.type, stmt.pos)
+        self.check_expr(
+            stmt.init, expected=stmt.type, allow_old=False, result_type=None
+        )
+        self.declare(stmt.name, stmt.type, stmt.pos)
 
-        elif isinstance(stmt, ast.StmtAssign):
-            var_type = self.lookup(stmt.name)
-            if var_type is None:
-                raise FrmlNameError(f"unknown variable {stmt.name!r}", stmt.pos)
-            if isinstance(var_type, ArrayType):
-                raise FrmlTypeError(
-                    "array-to-array assignment is not supported (arrays are references)",
-                    stmt.pos,
-                )
-            self.check_expr(
-                stmt.expr, expected=var_type, allow_old=False, result_type=None
+    def visit_StmtAssign(self, stmt, ret):
+        var_type = self.lookup(stmt.name)
+        if var_type is None:
+            raise FrmlNameError(f"unknown variable {stmt.name!r}", stmt.pos)
+        if var_type.is_array():
+            raise FrmlTypeError(
+                "array-to-array assignment is not supported (arrays are references)",
+                stmt.pos,
             )
+        self.check_expr(stmt.expr, expected=var_type, allow_old=False, result_type=None)
 
-        elif isinstance(stmt, ast.StmtArrayAssign):
-            arr_type = self.check_expr(stmt.array, allow_old=False, result_type=None)
-            if not isinstance(arr_type, ArrayType):
-                raise FrmlTypeError(f"expected an array but found {arr_type}", stmt.pos)
-            self.check_expr(stmt.index, expected=INT, allow_old=False, result_type=None)
-            self.check_expr(
-                stmt.value, expected=arr_type.elem, allow_old=False, result_type=None
-            )
+    def visit_StmtArrayAssign(self, stmt, ret):
+        arr_type = self.check_expr(stmt.array, allow_old=False, result_type=None)
+        if not arr_type.is_array():
+            raise FrmlTypeError(f"expected an array but found {arr_type}", stmt.pos)
+        self.check_expr(stmt.index, expected=INT, allow_old=False, result_type=None)
+        self.check_expr(
+            stmt.value, expected=arr_type.elem, allow_old=False, result_type=None
+        )
 
-        elif isinstance(stmt, ast.StmtCall):
-            self.check_call(stmt.name, stmt.args, stmt.pos, require_void=True)
+    def visit_StmtCall(self, stmt, ret):
+        self.check_call(stmt.name, stmt.args, stmt.pos, require_void=True)
 
-        elif isinstance(stmt, ast.StmtIf):
-            self.check_expr(stmt.cond, expected=BOOL, allow_old=False, result_type=None)
+    def visit_StmtIf(self, stmt, ret):
+        self.check_expr(stmt.cond, expected=BOOL, allow_old=False, result_type=None)
+        self.push_scope()
+        for s in stmt.then:
+            self.check_stmt(s, ret)
+        self.pop_scope()
+        if stmt.else_ is not None:
             self.push_scope()
-            for s in stmt.then:
-                self.check_stmt(s, ret)
-            self.pop_scope()
-            if stmt.else_ is not None:
-                self.push_scope()
-                for s in stmt.else_:
-                    self.check_stmt(s, ret)
-                self.pop_scope()
-
-        elif isinstance(stmt, ast.StmtWhile):
-            self.check_expr(stmt.cond, expected=BOOL, allow_old=False, result_type=None)
-            self.in_spec = True
-            try:
-                for inv in stmt.invariants:
-                    self.check_expr(
-                        inv, expected=BOOL, allow_old=False, result_type=None
-                    )
-                if stmt.decreases is not None:
-                    self.check_expr(
-                        stmt.decreases, expected=INT, allow_old=False, result_type=None
-                    )
-            finally:
-                self.in_spec = False
-            self.push_scope()
-            for s in stmt.body:
+            for s in stmt.else_:
                 self.check_stmt(s, ret)
             self.pop_scope()
 
-        elif isinstance(stmt, ast.StmtReturn):
-            if ret is None:
-                raise FrmlTypeError("a procedure cannot return a value", stmt.pos)
-            if (
-                isinstance(ret, ArrayType)
-                and isinstance(stmt.expr, ast.ExprVar)
-                and stmt.expr.name in self.current_params
-            ):
-                raise FrmlTypeError(
-                    "cannot return an array parameter (arrays are references)",
-                    stmt.pos,
+    def visit_StmtWhile(self, stmt, ret):
+        self.check_expr(stmt.cond, expected=BOOL, allow_old=False, result_type=None)
+        self.in_spec = True
+        try:
+            for inv in stmt.invariants:
+                self.check_expr(inv, expected=BOOL, allow_old=False, result_type=None)
+            if stmt.decreases is not None:
+                self.check_expr(
+                    stmt.decreases, expected=INT, allow_old=False, result_type=None
                 )
-            self.check_expr(stmt.expr, expected=ret, allow_old=False, result_type=None)
+        finally:
+            self.in_spec = False
+        self.push_scope()
+        for s in stmt.body:
+            self.check_stmt(s, ret)
+        self.pop_scope()
 
-        elif isinstance(stmt, ast.StmtAssert):
-            self.check_expr(stmt.expr, expected=BOOL, allow_old=False, result_type=None)
+    def visit_StmtReturn(self, stmt, ret):
+        if ret is None:
+            raise FrmlTypeError("a procedure cannot return a value", stmt.pos)
+        if ret.is_array() and stmt.expr.variable_name() in self.current_params:
+            raise FrmlTypeError(
+                "cannot return an array parameter (arrays are references)",
+                stmt.pos,
+            )
+        self.check_expr(stmt.expr, expected=ret, allow_old=False, result_type=None)
 
-        else:  # pragma: no cover - defensive
-            raise FrmlTypeError(f"unknown statement {type(stmt).__name__}", stmt.pos)
+    def visit_StmtAssert(self, stmt, ret):
+        self.check_expr(stmt.expr, expected=BOOL, allow_old=False, result_type=None)
+
+    def visit_Stmt(self, stmt, ret):
+        raise FrmlTypeError(f"unknown statement {type(stmt).__name__}", stmt.pos)
 
     def check_call(
         self,
@@ -258,13 +250,13 @@ class TypeChecker:
                     f"built-in function 'push' expects 2 arguments but got {len(args)}",
                     pos,
                 )
-            if not isinstance(args[0], ast.ExprVar):
+            if args[0].variable_name() is None:
                 raise FrmlTypeError(
                     "push expects an array variable as its first argument",
                     args[0].pos,
                 )
             arr_type = self._check(args[0], None, allow_old=False, result_type=None)
-            if not isinstance(arr_type, ArrayType):
+            if not arr_type.is_array():
                 raise FrmlTypeError(
                     f"push expects an array but found {arr_type}",
                     args[0].pos,
@@ -280,13 +272,13 @@ class TypeChecker:
                     f"built-in function 'pop' expects 1 argument but got {len(args)}",
                     pos,
                 )
-            if not isinstance(args[0], ast.ExprVar):
+            if args[0].variable_name() is None:
                 raise FrmlTypeError(
                     "pop expects an array variable as its argument",
                     args[0].pos,
                 )
             arr_type = self._check(args[0], None, allow_old=False, result_type=None)
-            if not isinstance(arr_type, ArrayType):
+            if not arr_type.is_array():
                 raise FrmlTypeError(
                     f"pop expects an array but found {arr_type}",
                     args[0].pos,
@@ -305,13 +297,15 @@ class TypeChecker:
 
     def _is_array_valued_call(self, expr):
         """True when `expr` is a call that returns an array."""
-        if not isinstance(expr, ast.ExprCall):
+        if not expr.is_call_node():
             return False
         builtin = BUILTINS.get(expr.name)
         if builtin is not None:
-            return isinstance(builtin.return_type, ArrayType)
+            return builtin.return_type is not None and builtin.return_type.is_array()
         fn = self.functions.get(expr.name)
-        return fn is not None and isinstance(fn.return_type, ArrayType)
+        return (
+            fn is not None and fn.return_type is not None and fn.return_type.is_array()
+        )
 
     # -- expressions --------------------------------------------------------
 
@@ -327,198 +321,188 @@ class TypeChecker:
             raise FrmlTypeError(f"expected {expected} but found {actual}", expr.pos)
         return actual
 
-    def _check(
-        self,
-        expr,
-        expected,
-        allow_old,
-        result_type,
-    ):
-        if isinstance(expr, ast.LiteralInt):
-            return INT
+    def _check(self, expr, expected, allow_old, result_type):
+        return expr.accept(self, expected, allow_old, result_type)
 
-        if isinstance(expr, ast.LiteralBool):
+    def visit_LiteralInt(self, expr, expected, allow_old, result_type):
+        return INT
+
+    def visit_LiteralBool(self, expr, expected, allow_old, result_type):
+        return BOOL
+
+    def visit_LiteralString(self, expr, expected, allow_old, result_type):
+        return STRING
+
+    def visit_ExprVar(self, expr, expected, allow_old, result_type):
+        if expr.name == "result":
+            if result_type is None:
+                raise FrmlTypeError(
+                    "'result' is only allowed inside an ensures clause",
+                    expr.pos,
+                )
+            return result_type
+        t = self.lookup(expr.name)
+        if t is None:
+            raise FrmlNameError(f"unknown variable {expr.name!r}", expr.pos)
+        return t
+
+    def visit_ExprUnary(self, expr, expected, allow_old, result_type):
+        t = self._check(expr.operand, None, allow_old, result_type)
+        if expr.op == "!":
+            if t != BOOL:
+                raise FrmlTypeError(
+                    f"operator '!' expects Bool but found {t}", expr.pos
+                )
+            return BOOL
+        if expr.op == "-":
+            if t != INT:
+                raise FrmlTypeError(f"unary '-' expects Int but found {t}", expr.pos)
+            return INT
+        raise FrmlTypeError(f"unknown unary operator {expr.op!r}", expr.pos)
+
+    def visit_ExprStringify(self, expr, expected, allow_old, result_type):
+        t = self._check(expr.operand, None, allow_old, result_type)
+        if not t.is_scalar():
+            raise FrmlTypeError(f"backtick cannot convert {t} to a string", expr.pos)
+        return STRING
+
+    def visit_ExprBinary(self, expr, expected, allow_old, result_type):
+        op = expr.op
+        if op in ("and", "or", "=>"):
+            lt = self._check(expr.left, None, allow_old, result_type)
+            rt = self._check(expr.right, None, allow_old, result_type)
+            if lt != BOOL or rt != BOOL:
+                raise FrmlTypeError(
+                    f"operator {op!r} expects Bool operands but found {lt} and {rt}",
+                    expr.pos,
+                )
             return BOOL
 
-        if isinstance(expr, ast.LiteralString):
-            return STRING
-
-        if isinstance(expr, ast.ExprVar):
-            if expr.name == "result":
-                if result_type is None:
-                    raise FrmlTypeError(
-                        "'result' is only allowed inside an ensures clause",
-                        expr.pos,
-                    )
-                return result_type
-            t = self.lookup(expr.name)
-            if t is None:
-                raise FrmlNameError(f"unknown variable {expr.name!r}", expr.pos)
-            return t
-
-        if isinstance(expr, ast.ExprUnary):
-            t = self._check(expr.operand, None, allow_old, result_type)
-            if expr.op == "!":
-                if t != BOOL:
-                    raise FrmlTypeError(
-                        f"operator '!' expects Bool but found {t}", expr.pos
-                    )
-                return BOOL
-            if expr.op == "-":
-                if t != INT:
-                    raise FrmlTypeError(
-                        f"unary '-' expects Int but found {t}", expr.pos
-                    )
-                return INT
-            raise FrmlTypeError(f"unknown unary operator {expr.op!r}", expr.pos)
-
-        if isinstance(expr, ast.ExprStringify):
-            t = self._check(expr.operand, None, allow_old, result_type)
-            if not isinstance(t, (IntType, BoolType, StringType)):
+        if op == "++":
+            lt = self._check(expr.left, None, allow_old, result_type)
+            rt = self._check(expr.right, None, allow_old, result_type)
+            if lt != STRING or rt != STRING:
                 raise FrmlTypeError(
-                    f"backtick cannot convert {t} to a string", expr.pos
+                    f"operator '++' expects String operands but found {lt} and {rt}",
+                    expr.pos,
                 )
             return STRING
 
-        if isinstance(expr, ast.ExprBinary):
-            op = expr.op
-            if op in ("and", "or", "=>"):
-                lt = self._check(expr.left, None, allow_old, result_type)
-                rt = self._check(expr.right, None, allow_old, result_type)
-                if lt != BOOL or rt != BOOL:
-                    raise FrmlTypeError(
-                        f"operator {op!r} expects Bool operands but found {lt} and {rt}",
-                        expr.pos,
-                    )
-                return BOOL
-
-            if op == "++":
-                lt = self._check(expr.left, None, allow_old, result_type)
-                rt = self._check(expr.right, None, allow_old, result_type)
-                if lt != STRING or rt != STRING:
-                    raise FrmlTypeError(
-                        f"operator '++' expects String operands but found {lt} and {rt}",
-                        expr.pos,
-                    )
-                return STRING
-
-            if op in ("==", "!="):
-                lt = self._check(expr.left, None, allow_old, result_type)
-                rt = self._check(expr.right, None, allow_old, result_type)
-                if lt != rt:
-                    raise FrmlTypeError(
-                        f"operator {op!r} requires operands of the same type but found {lt} and {rt}",
-                        expr.pos,
-                    )
-                return BOOL
-
-            if op in ("<", "<=", ">", ">="):
-                lt = self._check(expr.left, None, allow_old, result_type)
-                rt = self._check(expr.right, None, allow_old, result_type)
-                if lt != INT or rt != INT:
-                    raise FrmlTypeError(
-                        f"operator {op!r} expects Int operands but found {lt} and {rt}",
-                        expr.pos,
-                    )
-                return BOOL
-
-            if op in ("+", "-", "*", "/", "%"):
-                lt = self._check(expr.left, None, allow_old, result_type)
-                rt = self._check(expr.right, None, allow_old, result_type)
-                if lt != INT or rt != INT:
-                    raise FrmlTypeError(
-                        f"operator {op!r} expects Int operands but found {lt} and {rt}",
-                        expr.pos,
-                    )
-                return INT
-
-            raise FrmlTypeError(f"unknown binary operator {op!r}", expr.pos)
-
-        if isinstance(expr, ast.ExprCall):
-            t = self.check_call(expr.name, expr.args, expr.pos, require_void=False)
-            if t is None:
+        if op in ("==", "!="):
+            lt = self._check(expr.left, None, allow_old, result_type)
+            rt = self._check(expr.right, None, allow_old, result_type)
+            if lt != rt:
                 raise FrmlTypeError(
-                    f"procedure {expr.name!r} cannot be used inside an expression",
+                    f"operator {op!r} requires operands of the same type but found {lt} and {rt}",
                     expr.pos,
                 )
-            return t
+            return BOOL
 
-        if isinstance(expr, ast.ExprArrayAccess):
-            arr = self._check(expr.array, None, allow_old, result_type)
-            if not isinstance(arr, ArrayType):
+        if op in ("<", "<=", ">", ">="):
+            lt = self._check(expr.left, None, allow_old, result_type)
+            rt = self._check(expr.right, None, allow_old, result_type)
+            if lt != INT or rt != INT:
                 raise FrmlTypeError(
-                    f"array access expects an array but found {arr}",
+                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
                     expr.pos,
                 )
-            idx = self._check(expr.index, None, allow_old, result_type)
-            if idx != INT:
-                raise FrmlTypeError("array index must have type Int", expr.pos)
-            return arr.elem
+            return BOOL
 
-        if isinstance(expr, ast.ExprArrayLiteral):
-            if not expr.elements:
-                if isinstance(expected, ArrayType):
-                    return expected
+        if op in ("+", "-", "*", "/", "%"):
+            lt = self._check(expr.left, None, allow_old, result_type)
+            rt = self._check(expr.right, None, allow_old, result_type)
+            if lt != INT or rt != INT:
                 raise FrmlTypeError(
-                    "cannot infer the type of an empty array literal",
+                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
                     expr.pos,
-                )
-            elem_type = self._check(expr.elements[0], None, allow_old, result_type)
-            if not isinstance(elem_type, (IntType, BoolType, StringType)):
-                raise FrmlTypeError(
-                    f"array elements must be Int, Bool or String but found {elem_type}",
-                    expr.pos,
-                )
-            for e in expr.elements[1:]:
-                if self._check(e, None, allow_old, result_type) != elem_type:
-                    raise FrmlTypeError(
-                        "all elements of an array literal must have the same type",
-                        expr.pos,
-                    )
-            return ArrayType(elem_type)
-
-        if isinstance(expr, ast.ExprLength):
-            arg = self._check(expr.arg, None, allow_old, result_type)
-            if not isinstance(arg, ArrayType):
-                raise FrmlTypeError(
-                    f"length expects an array but found {arg}", expr.pos
                 )
             return INT
 
-        if isinstance(expr, ast.ExprOld):
-            if not allow_old:
+        raise FrmlTypeError(f"unknown binary operator {op!r}", expr.pos)
+
+    def visit_ExprCall(self, expr, expected, allow_old, result_type):
+        t = self.check_call(expr.name, expr.args, expr.pos, require_void=False)
+        if t is None:
+            raise FrmlTypeError(
+                f"procedure {expr.name!r} cannot be used inside an expression",
+                expr.pos,
+            )
+        return t
+
+    def visit_ExprArrayAccess(self, expr, expected, allow_old, result_type):
+        arr = self._check(expr.array, None, allow_old, result_type)
+        if not arr.is_array():
+            raise FrmlTypeError(
+                f"array access expects an array but found {arr}",
+                expr.pos,
+            )
+        idx = self._check(expr.index, None, allow_old, result_type)
+        if idx != INT:
+            raise FrmlTypeError("array index must have type Int", expr.pos)
+        return arr.elem
+
+    def visit_ExprArrayLiteral(self, expr, expected, allow_old, result_type):
+        if not expr.elements:
+            if expected is not None and expected.is_array():
+                return expected
+            raise FrmlTypeError(
+                "cannot infer the type of an empty array literal",
+                expr.pos,
+            )
+        elem_type = self._check(expr.elements[0], None, allow_old, result_type)
+        if not elem_type.is_scalar():
+            raise FrmlTypeError(
+                f"array elements must be Int, Bool or String but found {elem_type}",
+                expr.pos,
+            )
+        for e in expr.elements[1:]:
+            if self._check(e, None, allow_old, result_type) != elem_type:
                 raise FrmlTypeError(
-                    "'old' is only allowed inside an ensures clause",
+                    "all elements of an array literal must have the same type",
                     expr.pos,
                 )
-            return self._check(expr.arg, None, allow_old=False, result_type=result_type)
+        return ArrayType(elem_type)
 
-        if isinstance(expr, ast.ExprQuantifier):
-            if not isinstance(expr.var_type, (IntType, BoolType)):
-                raise FrmlTypeError(
-                    "quantified variables must have type Int or Bool",
-                    expr.pos,
-                )
-            self.scopes.append({expr.var_name: expr.var_type})
-            try:
-                body = self._check(expr.body, None, allow_old, result_type)
-            finally:
-                self.scopes.pop()
-            if body != BOOL:
-                raise FrmlTypeError("quantifier body must have type Bool", expr.pos)
-            return BOOL
+    def visit_ExprLength(self, expr, expected, allow_old, result_type):
+        arg = self._check(expr.arg, None, allow_old, result_type)
+        if not arg.is_array():
+            raise FrmlTypeError(f"length expects an array but found {arg}", expr.pos)
+        return INT
 
+    def visit_ExprOld(self, expr, expected, allow_old, result_type):
+        if not allow_old:
+            raise FrmlTypeError(
+                "'old' is only allowed inside an ensures clause",
+                expr.pos,
+            )
+        return self._check(expr.arg, None, allow_old=False, result_type=result_type)
+
+    def visit_ExprQuantifier(self, expr, expected, allow_old, result_type):
+        if not expr.var_type.is_int_or_bool():
+            raise FrmlTypeError(
+                "quantified variables must have type Int or Bool",
+                expr.pos,
+            )
+        self.scopes.append({expr.var_name: expr.var_type})
+        try:
+            body = self._check(expr.body, None, allow_old, result_type)
+        finally:
+            self.scopes.pop()
+        if body != BOOL:
+            raise FrmlTypeError("quantifier body must have type Bool", expr.pos)
+        return BOOL
+
+    def visit_Expr(self, expr, expected, allow_old, result_type):
         raise FrmlTypeError(f"unknown expression {type(expr).__name__}", expr.pos)
 
 
 def definitely_returns(stmts):
     """Return True when every control-flow path through `stmts` returns."""
     for stmt in stmts:
-        if isinstance(stmt, ast.StmtReturn):
+        if stmt.is_return():
             return True
         if (
-            isinstance(stmt, ast.StmtIf)
-            and stmt.else_ is not None
+            stmt.is_if_with_else()
             and definitely_returns(stmt.then)
             and definitely_returns(stmt.else_)
         ):
@@ -531,75 +515,12 @@ def definitely_returns(stmts):
 def calls_itself(fn):
     """True when `fn` directly (self-)recursively calls itself."""
 
-    def walk_expr(expr):
-        if isinstance(expr, ast.ExprCall) and (expr.name == fn.name):
+    def walk(node):
+        if node.is_call(fn.name):
             return True
-        for child in _expr_children(expr):
-            if walk_expr(child):
+        for child in node.children():
+            if walk(child):
                 return True
         return False
 
-    def walk_stmt(stmt):
-        if isinstance(stmt, ast.StmtCall) and stmt.name == fn.name:
-            return True
-        for child in _stmt_exprs(stmt):
-            if walk_expr(child):
-                return True
-        for child in _stmt_stmts(stmt):
-            if walk_stmt(child):
-                return True
-        return False
-
-    return any(walk_stmt(s) for s in fn.body)
-
-
-def _expr_children(expr):
-    if isinstance(expr, ast.ExprUnary):
-        return [expr.operand]
-    if isinstance(expr, ast.ExprBinary):
-        return [expr.left, expr.right]
-    if isinstance(expr, ast.ExprCall):
-        return list(expr.args)
-    if isinstance(expr, ast.ExprArrayAccess):
-        return [expr.array, expr.index]
-    if isinstance(expr, ast.ExprArrayLiteral):
-        return list(expr.elements)
-    if isinstance(expr, ast.ExprLength):
-        return [expr.arg]
-    if isinstance(expr, ast.ExprOld):
-        return [expr.arg]
-    if isinstance(expr, ast.ExprQuantifier):
-        return [expr.body]
-    return []
-
-
-def _stmt_exprs(stmt):
-    if isinstance(stmt, ast.StmtLet):
-        return [stmt.init]
-    if isinstance(stmt, ast.StmtAssign):
-        return [stmt.expr]
-    if isinstance(stmt, ast.StmtArrayAssign):
-        return [stmt.array, stmt.index, stmt.value]
-    if isinstance(stmt, ast.StmtCall):
-        return list(stmt.args)
-    if isinstance(stmt, ast.StmtIf):
-        return [stmt.cond]
-    if isinstance(stmt, ast.StmtWhile):
-        return (
-            [stmt.cond]
-            + list(stmt.invariants)
-            + ([stmt.decreases] if stmt.decreases else [])
-        )
-    if isinstance(stmt, ast.StmtReturn):
-        return [stmt.expr]
-    if isinstance(stmt, ast.StmtAssert):
-        return [stmt.expr]
-    return []
-
-
-def _stmt_stmts(stmt):
-    if isinstance(stmt, ast.StmtIf):
-        return list(stmt.then) + (list(stmt.else_) if stmt.else_ else [])
-    if isinstance(stmt, ast.StmtWhile):
-        return list(stmt.body)
-    return []
+    return any(walk(s) for s in fn.body)

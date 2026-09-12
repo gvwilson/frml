@@ -8,7 +8,7 @@ such as `0 <= i and i < length(a) => a[i] >= 0` parse naturally.
 from . import ast_nodes as ast
 from .errors import FrmlSyntaxError
 from .lexer import tokenize
-from .types import BOOL, INT, STRING, ArrayType, BoolType, IntType, StringType
+from .types import BOOL, INT, STRING, ArrayType
 
 
 class Parser:
@@ -121,7 +121,7 @@ class Parser:
             self.expect("<")
             elem = self.parse_type()
             self.expect(">")
-            if not isinstance(elem, (IntType, BoolType, StringType)):
+            if not elem.is_scalar():
                 raise FrmlSyntaxError(
                     "array element type must be Int, Bool or String (nested arrays are not allowed)",
                     tok.pos,
@@ -317,14 +317,15 @@ class Parser:
         expr = self.parse_primary()
         while True:
             if self.check("("):
-                if not isinstance(expr, ast.ExprVar):
+                name = expr.variable_name()
+                if name is None:
                     raise FrmlSyntaxError(
                         "only named functions can be called",
                         self.peek().pos,
                     )
                 self.advance()  # (
                 args = self.parse_args()
-                expr = ast.ExprCall(expr.name, args, expr.pos)
+                expr = ast.ExprCall(name, args, expr.pos)
             elif self.check("["):
                 tok = self.advance()  # [
                 index = self.parse_expr()
@@ -401,30 +402,4 @@ def parse(source):
 
 def _render_expr(expr):
     """Best-effort rendering of an expression for error messages."""
-    if isinstance(expr, ast.LiteralInt):
-        return str(expr.value)
-    if isinstance(expr, ast.LiteralBool):
-        return "true" if expr.value else "false"
-    if isinstance(expr, ast.LiteralString):
-        return '"' + expr.value + '"'
-    if isinstance(expr, ast.ExprStringify):
-        return f"`{_render_expr(expr.operand)}"
-    if isinstance(expr, ast.ExprVar):
-        return expr.name
-    if isinstance(expr, ast.ExprUnary):
-        return f"({expr.op}{_render_expr(expr.operand)})"
-    if isinstance(expr, ast.ExprBinary):
-        return f"({_render_expr(expr.left)} {expr.op} {_render_expr(expr.right)})"
-    if isinstance(expr, ast.ExprCall):
-        return f"{expr.name}({', '.join(_render_expr(a) for a in expr.args)})"
-    if isinstance(expr, ast.ExprArrayAccess):
-        return f"{_render_expr(expr.array)}[{_render_expr(expr.index)}]"
-    if isinstance(expr, ast.ExprArrayLiteral):
-        return "[" + ", ".join(_render_expr(e) for e in expr.elements) + "]"
-    if isinstance(expr, ast.ExprLength):
-        return f"length({_render_expr(expr.arg)})"
-    if isinstance(expr, ast.ExprOld):
-        return f"old({_render_expr(expr.arg)})"
-    if isinstance(expr, ast.ExprQuantifier):
-        return f"({expr.quant} {expr.var_name}: {expr.var_type} :: {_render_expr(expr.body)})"
-    return "<expr>"
+    return expr.render()

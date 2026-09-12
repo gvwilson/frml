@@ -11,6 +11,7 @@ from frml.prover import (
     Obligation,
     Prover,
     State,
+    _EffectCollector,
     _render_model,
     _render_model_value,
     check_obligations,
@@ -503,13 +504,13 @@ def test_prover_rejects_non_returning_path():
 
 
 def test_sort_unsupported_type():
-    with pytest.raises(FrmlVerificationError):
-        Prover._sort(DummyType())
+    with pytest.raises(NotImplementedError):
+        DummyType().sort()
 
 
 def test_fresh_scalar_unsupported_type():
-    with pytest.raises(FrmlVerificationError):
-        prover()._fresh_scalar(DummyType(), "x")
+    with pytest.raises(NotImplementedError):
+        DummyType().fresh("x")
 
 
 def test_array_sort():
@@ -518,10 +519,10 @@ def test_array_sort():
 
 
 def test_sort_builtin_types():
-    assert Prover._sort(IntType()) == z3.IntSort()
-    assert Prover._sort(BoolType()) == z3.BoolSort()
-    assert Prover._sort(StringType()) == z3.StringSort()
-    assert Prover._sort(ArrayType(INT)) == z3.ArraySort(z3.IntSort(), z3.IntSort())
+    assert IntType().sort() == z3.IntSort()
+    assert BoolType().sort() == z3.BoolSort()
+    assert StringType().sort() == z3.StringSort()
+    assert ArrayType(INT).sort() == z3.ArraySort(z3.IntSort(), z3.IntSort())
 
 
 def test_fresh_from_term_preserves_sort():
@@ -631,23 +632,23 @@ def test_eval_pop_on_non_array():
 
 
 def test_assigned_names_collects_pop_in_while_invariant():
-    scalars, arrays, resized = set(), set(), set()
     inv = ast.ExprCall("pop", [ast.ExprVar("a", Position(0, 0))], Position(0, 0))
     stmt = ast.StmtWhile(
         ast.LiteralBool(True, Position(0, 0)), [inv], None, [], Position(0, 0)
     )
-    prover()._assigned_names([stmt], scalars, arrays, resized)
-    assert "a" in resized
+    collector = _EffectCollector()
+    collector.collect([stmt])
+    assert "a" in collector.resized
 
 
 def test_assigned_names_collects_pop_in_while_decreases():
-    scalars, arrays, resized = set(), set(), set()
     dec = ast.ExprCall("pop", [ast.ExprVar("a", Position(0, 0))], Position(0, 0))
     stmt = ast.StmtWhile(
         ast.LiteralBool(True, Position(0, 0)), [], dec, [], Position(0, 0)
     )
-    prover()._assigned_names([stmt], scalars, arrays, resized)
-    assert "a" in resized
+    collector = _EffectCollector()
+    collector.collect([stmt])
+    assert "a" in collector.resized
 
 
 def test_check_obligations_reports_unknown(monkeypatch):
