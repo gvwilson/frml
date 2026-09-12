@@ -18,7 +18,7 @@ from frml.types import INT
 def run(source):
     program = parse(source)
     TypeChecker(program).check()
-    return Interpreter(program).run_main()
+    return Interpreter(program).run()
 
 
 def interp(source=""):
@@ -195,7 +195,7 @@ def test_while_loop_iteration_limit():
     vm = Interpreter(program)
     vm.max_iterations = 3
     with pytest.raises(FrmlTerminationError):
-        vm.run_main()
+        vm.run()
 
 
 # -- strings ---------------------------------------------------------------
@@ -371,9 +371,9 @@ def test_quantified_postcondition_violation_raises():
 # -- white-box unit tests --------------------------------------------------
 
 
-def test_run_main_requires_a_main_function():
+def test_run_requires_a_main_function():
     with pytest.raises(FrmlRuntimeError):
-        interp("fn foo() -> Int { return 0; }").run_main()
+        interp("fn foo() -> Int { return 0; }").run()
 
 
 def test_function_without_return_raises():
@@ -666,7 +666,7 @@ def test_args_returns_command_line_arguments():
         "fn main() -> Int { let a: Array<String> = args(); return length(a); }"
     )
     TypeChecker(program).check()
-    assert Interpreter(program, argv=["x", "y"]).run_main() == 2
+    assert Interpreter(program, argv=["x", "y"]).run() == 2
 
 
 def test_call_builtin_unknown_name():

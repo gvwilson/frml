@@ -398,8 +398,3 @@ class Parser:
 
 def parse(source):
     return Parser(tokenize(source)).parse_program()
-
-
-def _render_expr(expr):
-    """Best-effort rendering of an expression for error messages."""
-    return expr.render()

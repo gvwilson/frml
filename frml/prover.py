@@ -237,7 +237,7 @@ class Prover:
             self.entry_decreases = d
             self._emit(
                 "decreases",
-                f"decreases {self._render(fn.decreases)} >= 0",
+                f"decreases {fn.decreases.render()} >= 0",
                 state.path,
                 d >= 0,
                 fn.decreases.pos,
@@ -308,7 +308,7 @@ class Prover:
             )
         self._emit(
             "bounds",
-            f"array index in bounds: 0 <= {self._render(stmt.index)} < length",
+            f"array index in bounds: 0 <= {stmt.index.render()} < length",
             state.path,
             z3.And(index >= 0, index < arr.length),
             stmt.pos,
@@ -361,7 +361,7 @@ class Prover:
         goal, state = self.eval_rhs(stmt.expr, state)
         self._emit(
             "assert",
-            f"assert {self._render(stmt.expr)}",
+            f"assert {stmt.expr.render()}",
             state.path,
             goal,
             stmt.pos,
@@ -398,7 +398,7 @@ class Prover:
             term = self.eval_expr(inv, state)
             self._emit(
                 "invariant",
-                f"loop invariant initially: {self._render(inv)}",
+                f"loop invariant initially: {inv.render()}",
                 state.path,
                 term,
                 inv.pos,
@@ -409,7 +409,7 @@ class Prover:
             d_before = self.eval_expr(stmt.decreases, state)
             self._emit(
                 "termination",
-                f"loop decreases {self._render(stmt.decreases)} >= 0",
+                f"loop decreases {stmt.decreases.render()} >= 0",
                 state.path + inv_terms + [cond],
                 d_before >= 0,
                 stmt.decreases.pos,
@@ -435,7 +435,7 @@ class Prover:
                 term = self.eval_expr(inv, end)
                 self._emit(
                     "invariant",
-                    f"loop invariant preserved: {self._render(inv)}",
+                    f"loop invariant preserved: {inv.render()}",
                     end.path,
                     term,
                     inv.pos,
@@ -444,7 +444,7 @@ class Prover:
                 d_after = self.eval_expr(stmt.decreases, end)
                 self._emit(
                     "termination",
-                    f"loop decreases {self._render(stmt.decreases)} strictly decreases",
+                    f"loop decreases {stmt.decreases.render()} strictly decreases",
                     end.path,
                     d_after < d_before_body,
                     stmt.decreases.pos,
@@ -516,7 +516,7 @@ class Prover:
             goal = self.eval_expr(req, req_state)
             self._emit(
                 "precondition",
-                f"precondition of {fn.name}: {self._render(req)}",
+                f"precondition of {fn.name}: {req.render()}",
                 caller_state.path,
                 goal,
                 req.pos,
@@ -532,7 +532,7 @@ class Prover:
             if self.entry_decreases is not None:
                 self._emit(
                     "termination",
-                    f"recursive decreases {self._render(fn.decreases)} strictly decreases",
+                    f"recursive decreases {fn.decreases.render()} strictly decreases",
                     caller_state.path,
                     d_call < self.entry_decreases,
                     fn.decreases.pos,
@@ -589,7 +589,7 @@ class Prover:
         goal = self.eval_expr(ens, state, result_term=result)
         self._emit(
             "postcondition",
-            self._render(ens),
+            ens.render(),
             state.path,
             goal,
             ens.pos,
@@ -616,7 +616,7 @@ class Prover:
             raise FrmlVerificationError("pop expects an array", expr.pos)
         self._emit(
             "bounds",
-            f"pop from a non-empty array: 0 < length({self._render(expr.args[0])})",
+            f"pop from a non-empty array: 0 < length({expr.args[0].render()})",
             state.path,
             arr.length > 0,
             expr.pos,
@@ -778,7 +778,7 @@ class Prover:
             if self._quant_depth == 0 and self._assume_depth == 0:
                 self._emit(
                     "division",
-                    f"divisor is non-zero in {self._render(expr)}",
+                    f"divisor is non-zero in {expr.render()}",
                     state.path,
                     right != 0,
                     expr.pos,
@@ -832,7 +832,7 @@ class Prover:
             goal = self.eval_expr(req, req_state)
             self._emit(
                 "precondition",
-                f"precondition of {fn.name}: {self._render(req)}",
+                f"precondition of {fn.name}: {req.render()}",
                 state.path,
                 goal,
                 req.pos,
@@ -863,7 +863,7 @@ class Prover:
         if self._quant_depth == 0 and self._assume_depth == 0:
             self._emit(
                 "bounds",
-                f"array index in bounds: 0 <= {self._render(expr.index)} < length",
+                f"array index in bounds: 0 <= {expr.index.render()} < length",
                 state.path,
                 z3.And(index >= 0, index < arr.length),
                 expr.pos,
@@ -976,13 +976,6 @@ class Prover:
             return self.eval_expr(expr, state, result_term=result_term)
         finally:
             self._assume_depth -= 1
-
-    # -- rendering ----------------------------------------------------------
-
-    def _render(self, expr):
-        from .parser import _render_expr
-
-        return _render_expr(expr)
 
 
 # ---------------------------------------------------------------------------

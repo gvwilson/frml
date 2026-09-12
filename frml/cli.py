@@ -124,7 +124,7 @@ def do_run(filename, argv=None):
         return 1
 
     try:
-        code = Interpreter(program, argv=argv).run_main()
+        code = Interpreter(program, argv=argv).run()
     except FrmlError as e:
         print(e.format(filename), file=sys.stderr)
         return 1

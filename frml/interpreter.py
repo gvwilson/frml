@@ -50,33 +50,6 @@ class _SkipCheck(Exception):
     pass
 
 
-def _as_int(value):
-    """Coerce `value` to `int`.
-
-    The typechecker has already verified the expression is int-typed, so this
-    is a runtime backstop rather than a conversion of arbitrary input.
-    """
-    return int(cast(int, value))
-
-
-def _euclid_div(a, b):
-    """Integer division matching Z3's Euclidean semantics (non-negative remainder)."""
-    if b == 0:
-        raise ZeroDivisionError("division by zero")
-    sign = 1 if b > 0 else -1
-    return math.floor(a / abs(b)) * sign
-
-
-def _euclid_mod(a, b):
-    if b == 0:
-        raise ZeroDivisionError("division by zero")
-    return a - b * _euclid_div(a, b)
-
-
-def _truthy(value):
-    return bool(value)
-
-
 class Interpreter:
     def __init__(self, program, argv=None):
         self.program = program
@@ -86,72 +59,31 @@ class Interpreter:
         self.max_iterations = DEFAULT_MAX_ITER
         self.argv = list(argv) if argv is not None else []
 
-    # -- entry point --------------------------------------------------------
-
-    def run_main(self):
+    def run(self):
+        """Entry point."""
         if "main" not in self.functions:
             raise FrmlRuntimeError("no 'main' function to run")
         value = self.call("main", [])
         return _as_int(value)
 
-    # -- built-in functions -------------------------------------------------
-
     def call_builtin(self, name, args, pos):
-        if name == "read":
-            return self._read_file(args[0], pos)
-        if name == "write":
-            return self._write_file(args[0], args[1], pos)
+        """Built-in functions."""
+        if name == "args":
+            return FrmlArray(STRING, list(self.argv))
+        if name == "pop":
+            return self._pop(args[0], pos)
         if name == "print":
             print(str(args[0]))
             return None
-        if name == "split":
-            return FrmlArray(STRING, str(args[0]).split(str(args[1])))
-        if name == "args":
-            return FrmlArray(STRING, list(self.argv))
         if name == "push":
             return self._push(args[0], args[1], pos)
-        if name == "pop":
-            return self._pop(args[0], pos)
+        if name == "read":
+            return self._read_file(args[0], pos)
+        if name == "split":
+            return FrmlArray(STRING, str(args[0]).split(str(args[1])))
+        if name == "write":
+            return self._write_file(args[0], args[1], pos)
         raise FrmlRuntimeError(f"unknown built-in function {name!r}")
-
-    def _read_file(self, path, pos):
-        try:
-            with open(str(path), "r", encoding="utf-8") as f:
-                return f.read()
-        except OSError as e:
-            raise FrmlRuntimeError(
-                f"cannot read file {path!r}: {e.strerror or e}", pos
-            ) from e
-
-    def _write_file(self, path, text, pos):
-        try:
-            with open(str(path), "w", encoding="utf-8") as f:
-                f.write(str(text))
-                return
-        except OSError as e:
-            raise FrmlRuntimeError(
-                f"cannot write file {path!r}: {e.strerror or e}", pos
-            ) from e
-
-    def _push(self, arr, value, pos):
-        if not isinstance(arr, FrmlArray):
-            raise FrmlRuntimeError("push expects an array", pos)
-        arr.elements.append(value)
-
-    def _pop(self, arr, pos):
-        if not isinstance(arr, FrmlArray):
-            raise FrmlRuntimeError("pop expects an array", pos)
-        if arr.length == 0:
-            raise FrmlRuntimeError("pop from an empty array", pos)
-        return arr.elements.pop()
-
-    # -- rendering for error messages --------------------------------------
-
-    def render(self, expr):
-        """A compact, best-effort source rendering of an expression."""
-        from .parser import _render_expr  # avoid import cycle at module load
-
-        return _render_expr(expr)
 
     # -- scope helpers ------------------------------------------------------
 
@@ -162,14 +94,14 @@ class Interpreter:
                 return
         raise FrmlRuntimeError(f"unknown variable {name!r}")
 
-    def pop_scope(self):
-        self.scopes.pop()
-
     def lookup_value(self, name):
         for scope in reversed(self.scopes):
             if name in scope:
                 return scope[name]
         raise FrmlRuntimeError(f"unknown variable {name!r}")
+
+    def pop_scope(self):
+        self.scopes.pop()
 
     def push_scope(self):
         self.scopes.append({})
@@ -195,13 +127,13 @@ class Interpreter:
             for req in fn.requires:
                 if not _truthy(self.eval_expr(req)):
                     raise FrmlContractError(
-                        f"precondition violated: {self.render(req)}", req.pos
+                        f"precondition violated: {req.render()}", req.pos
                     )
 
             result = None
             returned = False
             try:
-                self.execute_stmts(fn.body)
+                self.execute_stmt_list(fn.body)
             except ReturnSignal as sig:
                 result = sig.value
                 returned = True
@@ -229,7 +161,7 @@ class Interpreter:
                         continue
                     if not ok:
                         raise FrmlContractError(
-                            f"postcondition violated: {self.render(ens)}",
+                            f"postcondition violated: {ens.render()}",
                             ens.pos,
                         )
             finally:
@@ -241,12 +173,15 @@ class Interpreter:
 
     # -- statements ---------------------------------------------------------
 
-    def execute_stmts(self, stmts):
+    def execute_stmt_list(self, stmts):
         for stmt in stmts:
             self.execute_stmt(stmt)
 
     def execute_stmt(self, stmt):
         return stmt.accept(self)
+
+    def visit_Stmt(self, stmt):
+        raise FrmlRuntimeError(f"unknown statement {type(stmt).__name__}")
 
     def visit_StmtArrayAssign(self, stmt):
         arr = self.eval_expr(stmt.array)
@@ -258,7 +193,7 @@ class Interpreter:
         value = _truthy(self.eval_expr(stmt.expr))
         if not value:
             raise FrmlRuntimeError(
-                f"assertion failed: {self.render(stmt.expr)}", stmt.pos
+                f"assertion failed: {stmt.expr.render()}", stmt.pos
             )
 
     def visit_StmtAssign(self, stmt):
@@ -280,13 +215,13 @@ class Interpreter:
         if _truthy(self.eval_expr(stmt.cond)):
             self.push_scope()
             try:
-                self.execute_stmts(stmt.then)
+                self.execute_stmt_list(stmt.then)
             finally:
                 self.pop_scope()
         elif stmt.else_ is not None:
             self.push_scope()
             try:
-                self.execute_stmts(stmt.else_)
+                self.execute_stmt_list(stmt.else_)
             finally:
                 self.pop_scope()
 
@@ -322,7 +257,7 @@ class Interpreter:
 
             self.push_scope()
             try:
-                self.execute_stmts(stmt.body)
+                self.execute_stmt_list(stmt.body)
             finally:
                 self.pop_scope()
 
@@ -334,9 +269,6 @@ class Interpreter:
                         stmt.pos,
                     )
 
-    def visit_Stmt(self, stmt):
-        raise FrmlRuntimeError(f"unknown statement {type(stmt).__name__}")
-
     # -- expressions --------------------------------------------------------
 
     def eval_expr(self, expr, *, result_value=None, elem_hint=None, use_old=False):
@@ -344,20 +276,8 @@ class Interpreter:
             self, result_value=result_value, elem_hint=elem_hint, use_old=use_old
         )
 
-    def visit_LiteralBool(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        return expr.value
-
-    def visit_LiteralInt(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        return expr.value
-
-    def visit_LiteralString(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        return expr.value
+    def visit_Expr(self, expr, *, result_value=None, elem_hint=None, use_old=False):
+        raise FrmlRuntimeError(f"unknown expression {type(expr).__name__}")
 
     def visit_ExprArrayAccess(
         self, expr, *, result_value=None, elem_hint=None, use_old=False
@@ -505,8 +425,20 @@ class Interpreter:
             return self.snapshot[expr.name]
         return self.lookup_value(expr.name)
 
-    def visit_Expr(self, expr, *, result_value=None, elem_hint=None, use_old=False):
-        raise FrmlRuntimeError(f"unknown expression {type(expr).__name__}")
+    def visit_LiteralBool(
+        self, expr, *, result_value=None, elem_hint=None, use_old=False
+    ):
+        return expr.value
+
+    def visit_LiteralInt(
+        self, expr, *, result_value=None, elem_hint=None, use_old=False
+    ):
+        return expr.value
+
+    def visit_LiteralString(
+        self, expr, *, result_value=None, elem_hint=None, use_old=False
+    ):
+        return expr.value
 
     # -- helpers ------------------------------------------------------------
 
@@ -684,6 +616,18 @@ class Interpreter:
                 return ("low_gt", left)
         return None
 
+    def _push(self, arr, value, pos):
+        if not isinstance(arr, FrmlArray):
+            raise FrmlRuntimeError("push expects an array", pos)
+        arr.elements.append(value)
+
+    def _pop(self, arr, pos):
+        if not isinstance(arr, FrmlArray):
+            raise FrmlRuntimeError("pop expects an array", pos)
+        if arr.length == 0:
+            raise FrmlRuntimeError("pop from an empty array", pos)
+        return arr.elements.pop()
+
     def _quant_bounds(self, body, var):
         """Recognise `0 <= var and var < length(...) => P` style forall bodies."""
         if not body.is_binary() or body.op != "=>":
@@ -703,3 +647,49 @@ class Interpreter:
         rest = conjuncts
         # Rebuild the remaining conjunction (everything except the bound tests).
         return (low, high, self._and_list(rest))
+
+    def _read_file(self, path, pos):
+        try:
+            with open(str(path), "r", encoding="utf-8") as f:
+                return f.read()
+        except OSError as e:
+            raise FrmlRuntimeError(
+                f"cannot read file {path!r}: {e.strerror or e}", pos
+            ) from e
+
+    def _write_file(self, path, text, pos):
+        try:
+            with open(str(path), "w", encoding="utf-8") as f:
+                f.write(str(text))
+                return
+        except OSError as e:
+            raise FrmlRuntimeError(
+                f"cannot write file {path!r}: {e.strerror or e}", pos
+            ) from e
+
+
+def _as_int(value):
+    """Coerce `value` to `int`.
+
+    The typechecker has already verified the expression is int-typed, so this
+    is a runtime backstop rather than a conversion of arbitrary input.
+    """
+    return int(cast(int, value))
+
+
+def _euclid_div(a, b):
+    """Integer division matching Z3's Euclidean semantics (non-negative remainder)."""
+    if b == 0:
+        raise ZeroDivisionError("division by zero")
+    sign = 1 if b > 0 else -1
+    return math.floor(a / abs(b)) * sign
+
+
+def _euclid_mod(a, b):
+    if b == 0:
+        raise ZeroDivisionError("division by zero")
+    return a - b * _euclid_div(a, b)
+
+
+def _truthy(value):
+    return bool(value)
