@@ -1,12 +1,8 @@
 # The Basic Level: Scalars, No Loops
 
-This tutorial explains how Frml checks and validates programs at the `basic`
-level: programs that use only scalar values (`Int`, `Bool`, `String`), with
-branching, function calls, and recursion, but no arrays, I/O, `push`/`pop`, or
-`while` loops. The `basic` type checker guarantees those restrictions, so the
-`basic` prover never needs to model arrays or loops.
-
-It describes `frml/prover_basic.py`.
+This tutorial explains how Frml checks and validates `basic`-level programs that
+use only scalar values, with conditional branching, function calls, and
+recursion. The implementation is in `frml/prover_basic.py`.
 
 ## The prover's data model
 
@@ -14,12 +10,13 @@ It describes `frml/prover_basic.py`.
     -   `State.vars`: symbolic values of scalar variables.
     -   `State.path`: every fact assumed to hold so far.
     -   `State.old_vars`: snapshot of scalar values at function entry.
--   The prover never stores concrete numbers in variables: it stores formulas about numbers.
+-   The prover never stores concrete numbers in variables: it stores formulas
+    about numbers.
 -   A scalar variable holds a Z3 term, not a concrete number.
     -   `x` might hold the symbolic integer `x!1`, not the number 5.
     -   `x!1` means "the first fresh symbol named `x`" (see below).
 -   An `Obligation` records one claim to prove.
-    -   `kind`: `postcondition`, `precondition`, `assert`, `division`,
+    -   Its `kind` can be `postcondition`, `precondition`, `assert`, `division`,
         `termination`, or `decreases`.
     -   `description`: human readable text of the claim.
     -   `hyp`: the list of hypothesis terms.
@@ -30,7 +27,8 @@ It describes `frml/prover_basic.py`.
 
 -   The prover keeps a counter and calls `_fresh(name)`.
 -   Each call returns `name!N` with an increasing `N`.
-    -   `x!1`, `x!2`, `x!3` are different symbols even though they all relate to the source variable `x`.
+    -   `x!1`, `x!2`, `x!3` are different symbols even though they all relate to
+        the source variable `x`.
 -   Why this matters:
     -   When `x` is reassigned, the old `x!1` is not overwritten.
     -   The new value becomes a new symbol such as `x!5`.
@@ -45,9 +43,7 @@ x = x + 1;
 
 ## The driver: who calls what
 
-The rest of this tutorial looks at one feature at a time. This section provides
-an overview by following method calls for a single function. The CLI's `check`
-command eventually calls the module-level entry point:
+The CLI's `check` command eventually calls the module-level entry point:
 
 ```python
 def verify_program(program, timeout_ms=10000, trace=False):
@@ -62,7 +58,7 @@ def verify_program(program, timeout_ms=10000, trace=False):
 The prover works in two phases:
 
 1.  Generate: walk the AST and collect `Obligation` objects.
-2.  Check: hand each obligation to Z3 and turn the answers into outcomes.
+1.  Check: hand each obligation to Z3 and turn the answers into outcomes.
 
 `verify()` is the generation phase for the whole program:
 
@@ -143,7 +139,7 @@ Looking more closely:
 
 ## The statement loop
 
-Statements execute through three short methods:
+Statements are handled by three related methods:
 
 ```python
 def exec_stmts(self, stmts, state):
@@ -175,11 +171,11 @@ def exec_stmt(self, stmt, state):
 `exec_stmts` handles the statement list:
 
 -   `states` is the set of live paths, starting with the single entry state.
--   Each statement maps every live state to zero or more successor states.
+-   Each statement maps every live state to zero or more successor states
+    (see below).
 -   `exec_stmt` calls `stmt.accept(self, state)`, which dispatches to
     `visit_StmtAssign`, `visit_StmtIf`, `visit_StmtLet`, and so on.
-
-"Zero or more" matters because of `return`:
+-   "Zero or more" matters because of `return`:
 
 ```python
 def visit_StmtReturn(self, stmt, state):
@@ -540,8 +536,8 @@ fn max(a: Int, b: Int) -> Int
 -   The `if` produces two end states…
 -   …and there are three `ensures` clauses…
 -   …so there are six postcondition obligations (three per branch):
-    -   Then branch goals: `a >= a`, `a >= b`, `a == a or a == b`.
-    -   Else branch goals: `b >= a`, `b >= b`, `b == a or b == b`.
+    -   `if` branch goals: `a >= a`, `a >= b`, `a == a or a == b`.
+    -   `else` branch goals: `b >= a`, `b >= b`, `b == a or b == b`.
 -   Each is proved with the appropriate branch condition in the path.
 
 ## `old(...)`
@@ -851,31 +847,3 @@ Counterexample:
 -   The verifier does not pretend the claim is proved.
 -   The program is not silently accepted.
 -   The verifier never reports `VERIFIED` for a program it could not prove.
-
-## A mental model to keep
-
--   The prover runs the program with formulas, not numbers.
--   A variable is a symbol, not a value.
--   The path is a list of facts known to be true.
--   A contract clause is either an assumption or a goal.
--   Every obligation is `hypotheses => goal`.
--   Z3 proves the obligation by showing the negation has no solution.
-
-## Appendix: Structure of `prover_basic.py`
-
--   `State`: the symbolic program state.
--   `Obligation`: one verification condition.
--   `ProverResult`: all obligations for one function.
--   `CheckOutcome`: the Z3 result for one obligation.
--   Methods on `Prover`:
-    -   `verify`: loops over functions and collects obligations.
-    -   `verify_function`: sets up entry state, snapshots `old`, runs the body.
-    -   `exec_stmts` and `exec_stmt`: symbolic execution of statements.
-    -   `model_call`: uses a callee's contract at a call site.
-    -   `eval_expr`: translates one expression into a Z3 term.
-    -   `_emit`: records one obligation.
-    -   `_fresh`: makes a fresh symbol name.
--   Module-level functions:
-    -   `check_obligations`: runs the Z3 loop (the base shared by every higher
-        level).
-    -   `verify_program`: the entry point from the CLI.
