@@ -53,66 +53,72 @@ class TypeChecker(ArrayTypeChecker):
             pos,
         )
 
-        if name == "push":
-            _failif(
-                len(args) != 2,
-                FrmlTypeError,
-                f"built-in function 'push' expects 2 arguments but got {len(args)}",
-                pos,
-            )
-            _failif(
-                args[0].variable_name() is None,
-                FrmlTypeError,
-                "push expects an array variable as its first argument",
-                args[0].pos,
-            )
-            arr_type = args[0].accept(self, None, allow_old=False, result_type=None)
-            _failif(
-                not arr_type.is_array(),
-                FrmlTypeError,
-                f"push expects an array but found {arr_type}",
-                args[0].pos,
-            )
-            self.check_expr(
-                args[1], expected=arr_type.elem, allow_old=False, result_type=None
-            )
-            return None
+        match name:
+            case "push":
+                _failif(
+                    len(args) != 2,
+                    FrmlTypeError,
+                    f"built-in function 'push' expects 2 arguments but got {len(args)}",
+                    pos,
+                )
+                _failif(
+                    args[0].variable_name() is None,
+                    FrmlTypeError,
+                    "push expects an array variable as its first argument",
+                    args[0].pos,
+                )
+                arr_type = args[0].accept(
+                    self, None, allow_old=False, result_type=None
+                )
+                _failif(
+                    not arr_type.is_array(),
+                    FrmlTypeError,
+                    f"push expects an array but found {arr_type}",
+                    args[0].pos,
+                )
+                self.check_expr(
+                    args[1], expected=arr_type.elem, allow_old=False, result_type=None
+                )
+                return None
 
-        if name == "pop":
-            _failif(
-                len(args) != 1,
-                FrmlTypeError,
-                f"built-in function 'pop' expects 1 argument but got {len(args)}",
-                pos,
-            )
-            _failif(
-                args[0].variable_name() is None,
-                FrmlTypeError,
-                "pop expects an array variable as its argument",
-                args[0].pos,
-            )
-            arr_type = args[0].accept(self, None, allow_old=False, result_type=None)
-            _failif(
-                not arr_type.is_array(),
-                FrmlTypeError,
-                f"pop expects an array but found {arr_type}",
-                args[0].pos,
-            )
-            _failif(
-                require_void,
-                FrmlTypeError,
-                "built-in function 'pop' returns a value and cannot be used "
-                "as a statement",
-                pos,
-            )
-            return arr_type.elem
+            case "pop":
+                _failif(
+                    len(args) != 1,
+                    FrmlTypeError,
+                    f"built-in function 'pop' expects 1 argument but got {len(args)}",
+                    pos,
+                )
+                _failif(
+                    args[0].variable_name() is None,
+                    FrmlTypeError,
+                    "pop expects an array variable as its argument",
+                    args[0].pos,
+                )
+                arr_type = args[0].accept(
+                    self, None, allow_old=False, result_type=None
+                )
+                _failif(
+                    not arr_type.is_array(),
+                    FrmlTypeError,
+                    f"pop expects an array but found {arr_type}",
+                    args[0].pos,
+                )
+                _failif(
+                    require_void,
+                    FrmlTypeError,
+                    "built-in function 'pop' returns a value and cannot be used "
+                    "as a statement",
+                    pos,
+                )
+                return arr_type.elem
 
-        _failif(
-            True,
-            FrmlTypeError,
-            f"unknown built-in function {name!r}",
-            pos,
-        )  # pragma: no cover - defensive
+            case _:
+                _failif(
+                    True,
+                    FrmlTypeError,
+                    f"unknown built-in function {name!r}",
+                    pos,
+                )  # pragma: no cover - defensive
 
     def _is_array_valued_call(self, expr):
         """True when `expr` is a call that returns an array."""

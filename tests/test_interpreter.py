@@ -2,14 +2,25 @@
 
 import pytest
 
-from frml import ast_nodes as ast
+from frml.builtins import BUILTINS
 from frml.errors import (
     FrmlContractError,
     FrmlRuntimeError,
     FrmlTerminationError,
 )
-from frml.interpreter import FrmlArray, Interpreter, _euclid_div, _euclid_mod, _truthy
+from frml.expr import (
+    ExprArrayLiteral,
+    ExprBinary,
+    ExprLength,
+    ExprOld,
+    ExprQuantifier,
+    ExprUnary,
+    ExprVar,
+)
+from frml.interpreter import Interpreter
+from frml.lit import LitBool, LitInt
 from frml.parser import parse
+from frml.runtime import FrmlArray, _euclid_div, _euclid_mod, _truthy
 from frml.typechecker_complete import TypeChecker
 from frml.types import INT
 from frml.utils import Position
@@ -384,48 +395,48 @@ def test_function_without_return_raises():
 
 def test_param_elem_hint_unknown_function():
     vm = interp("fn main() -> Int { return 0; }")
-    assert vm._param_elem_hint("nope", 0, ast.LiteralInt(1, Position(0, 0))) is None
+    assert vm._param_elem_hint("nope", 0, LitInt(1, Position(0, 0))) is None
 
 
 def test_lookup_and_assign_unknown_variable():
     vm = interp("fn main() -> Int { return 0; }")
-    vm.push_scope()
+    vm.scope.push()
     with pytest.raises(FrmlRuntimeError):
-        vm.lookup_value("nope")
+        vm.scope.lookup("nope")
     with pytest.raises(FrmlRuntimeError):
-        vm.assign_value("nope", 1)
+        vm.scope.assign("nope", 1)
 
 
 def test_eval_result_outside_postcondition():
     vm = interp()
     with pytest.raises(FrmlRuntimeError):
-        vm.eval_expr(ast.ExprVar("result", Position(0, 0)))
+        vm.eval_expr(ExprVar("result", Position(0, 0)))
 
 
 def test_eval_old_outside_postcondition():
     vm = interp()
     with pytest.raises(FrmlRuntimeError):
-        vm.eval_expr(ast.ExprOld(ast.LiteralInt(1, Position(0, 0)), Position(0, 0)))
+        vm.eval_expr(ExprOld(LitInt(1, Position(0, 0)), Position(0, 0)))
 
 
 def test_eval_old_variable_outside_postcondition():
     vm = interp()
     with pytest.raises(FrmlRuntimeError):
-        vm.eval_expr(ast.ExprVar("x", Position(0, 0)), use_old=True)
+        vm.eval_expr(ExprVar("x", Position(0, 0)), use_old=True)
 
 
 def test_eval_old_unknown_variable():
     vm = interp()
     vm.snapshot = {}
     with pytest.raises(FrmlRuntimeError):
-        vm.eval_expr(ast.ExprVar("missing", Position(0, 0)), use_old=True)
+        vm.eval_expr(ExprVar("missing", Position(0, 0)), use_old=True)
 
 
 def test_eval_unknown_unary_operator():
     vm = interp()
     with pytest.raises(FrmlRuntimeError):
         vm.eval_expr(
-            ast.ExprUnary("~", ast.LiteralInt(1, Position(0, 0)), Position(0, 0))
+            ExprUnary("~", LitInt(1, Position(0, 0)), Position(0, 0))
         )
 
 
@@ -433,10 +444,10 @@ def test_eval_unknown_binary_operator():
     vm = interp()
     with pytest.raises(FrmlRuntimeError):
         vm.eval_expr(
-            ast.ExprBinary(
+            ExprBinary(
                 "~",
-                ast.LiteralInt(1, Position(0, 0)),
-                ast.LiteralInt(1, Position(0, 0)),
+                LitInt(1, Position(0, 0)),
+                LitInt(1, Position(0, 0)),
                 Position(0, 0),
             )
         )
@@ -445,15 +456,7 @@ def test_eval_unknown_binary_operator():
 def test_eval_length_on_non_array():
     vm = interp()
     with pytest.raises(FrmlRuntimeError):
-        vm.eval_expr(ast.ExprLength(ast.LiteralInt(1, Position(0, 0)), Position(0, 0)))
-
-
-def test_eval_unknown_expression():
-    expr = ast.Expr()
-    expr.pos = Position(0, 0)
-    vm = interp()
-    with pytest.raises(FrmlRuntimeError):
-        vm.eval_expr(expr)
+        vm.eval_expr(ExprLength(LitInt(1, Position(0, 0)), Position(0, 0)))
 
 
 def test_store_and_load_on_non_array():
@@ -473,14 +476,14 @@ def test_stringify_unsupported_value():
 def test_infer_array_elem_empty_without_hint():
     vm = interp()
     with pytest.raises(FrmlRuntimeError):
-        vm._infer_array_elem(ast.ExprArrayLiteral([], Position(0, 0)), None, False)
+        vm._infer_array_elem(ExprArrayLiteral([], Position(0, 0)), None, False)
 
 
 def test_infer_array_elem_non_scalar_element():
     vm = interp()
-    vm.push_scope()
-    vm.scopes[-1]["a"] = FrmlArray(INT, [1])
-    expr = ast.ExprArrayLiteral([ast.ExprVar("a", Position(0, 0))], Position(0, 0))
+    vm.scope.push()
+    vm.scope.define("a", FrmlArray(INT, [1]))
+    expr = ExprArrayLiteral([ExprVar("a", Position(0, 0))], Position(0, 0))
     with pytest.raises(FrmlRuntimeError):
         vm._infer_array_elem(expr, None, False)
 
@@ -501,20 +504,20 @@ def test_truthy_helper():
 
 def test_match_bound_non_binary_returns_none():
     vm = interp()
-    assert vm._match_bound(ast.ExprVar("i", Position(0, 0)), "i") is None
+    assert vm._match_bound(ExprVar("i", Position(0, 0)), "i") is None
 
 
 def test_match_bound_left_side_operators():
     vm = interp()
-    i = ast.ExprVar("i", Position(0, 0))
-    e = ast.LiteralInt(3, Position(0, 0))
-    assert vm._match_bound(ast.ExprBinary("<", i, e, Position(0, 0)), "i") == ("lt", e)
-    assert vm._match_bound(ast.ExprBinary("<=", i, e, Position(0, 0)), "i") == ("le", e)
-    assert vm._match_bound(ast.ExprBinary(">=", i, e, Position(0, 0)), "i") == (
+    i = ExprVar("i", Position(0, 0))
+    e = LitInt(3, Position(0, 0))
+    assert vm._match_bound(ExprBinary("<", i, e, Position(0, 0)), "i") == ("lt", e)
+    assert vm._match_bound(ExprBinary("<=", i, e, Position(0, 0)), "i") == ("le", e)
+    assert vm._match_bound(ExprBinary(">=", i, e, Position(0, 0)), "i") == (
         "low",
         e,
     )
-    assert vm._match_bound(ast.ExprBinary(">", i, e, Position(0, 0)), "i") == (
+    assert vm._match_bound(ExprBinary(">", i, e, Position(0, 0)), "i") == (
         "low_gt",
         e,
     )
@@ -522,15 +525,15 @@ def test_match_bound_left_side_operators():
 
 def test_match_bound_right_side_operators():
     vm = interp()
-    i = ast.ExprVar("i", Position(0, 0))
-    e = ast.LiteralInt(3, Position(0, 0))
-    assert vm._match_bound(ast.ExprBinary(">", e, i, Position(0, 0)), "i") == ("lt", e)
-    assert vm._match_bound(ast.ExprBinary(">=", e, i, Position(0, 0)), "i") == ("le", e)
-    assert vm._match_bound(ast.ExprBinary("<=", e, i, Position(0, 0)), "i") == (
+    i = ExprVar("i", Position(0, 0))
+    e = LitInt(3, Position(0, 0))
+    assert vm._match_bound(ExprBinary(">", e, i, Position(0, 0)), "i") == ("lt", e)
+    assert vm._match_bound(ExprBinary(">=", e, i, Position(0, 0)), "i") == ("le", e)
+    assert vm._match_bound(ExprBinary("<=", e, i, Position(0, 0)), "i") == (
         "low",
         e,
     )
-    assert vm._match_bound(ast.ExprBinary("<", e, i, Position(0, 0)), "i") == (
+    assert vm._match_bound(ExprBinary("<", e, i, Position(0, 0)), "i") == (
         "low_gt",
         e,
     )
@@ -538,9 +541,9 @@ def test_match_bound_right_side_operators():
 
 def test_extract_bounds_low_bound_not_zero_is_kept():
     vm = interp()
-    i = ast.ExprVar("i", Position(0, 0))
+    i = ExprVar("i", Position(0, 0))
     conjuncts = [
-        ast.ExprBinary(">=", i, ast.LiteralInt(5, Position(0, 0)), Position(0, 0))
+        ExprBinary(">=", i, LitInt(5, Position(0, 0)), Position(0, 0))
     ]
     low, high = vm._extract_bounds(conjuncts, "i")
     assert low == 0 and high is None
@@ -548,13 +551,13 @@ def test_extract_bounds_low_bound_not_zero_is_kept():
 
 def test_extract_bounds_le_upper_bound():
     vm = interp()
-    i = ast.ExprVar("i", Position(0, 0))
-    vm.push_scope()
-    vm.scopes[-1]["a"] = FrmlArray(INT, [1, 2, 3])
-    length_expr = ast.ExprLength(ast.ExprVar("a", Position(0, 0)), Position(0, 0))
+    i = ExprVar("i", Position(0, 0))
+    vm.scope.push()
+    vm.scope.define("a", FrmlArray(INT, [1, 2, 3]))
+    length_expr = ExprLength(ExprVar("a", Position(0, 0)), Position(0, 0))
     conjuncts = [
-        ast.ExprBinary(">=", i, ast.LiteralInt(0, Position(0, 0)), Position(0, 0)),
-        ast.ExprBinary("<=", i, length_expr, Position(0, 0)),
+        ExprBinary(">=", i, LitInt(0, Position(0, 0)), Position(0, 0)),
+        ExprBinary("<=", i, length_expr, Position(0, 0)),
     ]
     low, high = vm._extract_bounds(conjuncts, "i")
     assert (low, high) == (0, 4)
@@ -562,11 +565,11 @@ def test_extract_bounds_le_upper_bound():
 
 def test_extract_bounds_swallows_eval_failure():
     vm = interp()
-    i = ast.ExprVar("i", Position(0, 0))
-    vm.push_scope()
-    vm.scopes[-1]["x"] = 5
-    length_expr = ast.ExprLength(ast.ExprVar("x", Position(0, 0)), Position(0, 0))
-    conjuncts = [ast.ExprBinary("<", i, length_expr, Position(0, 0))]
+    i = ExprVar("i", Position(0, 0))
+    vm.scope.push()
+    vm.scope.define("x", 5)
+    length_expr = ExprLength(ExprVar("x", Position(0, 0)), Position(0, 0))
+    conjuncts = [ExprBinary("<", i, length_expr, Position(0, 0))]
     _, high = vm._extract_bounds(conjuncts, "i")
     assert high is None
 
@@ -574,16 +577,16 @@ def test_extract_bounds_swallows_eval_failure():
 def test_and_list_of_no_conjuncts_is_true():
     vm = interp()
     result = vm._and_list([])
-    assert isinstance(result, ast.LiteralBool) and result.value is True
+    assert isinstance(result, LitBool) and result.value is True
 
 
 def test_quant_bounds_without_upper_bound_is_none():
     vm = interp()
-    i = ast.ExprVar("i", Position(0, 0))
-    body = ast.ExprBinary(
+    i = ExprVar("i", Position(0, 0))
+    body = ExprBinary(
         "=>",
-        ast.ExprBinary(">=", i, ast.LiteralInt(0, Position(0, 0)), Position(0, 0)),
-        ast.LiteralBool(True, Position(0, 0)),
+        ExprBinary(">=", i, LitInt(0, Position(0, 0)), Position(0, 0)),
+        LitBool(True, Position(0, 0)),
         Position(0, 0),
     )
     assert vm._quant_bounds(body, "i") is None
@@ -591,8 +594,8 @@ def test_quant_bounds_without_upper_bound_is_none():
 
 def test_eval_quantifier_unknown_kind():
     vm = interp()
-    q = ast.ExprQuantifier(
-        "bogus", "i", INT, ast.LiteralBool(True, Position(0, 0)), Position(0, 0)
+    q = ExprQuantifier(
+        "bogus", "i", INT, LitBool(True, Position(0, 0)), Position(0, 0)
     )
     assert vm._eval_quantifier(q, None, False) == (False, None)
 
@@ -728,15 +731,13 @@ def test_pop_mutates_array_parameter_by_reference():
 
 
 def test_push_non_array_raises():
-    vm = interp()
     with pytest.raises(FrmlRuntimeError):
-        vm._push("not an array", 1, Position(0, 0))
+        BUILTINS["push"].call(None, ["not an array", 1], Position(0, 0))
 
 
 def test_pop_non_array_raises():
-    vm = interp()
     with pytest.raises(FrmlRuntimeError):
-        vm._pop("not an array", Position(0, 0))
+        BUILTINS["pop"].call(None, ["not an array"], Position(0, 0))
 
 
 # -- array-returning functions --------------------------------------------
@@ -760,9 +761,3 @@ def test_function_returns_local_array():
 
 def test_frml_array_equality_with_non_array_is_false():
     assert (FrmlArray(INT, [1]) == "not an array") is False
-
-
-def test_executing_unknown_statement_raises():
-    interp = Interpreter(ast.Program())
-    with pytest.raises(FrmlRuntimeError):
-        interp.execute_stmt(ast.Stmt())

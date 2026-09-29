@@ -2,7 +2,7 @@
 
 import pytest
 
-from frml.cli import (
+from frml.__main__ import (
     _format_outcome,
     do_check,
     do_checkrun,
@@ -231,7 +231,7 @@ def test_do_check_unknown(monkeypatch, capsys, write_frml):
     def fake_verify(program, timeout_ms=10000, trace=False):
         return [], [CheckOutcome(ob, "UNKNOWN")]
 
-    monkeypatch.setattr("frml.cli.verify_program_complete", fake_verify)
+    monkeypatch.setattr("frml.__main__.verify_program_complete", fake_verify)
     assert do_check(path) == 2
     assert "UNKNOWN" in capsys.readouterr().err
 

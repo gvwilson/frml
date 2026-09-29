@@ -221,28 +221,30 @@ class TypeChecker:
 
     def visit_ExprUnary(self, expr, expected, allow_old, result_type):
         t = expr.operand.accept(self, None, allow_old, result_type)
-        if expr.op == "!":
-            _failif(
-                t != BOOL,
-                FrmlTypeError,
-                f"operator '!' expects Bool but found {t}",
-                expr.pos,
-            )
-            return BOOL
-        if expr.op == "-":
-            _failif(
-                t != INT,
-                FrmlTypeError,
-                f"unary '-' expects Int but found {t}",
-                expr.pos,
-            )
-            return INT
-        _failif(
-            True,
-            FrmlTypeError,
-            f"unknown unary operator {expr.op!r}",
-            expr.pos,
-        )
+        match expr.op:
+            case "!":
+                _failif(
+                    t != BOOL,
+                    FrmlTypeError,
+                    f"operator '!' expects Bool but found {t}",
+                    expr.pos,
+                )
+                return BOOL
+            case "-":
+                _failif(
+                    t != INT,
+                    FrmlTypeError,
+                    f"unary '-' expects Int but found {t}",
+                    expr.pos,
+                )
+                return INT
+            case _:
+                _failif(
+                    True,
+                    FrmlTypeError,
+                    f"unknown unary operator {expr.op!r}",
+                    expr.pos,
+                )
 
     def visit_ExprVar(self, expr, expected, allow_old, result_type):
         if expr.name == "result":
@@ -264,67 +266,69 @@ class TypeChecker:
 
     def visit_ExprBinary(self, expr, expected, allow_old, result_type):
         op = expr.op
-        if op in ("and", "or", "=>"):
-            lt = expr.left.accept(self, None, allow_old, result_type)
-            rt = expr.right.accept(self, None, allow_old, result_type)
-            _failif(
-                lt != BOOL or rt != BOOL,
-                FrmlTypeError,
-                f"operator {op!r} expects Bool operands but found {lt} and {rt}",
-                expr.pos,
-            )
-            return BOOL
+        match op:
+            case "and" | "or" | "=>":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                _failif(
+                    lt != BOOL or rt != BOOL,
+                    FrmlTypeError,
+                    f"operator {op!r} expects Bool operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return BOOL
 
-        if op == "++":
-            lt = expr.left.accept(self, None, allow_old, result_type)
-            rt = expr.right.accept(self, None, allow_old, result_type)
-            _failif(
-                lt != STRING or rt != STRING,
-                FrmlTypeError,
-                f"operator '++' expects String operands but found {lt} and {rt}",
-                expr.pos,
-            )
-            return STRING
+            case "++":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                _failif(
+                    lt != STRING or rt != STRING,
+                    FrmlTypeError,
+                    f"operator '++' expects String operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return STRING
 
-        if op in ("==", "!="):
-            lt = expr.left.accept(self, None, allow_old, result_type)
-            rt = expr.right.accept(self, None, allow_old, result_type)
-            _failif(
-                lt != rt,
-                FrmlTypeError,
-                f"operator {op!r} requires operands of the same type but found {lt} and {rt}",
-                expr.pos,
-            )
-            return BOOL
+            case "==" | "!=":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                _failif(
+                    lt != rt,
+                    FrmlTypeError,
+                    f"operator {op!r} requires operands of the same type but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return BOOL
 
-        if op in ("<", "<=", ">", ">="):
-            lt = expr.left.accept(self, None, allow_old, result_type)
-            rt = expr.right.accept(self, None, allow_old, result_type)
-            _failif(
-                lt != INT or rt != INT,
-                FrmlTypeError,
-                f"operator {op!r} expects Int operands but found {lt} and {rt}",
-                expr.pos,
-            )
-            return BOOL
+            case "<" | "<=" | ">" | ">=":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                _failif(
+                    lt != INT or rt != INT,
+                    FrmlTypeError,
+                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return BOOL
 
-        if op in ("+", "-", "*", "/", "%"):
-            lt = expr.left.accept(self, None, allow_old, result_type)
-            rt = expr.right.accept(self, None, allow_old, result_type)
-            _failif(
-                lt != INT or rt != INT,
-                FrmlTypeError,
-                f"operator {op!r} expects Int operands but found {lt} and {rt}",
-                expr.pos,
-            )
-            return INT
+            case "+" | "-" | "*" | "/" | "%":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                _failif(
+                    lt != INT or rt != INT,
+                    FrmlTypeError,
+                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return INT
 
-        _failif(
-            True,
-            FrmlTypeError,
-            f"unknown binary operator {op!r}",
-            expr.pos,
-        )
+            case _:
+                _failif(
+                    True,
+                    FrmlTypeError,
+                    f"unknown binary operator {op!r}",
+                    expr.pos,
+                )
 
     def visit_ExprCall(self, expr, expected, allow_old, result_type):
         t = self.check_call(expr.name, expr.args, expr.pos, require_void=False)
@@ -373,13 +377,13 @@ class TypeChecker:
             expr.pos,
         )
 
-    def visit_LiteralBool(self, expr, expected, allow_old, result_type):
+    def visit_LitBool(self, expr, expected, allow_old, result_type):
         return BOOL
 
-    def visit_LiteralInt(self, expr, expected, allow_old, result_type):
+    def visit_LitInt(self, expr, expected, allow_old, result_type):
         return INT
 
-    def visit_LiteralString(self, expr, expected, allow_old, result_type):
+    def visit_LitString(self, expr, expected, allow_old, result_type):
         return STRING
 
     # -- helpers ------------------------------------------------------

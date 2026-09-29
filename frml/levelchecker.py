@@ -23,9 +23,29 @@ The feature checks are driven by the flags on the requested `Level`, so
 adding or rearranging levels only requires changing those flags.
 """
 
-from . import ast_nodes as ast
 from .builtins import BUILTINS
 from .errors import FrmlTypeError
+from .expr import (
+    ExprArrayAccess,
+    ExprArrayLiteral,
+    ExprBinary,
+    ExprCall,
+    ExprLength,
+    ExprOld,
+    ExprQuantifier,
+    ExprStringify,
+    ExprUnary,
+)
+from .stmt import (
+    StmtArrayAssign,
+    StmtAssert,
+    StmtAssign,
+    StmtCall,
+    StmtIf,
+    StmtLet,
+    StmtReturn,
+    StmtWhile,
+)
 from .utils import Level, _failif
 
 
@@ -74,20 +94,20 @@ class LevelChecker:
     def _check_stmt(self, stmt):
         if not self.level.allows_arrays:
             _failif(
-                isinstance(stmt, ast.StmtArrayAssign),
+                isinstance(stmt, StmtArrayAssign),
                 FrmlTypeError,
                 f"array assignment is not available at level '{self.level.value}'",
                 stmt.pos,
             )
         if not self.level.allows_loops:
             _failif(
-                isinstance(stmt, ast.StmtWhile),
+                isinstance(stmt, StmtWhile),
                 FrmlTypeError,
                 f"while loops are not available at level '{self.level.value}'",
                 stmt.pos,
             )
 
-        if isinstance(stmt, ast.StmtLet):
+        if isinstance(stmt, StmtLet):
             if not self.level.allows_arrays:
                 _failif(
                     stmt.type.is_array(),
@@ -97,21 +117,21 @@ class LevelChecker:
                     stmt.pos,
                 )
             self._check_expr(stmt.init)
-        elif isinstance(stmt, (ast.StmtAssign, ast.StmtAssert)):
+        elif isinstance(stmt, (StmtAssign, StmtAssert)):
             self._check_expr(stmt.expr)
-        elif isinstance(stmt, ast.StmtCall):
+        elif isinstance(stmt, StmtCall):
             if not self.level.allows_builtins:
                 self._check_call_name(stmt.name, stmt.pos)
             for arg in stmt.args:
                 self._check_expr(arg)
-        elif isinstance(stmt, ast.StmtIf):
+        elif isinstance(stmt, StmtIf):
             self._check_expr(stmt.cond)
             for s in stmt.then:
                 self._check_stmt(s)
             if stmt.else_ is not None:
                 for s in stmt.else_:
                     self._check_stmt(s)
-        elif isinstance(stmt, ast.StmtWhile):
+        elif isinstance(stmt, StmtWhile):
             self._check_expr(stmt.cond)
             for inv in stmt.invariants:
                 self._check_expr(inv)
@@ -119,43 +139,43 @@ class LevelChecker:
                 self._check_expr(stmt.decreases)
             for s in stmt.body:
                 self._check_stmt(s)
-        elif isinstance(stmt, ast.StmtReturn):
+        elif isinstance(stmt, StmtReturn):
             self._check_expr(stmt.expr)
 
     def _check_expr(self, expr):
         if not self.level.allows_arrays:
             _failif(
-                isinstance(expr, ast.ExprArrayAccess),
+                isinstance(expr, ExprArrayAccess),
                 FrmlTypeError,
                 f"array access is not available at level '{self.level.value}'",
                 expr.pos,
             )
             _failif(
-                isinstance(expr, ast.ExprArrayLiteral),
+                isinstance(expr, ExprArrayLiteral),
                 FrmlTypeError,
                 f"array literals are not available at level '{self.level.value}'",
                 expr.pos,
             )
             _failif(
-                isinstance(expr, ast.ExprLength),
+                isinstance(expr, ExprLength),
                 FrmlTypeError,
                 f"length() is not available at level '{self.level.value}'",
                 expr.pos,
             )
 
-        if isinstance(expr, ast.ExprCall):
+        if isinstance(expr, ExprCall):
             if not self.level.allows_builtins:
                 self._check_call_name(expr.name, expr.pos)
             for arg in expr.args:
                 self._check_expr(arg)
-        elif isinstance(expr, ast.ExprBinary):
+        elif isinstance(expr, ExprBinary):
             self._check_expr(expr.left)
             self._check_expr(expr.right)
-        elif isinstance(expr, (ast.ExprUnary, ast.ExprStringify)):
+        elif isinstance(expr, (ExprUnary, ExprStringify)):
             self._check_expr(expr.operand)
-        elif isinstance(expr, ast.ExprOld):
+        elif isinstance(expr, ExprOld):
             self._check_expr(expr.arg)
-        elif isinstance(expr, ast.ExprQuantifier):
+        elif isinstance(expr, ExprQuantifier):
             self._check_expr(expr.body)
 
     def _check_call_name(self, name, pos):

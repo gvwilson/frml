@@ -3,8 +3,19 @@
 import pytest
 import z3
 
-from frml import ast_nodes as ast
+from frml.ast_nodes import Function, Program
 from frml.errors import FrmlVerificationError
+from frml.expr import (
+    Expr,
+    ExprArrayAccess,
+    ExprArrayLiteral,
+    ExprBinary,
+    ExprCall,
+    ExprLength,
+    ExprUnary,
+    ExprVar,
+)
+from frml.lit import LitBool, LitInt
 from frml.parser import parse
 from frml.prover_complete import (
     EffectCollector,
@@ -16,6 +27,7 @@ from frml.prover_complete import (
     check_obligations,
     verify_program,
 )
+from frml.stmt import Stmt, StmtArrayAssign, StmtCall, StmtWhile
 from frml.typechecker_complete import TypeChecker
 from frml.types import INT, ArrayType, BoolType, IntType, StringType, Type
 from frml.utils import Position
@@ -40,13 +52,13 @@ def prover(source=""):
 
 
 def bare_expr():
-    expr = ast.Expr()
+    expr = Expr()
     expr.pos = Position(0, 0)
     return expr
 
 
 def bare_stmt():
-    stmt = ast.Stmt()
+    stmt = Stmt()
     stmt.pos = Position(0, 0)
     return stmt
 
@@ -544,32 +556,32 @@ def test_stringify_term_unsupported():
 
 def test_eval_result_outside_ensures():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprVar("result", Position(0, 0)), State())
+        prover().eval_expr(ExprVar("result", Position(0, 0)), State())
 
 
 def test_eval_old_unknown_variable():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprVar("x", Position(0, 0)), State(), use_old=True)
+        prover().eval_expr(ExprVar("x", Position(0, 0)), State(), use_old=True)
 
 
 def test_eval_unknown_variable():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprVar("x", Position(0, 0)), State())
+        prover().eval_expr(ExprVar("x", Position(0, 0)), State())
 
 
 def test_eval_unknown_unary_operator():
     with pytest.raises(FrmlVerificationError):
         prover().eval_expr(
-            ast.ExprUnary("~", ast.LiteralInt(1, Position(0, 0)), Position(0, 0)),
+            ExprUnary("~", LitInt(1, Position(0, 0)), Position(0, 0)),
             State(),
         )
 
 
 def test_eval_unknown_binary_operator():
-    expr = ast.ExprBinary(
+    expr = ExprBinary(
         "~",
-        ast.LiteralInt(1, Position(0, 0)),
-        ast.LiteralInt(1, Position(0, 0)),
+        LitInt(1, Position(0, 0)),
+        LitInt(1, Position(0, 0)),
         Position(0, 0),
     )
     with pytest.raises(FrmlVerificationError):
@@ -577,9 +589,9 @@ def test_eval_unknown_binary_operator():
 
 
 def test_eval_array_access_on_non_array():
-    expr = ast.ExprArrayAccess(
-        ast.LiteralInt(1, Position(0, 0)),
-        ast.LiteralInt(0, Position(0, 0)),
+    expr = ExprArrayAccess(
+        LitInt(1, Position(0, 0)),
+        LitInt(0, Position(0, 0)),
         Position(0, 0),
     )
     with pytest.raises(FrmlVerificationError):
@@ -588,13 +600,13 @@ def test_eval_array_access_on_non_array():
 
 def test_eval_empty_array_literal_without_sort():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprArrayLiteral([], Position(0, 0)), State())
+        prover().eval_expr(ExprArrayLiteral([], Position(0, 0)), State())
 
 
 def test_eval_length_on_non_array():
     with pytest.raises(FrmlVerificationError):
         prover().eval_expr(
-            ast.ExprLength(ast.LiteralInt(1, Position(0, 0)), Position(0, 0)), State()
+            ExprLength(LitInt(1, Position(0, 0)), Position(0, 0)), State()
         )
 
 
@@ -609,10 +621,10 @@ def test_exec_unknown_statement():
 
 
 def test_exec_array_assignment_on_non_array():
-    stmt = ast.StmtArrayAssign(
-        ast.LiteralInt(1, Position(0, 0)),
-        ast.LiteralInt(0, Position(0, 0)),
-        ast.LiteralInt(1, Position(0, 0)),
+    stmt = StmtArrayAssign(
+        LitInt(1, Position(0, 0)),
+        LitInt(0, Position(0, 0)),
+        LitInt(1, Position(0, 0)),
         Position(0, 0),
     )
     with pytest.raises(FrmlVerificationError):
@@ -620,9 +632,9 @@ def test_exec_array_assignment_on_non_array():
 
 
 def test_exec_push_on_non_array():
-    stmt = ast.StmtCall(
+    stmt = StmtCall(
         "push",
-        [ast.LiteralInt(1, Position(0, 0)), ast.LiteralInt(2, Position(0, 0))],
+        [LitInt(1, Position(0, 0)), LitInt(2, Position(0, 0))],
         Position(0, 0),
     )
     with pytest.raises(FrmlVerificationError):
@@ -630,15 +642,15 @@ def test_exec_push_on_non_array():
 
 
 def test_eval_pop_on_non_array():
-    expr = ast.ExprCall("pop", [ast.LiteralInt(1, Position(0, 0))], Position(0, 0))
+    expr = ExprCall("pop", [LitInt(1, Position(0, 0))], Position(0, 0))
     with pytest.raises(FrmlVerificationError):
         prover()._eval_pop(expr, State())
 
 
 def test_assigned_names_collects_pop_in_while_invariant():
-    inv = ast.ExprCall("pop", [ast.ExprVar("a", Position(0, 0))], Position(0, 0))
-    stmt = ast.StmtWhile(
-        ast.LiteralBool(True, Position(0, 0)), [inv], None, [], Position(0, 0)
+    inv = ExprCall("pop", [ExprVar("a", Position(0, 0))], Position(0, 0))
+    stmt = StmtWhile(
+        LitBool(True, Position(0, 0)), [inv], None, [], Position(0, 0)
     )
     collector = EffectCollector()
     collector.collect([stmt])
@@ -646,9 +658,9 @@ def test_assigned_names_collects_pop_in_while_invariant():
 
 
 def test_assigned_names_collects_pop_in_while_decreases():
-    dec = ast.ExprCall("pop", [ast.ExprVar("a", Position(0, 0))], Position(0, 0))
-    stmt = ast.StmtWhile(
-        ast.LiteralBool(True, Position(0, 0)), [], dec, [], Position(0, 0)
+    dec = ExprCall("pop", [ExprVar("a", Position(0, 0))], Position(0, 0))
+    stmt = StmtWhile(
+        LitBool(True, Position(0, 0)), [], dec, [], Position(0, 0)
     )
     collector = EffectCollector()
     collector.collect([stmt])
@@ -1037,6 +1049,6 @@ fn main() -> Int
 
 
 def test_effect_collector_ignores_unknown_statement():
-    fn = ast.Function("f", [], None, [], [], None, [ast.Stmt()], Position(1, 1))
-    program = ast.Program([fn])
+    fn = Function("f", [], None, [], [], None, [Stmt()], Position(1, 1))
+    program = Program([fn])
     Prover(program)  # constructing the prover walks the body; it should not raise
