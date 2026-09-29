@@ -2,9 +2,12 @@
 
 import pytest
 
-from frml import ast_nodes as ast
+from frml.ast_nodes import Function, Program
 from frml.errors import FrmlNameError, FrmlTypeError
+from frml.expr import Expr, ExprArrayLiteral, ExprBinary, ExprOld, ExprUnary
+from frml.lit import LitBool, LitInt
 from frml.parser import parse
+from frml.stmt import Stmt, StmtAssert, StmtCall, StmtIf
 from frml.typechecker_complete import TypeChecker
 from frml.utils import Position
 
@@ -267,36 +270,36 @@ def test_calls_itself_walks_non_recursive_call_statements():
 
 
 def _bare_expr():
-    expr = ast.Expr()
+    expr = Expr()
     expr.pos = Position(0, 0)
     return expr
 
 
 def test_bare_expr_returns_expr_with_position():
     expr = _bare_expr()
-    assert isinstance(expr, ast.Expr)
+    assert isinstance(expr, Expr)
     assert expr.pos == Position(0, 0)
 
 
 def test_expr_children_old():
-    arg = ast.LiteralInt(1, Position(0, 0))
-    assert ast.ExprOld(arg, Position(0, 0)).children() == [arg]
+    arg = LitInt(1, Position(0, 0))
+    assert ExprOld(arg, Position(0, 0)).children() == [arg]
 
 
 def test_stmt_exprs_call_statement():
-    arg = ast.LiteralInt(1, Position(0, 0))
-    stmt = ast.StmtCall("f", [arg], Position(0, 0))
+    arg = LitInt(1, Position(0, 0))
+    stmt = StmtCall("f", [arg], Position(0, 0))
     assert stmt.children() == [arg]
 
 
 def test_stmt_exprs_falls_back_for_unknown_statement():
-    assert ast.Stmt().children() == []
+    assert Stmt().children() == []
 
 
 def test_stmt_stmts_collects_branches():
-    branch = ast.StmtAssert(ast.LiteralBool(True, Position(0, 0)), Position(0, 0))
-    if_stmt = ast.StmtIf(
-        ast.LiteralBool(True, Position(0, 0)),
+    branch = StmtAssert(LitBool(True, Position(0, 0)), Position(0, 0))
+    if_stmt = StmtIf(
+        LitBool(True, Position(0, 0)),
         [branch],
         None,
         Position(0, 0),
@@ -517,27 +520,27 @@ def test_pop_cannot_be_redefined():
 
 
 def test_unknown_statement_rejected():
-    stmt = ast.Stmt()
+    stmt = Stmt()
     stmt.pos = Position(1, 1)
-    fn = ast.Function("f", [], None, [], [], None, [stmt], Position(1, 1))
-    program = ast.Program([fn])
+    fn = Function("f", [], None, [], [], None, [stmt], Position(1, 1))
+    program = Program([fn])
     with pytest.raises(FrmlTypeError):
         TypeChecker(program).check()
 
 
 def test_unknown_unary_operator_rejected():
-    checker = TypeChecker(ast.Program())
-    expr = ast.ExprUnary("~", ast.LiteralInt(1, Position(1, 1)), Position(1, 1))
+    checker = TypeChecker(Program())
+    expr = ExprUnary("~", LitInt(1, Position(1, 1)), Position(1, 1))
     with pytest.raises(FrmlTypeError):
         checker.check_expr(expr)
 
 
 def test_unknown_binary_operator_rejected():
-    checker = TypeChecker(ast.Program())
-    expr = ast.ExprBinary(
+    checker = TypeChecker(Program())
+    expr = ExprBinary(
         "^",
-        ast.LiteralInt(1, Position(1, 1)),
-        ast.LiteralInt(2, Position(1, 2)),
+        LitInt(1, Position(1, 1)),
+        LitInt(2, Position(1, 2)),
         Position(1, 1),
     )
     with pytest.raises(FrmlTypeError):
@@ -545,14 +548,14 @@ def test_unknown_binary_operator_rejected():
 
 
 def test_empty_array_literal_cannot_be_inferred():
-    checker = TypeChecker(ast.Program())
+    checker = TypeChecker(Program())
     with pytest.raises(FrmlTypeError):
-        checker.check_expr(ast.ExprArrayLiteral([], Position(1, 1)))
+        checker.check_expr(ExprArrayLiteral([], Position(1, 1)))
 
 
 def test_unknown_expression_rejected():
-    expr = ast.Expr()
+    expr = Expr()
     expr.pos = Position(1, 1)
-    checker = TypeChecker(ast.Program())
+    checker = TypeChecker(Program())
     with pytest.raises(FrmlTypeError):
         checker.check_expr(expr)

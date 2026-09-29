@@ -3,10 +3,12 @@
 import pytest
 import z3
 
-from frml import ast_nodes as ast
 from frml.errors import FrmlVerificationError
+from frml.expr import ExprVar
+from frml.lit import LitBool, LitInt
 from frml.parser import parse
 from frml.prover_loop import Prover, ScalarWriterCollector, State, verify_program
+from frml.stmt import StmtAssign, StmtLet, StmtWhile
 from frml.typechecker_loop import TypeChecker
 from frml.types import INT
 from frml.utils import Position
@@ -130,9 +132,9 @@ fn f(n: Int) -> Int
 
 
 def test_scalar_writer_collector_finds_nested_assignments():
-    assign = ast.StmtAssign("i", ast.LiteralInt(1, Position(0, 0)), Position(0, 0))
-    loop = ast.StmtWhile(
-        ast.LiteralBool(True, Position(0, 0)),
+    assign = StmtAssign("i", LitInt(1, Position(0, 0)), Position(0, 0))
+    loop = StmtWhile(
+        LitBool(True, Position(0, 0)),
         [],
         None,
         [assign],
@@ -144,10 +146,10 @@ def test_scalar_writer_collector_finds_nested_assignments():
 
 
 def test_scalar_writer_ignores_let():
-    let = ast.StmtLet(
+    let = StmtLet(
         "j",
         INT,
-        ast.LiteralInt(0, Position(0, 0)),
+        LitInt(0, Position(0, 0)),
         Position(0, 0),
     )
     collector = ScalarWriterCollector()
@@ -164,4 +166,4 @@ def test_fresh_from_term_preserves_sort():
 
 def test_eval_result_outside_ensures():
     with pytest.raises(FrmlVerificationError):
-        prover().eval_expr(ast.ExprVar("result", Position(0, 0)), State())
+        prover().eval_expr(ExprVar("result", Position(0, 0)), State())

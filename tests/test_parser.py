@@ -2,10 +2,12 @@
 
 import pytest
 
-from frml import ast_nodes as ast
 from frml.errors import FrmlSyntaxError
+from frml.expr import Expr, ExprArrayLiteral, ExprCall, ExprUnary
 from frml.lexer import tokenize
+from frml.lit import LitInt
 from frml.parser import Parser, parse
+from frml.stmt import StmtCall, StmtIf
 from frml.utils import Position
 
 
@@ -21,7 +23,7 @@ def test_parse_program_with_comments_and_whitespace():
 def test_parse_procedure_call_statement():
     program = parse("fn main() -> Int { bump(); return 0; }")
     stmt = program.functions[0].body[0]
-    assert isinstance(stmt, ast.StmtCall)
+    assert isinstance(stmt, StmtCall)
     assert stmt.name == "bump"
     assert stmt.args == []
 
@@ -33,9 +35,9 @@ def test_parse_else_if_chain():
     )
     program = parse(src)
     stmt = program.functions[0].body[0]
-    assert isinstance(stmt, ast.StmtIf)
+    assert isinstance(stmt, StmtIf)
     assert stmt.else_ is not None
-    assert isinstance(stmt.else_[0], ast.StmtIf)
+    assert isinstance(stmt.else_[0], StmtIf)
 
 
 def test_peek_clamps_beyond_end():
@@ -79,26 +81,26 @@ def test_unexpected_token_in_expression():
 
 
 def test_render_unary_expression():
-    expr = ast.ExprUnary("-", ast.LiteralInt(1, Position(0, 0)), Position(0, 0))
+    expr = ExprUnary("-", LitInt(1, Position(0, 0)), Position(0, 0))
     assert expr.render() == "(-1)"
 
 
 def test_render_call_expression():
-    expr = ast.ExprCall(
+    expr = ExprCall(
         "f",
-        [ast.LiteralInt(1, Position(0, 0)), ast.LiteralInt(2, Position(0, 0))],
+        [LitInt(1, Position(0, 0)), LitInt(2, Position(0, 0))],
         Position(0, 0),
     )
     assert expr.render() == "f(1, 2)"
 
 
 def test_render_array_literal():
-    expr = ast.ExprArrayLiteral(
-        [ast.LiteralInt(1, Position(0, 0)), ast.LiteralInt(2, Position(0, 0))],
+    expr = ExprArrayLiteral(
+        [LitInt(1, Position(0, 0)), LitInt(2, Position(0, 0))],
         Position(0, 0),
     )
     assert expr.render() == "[1, 2]"
 
 
 def test_render_unknown_expression_falls_back():
-    assert ast.Expr().render() == "<expr>"
+    assert Expr().render() == "<expr>"

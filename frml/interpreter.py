@@ -1,60 +1,46 @@
 """Concrete interpreter for Frml.
 
 The interpreter executes a type-checked program and enforces runtime checks.
+Execution of each node is delegated to its `do` method; the interpreter
+supplies the runtime state those methods call back into.
 """
 
-import math
-from typing import cast
-
-from . import ast_nodes as ast
+from . import expr, lit
 from .builtins import BUILTINS
-from .errors import FrmlContractError, FrmlRuntimeError, FrmlTerminationError
+from .errors import FrmlContractError, FrmlRuntimeError
+from .runtime import (
+    DEFAULT_MAX_ITER,
+    FrmlArray,
+    ReturnSignal,
+    _as_int,
+    _SkipCheck,
+    _truthy,
+)
+from .scope import Scope
 from .types import BOOL, INT, STRING
 from .utils import Position
 
-DEFAULT_MAX_ITER = 1_000_000
-
-
-class FrmlArray:
-    """A mutable, fixed-length array value."""
-
-    __slots__ = ("elem_type", "elements")
-
-    def __init__(self, elem_type, elements):
-        self.elem_type = elem_type
-        self.elements = list(elements)
-
-    @property
-    def length(self):
-        return len(self.elements)
-
-    def snapshot(self):
-        return FrmlArray(self.elem_type, list(self.elements))
-
-    def __eq__(self, other):
-        if not isinstance(other, FrmlArray):
-            return NotImplemented
-        return self.length == other.length and self.elements == other.elements
-
-
-class ReturnSignal(Exception):
-    def __init__(self, value):
-        self.value = value
-
-
-# Internal signal used when a runtime contract clause cannot be evaluated
-# (e.g. an unbounded quantifier).  Such clauses are skipped rather than treated
-# as failures, matching the spec's "runtime does not need to execute arbitrary
-# quantified expressions".
-class _SkipCheck(Exception):
-    pass
+# Bound kinds for each comparison operator, keyed by which side of the
+# comparison holds the quantified variable.
+_LEFT_VAR_BOUND = {
+    "<": "lt",
+    "<=": "le",
+    ">=": "low",
+    ">": "low_gt",
+}
+_RIGHT_VAR_BOUND = {
+    ">": "lt",
+    ">=": "le",
+    "<=": "low",
+    "<": "low_gt",
+}
 
 
 class Interpreter:
     def __init__(self, program, argv=None):
         self.program = program
         self.functions = {f.name: f for f in program.functions}
-        self.scopes = []
+        self.scope = Scope()
         self.snapshot = None
         self.max_iterations = DEFAULT_MAX_ITER
         self.argv = list(argv) if argv is not None else []
@@ -68,375 +54,99 @@ class Interpreter:
 
     def call_builtin(self, name, args, pos):
         """Built-in functions."""
-        if name == "args":
-            return FrmlArray(STRING, list(self.argv))
-        if name == "pop":
-            return self._pop(args[0], pos)
-        if name == "print":
-            print(str(args[0]))
-            return None
-        if name == "push":
-            return self._push(args[0], args[1], pos)
-        if name == "read":
-            return self._read_file(args[0], pos)
-        if name == "split":
-            return FrmlArray(STRING, str(args[0]).split(str(args[1])))
-        if name == "write":
-            return self._write_file(args[0], args[1], pos)
-        raise FrmlRuntimeError(f"unknown built-in function {name!r}")
-
-    # -- scope helpers ------------------------------------------------------
-
-    def assign_value(self, name, value):
-        for scope in reversed(self.scopes):
-            if name in scope:
-                scope[name] = value
-                return
-        raise FrmlRuntimeError(f"unknown variable {name!r}")
-
-    def lookup_value(self, name):
-        for scope in reversed(self.scopes):
-            if name in scope:
-                return scope[name]
-        raise FrmlRuntimeError(f"unknown variable {name!r}")
-
-    def pop_scope(self):
-        self.scopes.pop()
-
-    def push_scope(self):
-        self.scopes.append({})
+        try:
+            builtin = BUILTINS[name]
+        except KeyError:
+            raise FrmlRuntimeError(f"unknown built-in function {name!r}")
+        return builtin.call(self, args, pos)
 
     # -- function calls -----------------------------------------------------
 
     def call(self, name, args):
         fn = self.functions[name]
+        snapshot = self._make_snapshot(fn, args)
 
-        # Build the entry snapshot for `old(...)`.
+        self.scope.push()
+        try:
+            self._bind_params(fn, args)
+            self._check_preconditions(fn)
+
+            result, returned = self._execute_body(fn)
+            if fn.return_type is not None and not returned:
+                raise FrmlRuntimeError(
+                    f"function {fn.name!r} did not return a value", fn.pos
+                )
+
+            self._check_postconditions(fn, snapshot, result)
+            return result
+        finally:
+            self.scope.pop()
+
+    def _make_snapshot(self, fn, args):
+        """Capture the entry values used by `old(...)`."""
         snapshot = {}
         for param, value in zip(fn.params, args):
             if isinstance(value, FrmlArray):
                 snapshot[param.name] = value.snapshot()
             else:
                 snapshot[param.name] = value
+        return snapshot
 
-        self.push_scope()
-        try:
-            for param, value in zip(fn.params, args):
-                self.scopes[-1][param.name] = value
+    def _bind_params(self, fn, args):
+        for param, value in zip(fn.params, args):
+            self.scope.define(param.name, value)
 
-            for req in fn.requires:
-                if not _truthy(self.eval_expr(req)):
-                    raise FrmlContractError(
-                        f"precondition violated: {req.render()}", req.pos
-                    )
-
-            result = None
-            returned = False
-            try:
-                self.execute_stmt_list(fn.body)
-            except ReturnSignal as sig:
-                result = sig.value
-                returned = True
-
-            if fn.return_type is not None and not returned:
-                raise FrmlRuntimeError(
-                    f"function {fn.name!r} did not return a value", fn.pos
+    def _check_preconditions(self, fn):
+        for req in fn.requires:
+            if not _truthy(self.eval_expr(req)):
+                raise FrmlContractError(
+                    f"precondition violated: {req.render()}", req.pos
                 )
 
-            # Check postconditions.
-            old_snapshot = self.snapshot
-            self.snapshot = snapshot
-            try:
-                for ens in fn.ensures:
-                    try:
-                        ok = _truthy(
-                            self.eval_expr(
-                                ens,
-                                result_value=result
-                                if fn.return_type is not None
-                                else None,
-                            )
-                        )
-                    except _SkipCheck:
-                        continue
-                    if not ok:
-                        raise FrmlContractError(
-                            f"postcondition violated: {ens.render()}",
-                            ens.pos,
-                        )
-            finally:
-                self.snapshot = old_snapshot
+    def _execute_body(self, fn):
+        try:
+            self.execute_stmt_list(fn.body)
+        except ReturnSignal as sig:
+            return sig.value, True
+        return None, False
 
-            return result
+    def _check_postconditions(self, fn, snapshot, result):
+        old_snapshot = self.snapshot
+        self.snapshot = snapshot
+        try:
+            for ens in fn.ensures:
+                try:
+                    ok = _truthy(
+                        self.eval_expr(
+                            ens,
+                            result_value=result
+                            if fn.return_type is not None
+                            else None,
+                        )
+                    )
+                except _SkipCheck:
+                    continue
+                if not ok:
+                    raise FrmlContractError(
+                        f"postcondition violated: {ens.render()}",
+                        ens.pos,
+                    )
         finally:
-            self.pop_scope()
+            self.snapshot = old_snapshot
 
-    # -- statements ---------------------------------------------------------
+    # -- execution ----------------------------------------------------------
 
     def execute_stmt_list(self, stmts):
         for stmt in stmts:
             self.execute_stmt(stmt)
 
     def execute_stmt(self, stmt):
-        return stmt.accept(self)
-
-    def visit_Stmt(self, stmt):
-        raise FrmlRuntimeError(f"unknown statement {type(stmt).__name__}")
-
-    def visit_StmtArrayAssign(self, stmt):
-        arr = self.eval_expr(stmt.array)
-        index = self.eval_expr(stmt.index)
-        value = self.eval_expr(stmt.value)
-        self._store(arr, index, value, stmt.pos)
-
-    def visit_StmtAssert(self, stmt):
-        value = _truthy(self.eval_expr(stmt.expr))
-        if not value:
-            raise FrmlRuntimeError(f"assertion failed: {stmt.expr.render()}", stmt.pos)
-
-    def visit_StmtAssign(self, stmt):
-        value = self.eval_expr(stmt.expr)
-        self.assign_value(stmt.name, value)
-
-    def visit_StmtCall(self, stmt):
-        if stmt.name in BUILTINS:
-            args = [self.eval_expr(a) for a in stmt.args]
-            self.call_builtin(stmt.name, args, stmt.pos)
-        else:
-            args = [
-                self.eval_expr(a, elem_hint=self._param_elem_hint(stmt.name, i, a))
-                for i, a in enumerate(stmt.args)
-            ]
-            self.call(stmt.name, args)
-
-    def visit_StmtIf(self, stmt):
-        if _truthy(self.eval_expr(stmt.cond)):
-            self.push_scope()
-            try:
-                self.execute_stmt_list(stmt.then)
-            finally:
-                self.pop_scope()
-        elif stmt.else_ is not None:
-            self.push_scope()
-            try:
-                self.execute_stmt_list(stmt.else_)
-            finally:
-                self.pop_scope()
-
-    def visit_StmtLet(self, stmt):
-        value = self.eval_expr(stmt.init, elem_hint=self._elem_hint(stmt.type))
-        self.scopes[-1][stmt.name] = value
-
-    def visit_StmtReturn(self, stmt):
-        raise ReturnSignal(self.eval_expr(stmt.expr))
-
-    def visit_StmtWhile(self, stmt):
-        iterations = 0
-        while True:
-            cond = _truthy(self.eval_expr(stmt.cond))
-            if not cond:
-                break
-
-            d_before = 0
-            if stmt.decreases is not None:
-                d_before = _as_int(self.eval_expr(stmt.decreases))
-                if d_before < 0:
-                    raise FrmlTerminationError(
-                        "loop decreases expression became negative",
-                        stmt.pos,
-                    )
-
-            iterations += 1
-            if iterations > self.max_iterations:
-                raise FrmlTerminationError(
-                    "loop did not terminate within the iteration limit",
-                    stmt.pos,
-                )
-
-            self.push_scope()
-            try:
-                self.execute_stmt_list(stmt.body)
-            finally:
-                self.pop_scope()
-
-            if stmt.decreases is not None:
-                d_after = _as_int(self.eval_expr(stmt.decreases))
-                if not (d_after < d_before):
-                    raise FrmlTerminationError(
-                        "loop decreases expression did not strictly decrease",
-                        stmt.pos,
-                    )
-
-    # -- expressions --------------------------------------------------------
+        return stmt.do(self, result_value=None, elem_hint=None, use_old=False)
 
     def eval_expr(self, expr, *, result_value=None, elem_hint=None, use_old=False):
-        return expr.accept(
+        return expr.do(
             self, result_value=result_value, elem_hint=elem_hint, use_old=use_old
         )
-
-    def visit_Expr(self, expr, *, result_value=None, elem_hint=None, use_old=False):
-        raise FrmlRuntimeError(f"unknown expression {type(expr).__name__}")
-
-    def visit_ExprArrayAccess(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        arr = self.eval_expr(expr.array, result_value=result_value, use_old=use_old)
-        index = self.eval_expr(expr.index, result_value=result_value, use_old=use_old)
-        return self._load(arr, index, expr.pos)
-
-    def visit_ExprArrayLiteral(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        elem_type = self._infer_array_elem(expr, elem_hint, use_old)
-        elements = [
-            self.eval_expr(e, result_value=result_value, use_old=use_old)
-            for e in expr.elements
-        ]
-        return FrmlArray(elem_type, elements)
-
-    def visit_ExprBinary(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        op = expr.op
-        if op == "and":
-            return _truthy(
-                self.eval_expr(expr.left, result_value=result_value, use_old=use_old)
-            ) and _truthy(
-                self.eval_expr(expr.right, result_value=result_value, use_old=use_old)
-            )
-        if op == "or":
-            return _truthy(
-                self.eval_expr(expr.left, result_value=result_value, use_old=use_old)
-            ) or _truthy(
-                self.eval_expr(expr.right, result_value=result_value, use_old=use_old)
-            )
-        if op == "=>":
-            return (
-                not _truthy(
-                    self.eval_expr(
-                        expr.left, result_value=result_value, use_old=use_old
-                    )
-                )
-            ) or _truthy(
-                self.eval_expr(expr.right, result_value=result_value, use_old=use_old)
-            )
-
-        left = self.eval_expr(expr.left, result_value=result_value, use_old=use_old)
-        right = self.eval_expr(expr.right, result_value=result_value, use_old=use_old)
-
-        if op == "++":
-            return cast(str, left) + cast(str, right)
-        if op == "==":
-            return self._eq(left, right)
-        if op == "!=":
-            return not self._eq(left, right)
-        if op == "<":
-            return _as_int(left) < _as_int(right)
-        if op == "<=":
-            return _as_int(left) <= _as_int(right)
-        if op == ">":
-            return _as_int(left) > _as_int(right)
-        if op == ">=":
-            return _as_int(left) >= _as_int(right)
-        if op == "+":
-            return _as_int(left) + _as_int(right)
-        if op == "-":
-            return _as_int(left) - _as_int(right)
-        if op == "*":
-            return _as_int(left) * _as_int(right)
-        if op == "/":
-            if _as_int(right) == 0:
-                raise FrmlRuntimeError("division by zero", expr.pos)
-            return _euclid_div(_as_int(left), _as_int(right))
-        if op == "%":
-            if _as_int(right) == 0:
-                raise FrmlRuntimeError("division by zero", expr.pos)
-            return _euclid_mod(_as_int(left), _as_int(right))
-
-        raise FrmlRuntimeError(f"unknown binary operator {op!r}")
-
-    def visit_ExprCall(self, expr, *, result_value=None, elem_hint=None, use_old=False):
-        if expr.name in BUILTINS:
-            args = [
-                self.eval_expr(a, result_value=result_value, use_old=use_old)
-                for a in expr.args
-            ]
-            return self.call_builtin(expr.name, args, expr.pos)
-        assert expr.name in self.functions
-        args = [
-            self.eval_expr(
-                a, elem_hint=self._param_elem_hint(expr.name, i, a), use_old=use_old
-            )
-            for i, a in enumerate(expr.args)
-        ]
-        return self.call(expr.name, args)
-
-    def visit_ExprLength(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        arr = self.eval_expr(expr.arg, result_value=result_value, use_old=use_old)
-        if not isinstance(arr, FrmlArray):
-            raise FrmlRuntimeError("length expects an array", expr.pos)
-        return arr.length
-
-    def visit_ExprQuantifier(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        handled, value = self._eval_quantifier(expr, result_value, use_old)
-        if not handled:
-            raise _SkipCheck()
-        return value
-
-    def visit_ExprOld(self, expr, *, result_value=None, elem_hint=None, use_old=False):
-        if self.snapshot is None:
-            raise FrmlRuntimeError("'old' used outside a postcondition", expr.pos)
-        return self.eval_expr(expr.arg, result_value=result_value, use_old=True)
-
-    def visit_ExprStringify(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        v = self.eval_expr(expr.operand, result_value=result_value, use_old=use_old)
-        return self._stringify(v)
-
-    def visit_ExprUnary(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        v = self.eval_expr(expr.operand, result_value=result_value, use_old=use_old)
-        if expr.op == "!":
-            return not _truthy(v)
-        if expr.op == "-":
-            return -_as_int(v)
-        raise FrmlRuntimeError(f"unknown unary operator {expr.op!r}")
-
-    def visit_ExprVar(self, expr, *, result_value=None, elem_hint=None, use_old=False):
-        if expr.name == "result":
-            if result_value is None:
-                raise FrmlRuntimeError("'result' used outside a postcondition")
-            return result_value
-        if use_old:
-            if self.snapshot is None:
-                raise FrmlRuntimeError("'old' used outside a postcondition", expr.pos)
-            if expr.name not in self.snapshot:
-                raise FrmlRuntimeError(
-                    f"unknown variable {expr.name!r} in old()", expr.pos
-                )
-            return self.snapshot[expr.name]
-        return self.lookup_value(expr.name)
-
-    def visit_LiteralBool(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        return expr.value
-
-    def visit_LiteralInt(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        return expr.value
-
-    def visit_LiteralString(
-        self, expr, *, result_value=None, elem_hint=None, use_old=False
-    ):
-        return expr.value
 
     # -- helpers ------------------------------------------------------------
 
@@ -451,15 +161,17 @@ class Interpreter:
     def _infer_array_elem(self, expr, elem_hint, use_old):
         if expr.elements:
             first = self.eval_expr(expr.elements[0], use_old=use_old)
-            if isinstance(first, bool):
-                return BOOL
-            if isinstance(first, int):
-                return INT
-            if isinstance(first, str):
-                return STRING
-            raise FrmlRuntimeError(
-                "array elements must be Int, Bool or String", expr.pos
-            )
+            match first:
+                case bool():
+                    return BOOL
+                case int():
+                    return INT
+                case str():
+                    return STRING
+                case _:
+                    raise FrmlRuntimeError(
+                        "array elements must be Int, Bool or String", expr.pos
+                    )
         if elem_hint is not None:
             return elem_hint
         raise FrmlRuntimeError(
@@ -493,68 +205,62 @@ class Interpreter:
         arr.elements[idx] = value
 
     def _stringify(self, value):
-        if isinstance(value, bool):
-            return "true" if value else "false"
-        if isinstance(value, int):
-            return str(value)
-        if isinstance(value, str):
-            return value
-        raise FrmlRuntimeError("cannot convert value to a string")
+        match value:
+            case bool():
+                return "true" if value else "false"
+            case int():
+                return str(value)
+            case str():
+                return value
+            case _:
+                raise FrmlRuntimeError("cannot convert value to a string")
 
     # -- runtime quantifier support (best effort) ---------------------------
 
     def _and_list(self, exprs):
         if not exprs:
-            return ast.LiteralBool(True, Position(0, 0))
+            return lit.LitBool(True, Position(0, 0))
         result = exprs[0]
         for e in exprs[1:]:
-            result = ast.ExprBinary("and", result, e, e.pos)
+            result = expr.ExprBinary("and", result, e, e.pos)
         return result
 
     def _eval_quantifier(self, expr, result_value, use_old):
         var = expr.var_name
 
-        if expr.quant == "forall":
-            bounds = self._quant_bounds(expr.body, var)
-            if bounds is None:
-                return (False, None)
-            low, high, check = bounds
-            for i in range(low, high):
-                self.push_scope()
-                self.scopes[-1][var] = i
-                try:
-                    ok = _truthy(
-                        self.eval_expr(
-                            check, result_value=result_value, use_old=use_old
-                        )
-                    )
-                finally:
-                    self.pop_scope()
-                if not ok:
-                    return (True, False)
-            return (True, True)
+        match expr.quant:
+            case "forall":
+                bounds = self._quant_bounds(expr.body, var)
+                if bounds is None:
+                    return (False, None)
+                low, high, check = bounds
+                for i in range(low, high):
+                    if not self._eval_quant_check(var, i, check, result_value, use_old):
+                        return (True, False)
+                return (True, True)
 
-        if expr.quant == "exists":
-            bounds = self._quant_bounds_exists(expr.body, var)
-            if bounds is None:
-                return (False, None)
-            low, high, check = bounds
-            for i in range(low, high):
-                self.push_scope()
-                self.scopes[-1][var] = i
-                try:
-                    ok = _truthy(
-                        self.eval_expr(
-                            check, result_value=result_value, use_old=use_old
-                        )
-                    )
-                finally:
-                    self.pop_scope()
-                if ok:
-                    return (True, True)
-            return (True, False)
+            case "exists":
+                bounds = self._quant_bounds_exists(expr.body, var)
+                if bounds is None:
+                    return (False, None)
+                low, high, check = bounds
+                for i in range(low, high):
+                    if self._eval_quant_check(var, i, check, result_value, use_old):
+                        return (True, True)
+                return (True, False)
 
-        return (False, None)
+            case _:
+                return (False, None)
+
+    def _eval_quant_check(self, var, value, check, result_value, use_old):
+        self.scope.push()
+        self.scope.define(var, value)
+        try:
+            return _truthy(
+                self.eval_expr(check, result_value=result_value, use_old=use_old)
+            )
+        finally:
+            self.scope.pop()
 
     def _extract_bounds(self, conjuncts, var):
         low = 0
@@ -594,37 +300,14 @@ class Interpreter:
         op = expr.op
         left, right = expr.left, expr.right
         if left.variable_name() == var:
-            if op == "<":
-                return ("lt", right)
-            if op == "<=":
-                return ("le", right)
-            if op == ">=":
-                # i >= 0
-                return ("low", right)
-            if op == ">":
-                return ("low_gt", right)
+            kind = _LEFT_VAR_BOUND.get(op)
+            if kind is not None:
+                return (kind, right)
         if right.variable_name() == var:
-            if op == ">":
-                return ("lt", left)
-            if op == ">=":
-                return ("le", left)
-            if op == "<=":
-                return ("low", left)
-            if op == "<":
-                return ("low_gt", left)
+            kind = _RIGHT_VAR_BOUND.get(op)
+            if kind is not None:
+                return (kind, left)
         return None
-
-    def _push(self, arr, value, pos):
-        if not isinstance(arr, FrmlArray):
-            raise FrmlRuntimeError("push expects an array", pos)
-        arr.elements.append(value)
-
-    def _pop(self, arr, pos):
-        if not isinstance(arr, FrmlArray):
-            raise FrmlRuntimeError("pop expects an array", pos)
-        if arr.length == 0:
-            raise FrmlRuntimeError("pop from an empty array", pos)
-        return arr.elements.pop()
 
     def _quant_bounds(self, body, var):
         """Recognise `0 <= var and var < length(...) => P` style forall bodies."""
@@ -645,49 +328,3 @@ class Interpreter:
         rest = conjuncts
         # Rebuild the remaining conjunction (everything except the bound tests).
         return (low, high, self._and_list(rest))
-
-    def _read_file(self, path, pos):
-        try:
-            with open(str(path), "r", encoding="utf-8") as f:
-                return f.read()
-        except OSError as e:
-            raise FrmlRuntimeError(
-                f"cannot read file {path!r}: {e.strerror or e}", pos
-            ) from e
-
-    def _write_file(self, path, text, pos):
-        try:
-            with open(str(path), "w", encoding="utf-8") as f:
-                f.write(str(text))
-                return
-        except OSError as e:
-            raise FrmlRuntimeError(
-                f"cannot write file {path!r}: {e.strerror or e}", pos
-            ) from e
-
-
-def _as_int(value):
-    """Coerce `value` to `int`.
-
-    The typechecker has already verified the expression is int-typed, so this
-    is a runtime backstop rather than a conversion of arbitrary input.
-    """
-    return int(cast(int, value))
-
-
-def _euclid_div(a, b):
-    """Integer division matching Z3's Euclidean semantics (non-negative remainder)."""
-    if b == 0:
-        raise ZeroDivisionError("division by zero")
-    sign = 1 if b > 0 else -1
-    return math.floor(a / abs(b)) * sign
-
-
-def _euclid_mod(a, b):
-    if b == 0:
-        raise ZeroDivisionError("division by zero")
-    return a - b * _euclid_div(a, b)
-
-
-def _truthy(value):
-    return bool(value)

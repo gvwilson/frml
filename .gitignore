@@ -4,3 +4,6 @@
 .coverage
 __pycache__
 dist
+AGENTS.md
+CLAUDE.md
+resources/

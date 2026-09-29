@@ -283,17 +283,17 @@ class Prover:
             array_elem_sort=array_elem_sort,
         )
 
-    def visit_LiteralInt(
+    def visit_LitInt(
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
     ):
         return z3.IntVal(expr.value)
 
-    def visit_LiteralBool(
+    def visit_LitBool(
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
     ):
         return z3.BoolVal(expr.value)
 
-    def visit_LiteralString(
+    def visit_LitString(
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
     ):
         return z3.StringVal(expr.value)
@@ -324,11 +324,15 @@ class Prover:
         v = self.eval_expr(
             expr.operand, state, use_old=use_old, result_term=result_term
         )
-        if expr.op == "!":
-            return z3.Not(v)
-        if expr.op == "-":
-            return -v
-        raise FrmlVerificationError(f"unknown unary operator {expr.op!r}", expr.pos)
+        match expr.op:
+            case "!":
+                return z3.Not(v)
+            case "-":
+                return -v
+            case _:
+                raise FrmlVerificationError(
+                    f"unknown unary operator {expr.op!r}", expr.pos
+                )
 
     def visit_ExprStringify(
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
@@ -342,81 +346,60 @@ class Prover:
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
     ):
         op = expr.op
-        if op in ("and", "or", "=>"):
-            left = self.eval_expr(
-                expr.left, state, use_old=use_old, result_term=result_term
-            )
-            right = self.eval_expr(
-                expr.right, state, use_old=use_old, result_term=result_term
-            )
-            if op == "and":
+        left = self.eval_expr(
+            expr.left, state, use_old=use_old, result_term=result_term
+        )
+        right = self.eval_expr(
+            expr.right, state, use_old=use_old, result_term=result_term
+        )
+        match op:
+            case "and":
                 return z3.And(left, right)
-            if op == "or":
+            case "or":
                 return z3.Or(left, right)
-            return z3.Implies(left, right)
-
-        if op == "++":
-            left = self.eval_expr(
-                expr.left, state, use_old=use_old, result_term=result_term
-            )
-            right = self.eval_expr(
-                expr.right, state, use_old=use_old, result_term=result_term
-            )
-            return z3.Concat(left, right)
-
-        if op in ("<", "<=", ">", ">=", "+", "-", "*"):
-            left = self.eval_expr(
-                expr.left, state, use_old=use_old, result_term=result_term
-            )
-            right = self.eval_expr(
-                expr.right, state, use_old=use_old, result_term=result_term
-            )
-            if op == "<":
+            case "=>":
+                return z3.Implies(left, right)
+            case "++":
+                return z3.Concat(left, right)
+            case "<":
                 return left < right
-            if op == "<=":
+            case "<=":
                 return left <= right
-            if op == ">":
+            case ">":
                 return left > right
-            if op == ">=":
+            case ">=":
                 return left >= right
-            if op == "+":
+            case "+":
                 return left + right
-            if op == "-":
+            case "-":
                 return left - right
-            return left * right
+            case "*":
+                return left * right
+            case "/" | "%":
+                if self._quant_depth == 0 and self._assume_depth == 0:
+                    self._emit(
+                        "division",
+                        f"divisor is non-zero in {expr.render()}",
+                        state.path,
+                        right != 0,
+                        expr.pos,
+                    )
+                match op:
+                    case "/":
+                        return left / right
+                    case _:
+                        return left % right
 
-        if op in ("/", "%"):
-            left = self.eval_expr(
-                expr.left, state, use_old=use_old, result_term=result_term
-            )
-            right = self.eval_expr(
-                expr.right, state, use_old=use_old, result_term=result_term
-            )
-            if self._quant_depth == 0 and self._assume_depth == 0:
-                self._emit(
-                    "division",
-                    f"divisor is non-zero in {expr.render()}",
-                    state.path,
-                    right != 0,
-                    expr.pos,
+            case "==" | "!=":
+                eq = self._symbolic_eq(left, right)
+                if op == "!=":
+                    eq = z3.Not(eq)
+                return eq
+
+            case _:
+                raise FrmlVerificationError(
+                    f"unknown binary operator {op!r}", expr.pos
                 )
-            if op == "/":
-                return left / right
-            return left % right
-
-        if op in ("==", "!="):
-            left = self.eval_expr(
-                expr.left, state, use_old=use_old, result_term=result_term
-            )
-            right = self.eval_expr(
-                expr.right, state, use_old=use_old, result_term=result_term
-            )
-            eq = self._symbolic_eq(left, right)
-            if op == "!=":
-                eq = z3.Not(eq)
-            return eq
-
-        raise FrmlVerificationError(f"unknown binary operator {op!r}", expr.pos)
 
     def visit_ExprCall(
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
@@ -556,24 +539,25 @@ def _render_model_value(value):
     if not z3.is_app(value):
         return value.sexpr()
     head = value.decl().name()
-    if head == "const":
-        return f"all -> {_render_model_value(value.arg(0))}"
-    if head == "store":
-        entries = []
-        cur = value
-        while cur.decl().name() == "store":
-            index = _render_model_value(cur.arg(1))
-            item = _render_model_value(cur.arg(2))
-            entries.append(f"{index}: {item}")
-            cur = cur.arg(0)
-        if cur.decl().name() == "const":
-            entries.append(f"else: {_render_model_value(cur.arg(0))}")
-        return "{" + ", ".join(entries) + "}"
-    if head == "if":
-        cond = value.arg(0).sexpr()
-        then = _render_model_value(value.arg(1))
-        else_ = _render_model_value(value.arg(2))
-        return f"({cond} ? {then} : {else_})"
+    match head:
+        case "const":
+            return f"all -> {_render_model_value(value.arg(0))}"
+        case "store":
+            entries = []
+            cur = value
+            while cur.decl().name() == "store":
+                index = _render_model_value(cur.arg(1))
+                item = _render_model_value(cur.arg(2))
+                entries.append(f"{index}: {item}")
+                cur = cur.arg(0)
+            if cur.decl().name() == "const":
+                entries.append(f"else: {_render_model_value(cur.arg(0))}")
+            return "{" + ", ".join(entries) + "}"
+        case "if":
+            cond = value.arg(0).sexpr()
+            then = _render_model_value(value.arg(1))
+            else_ = _render_model_value(value.arg(2))
+            return f"({cond} ? {then} : {else_})"
     if z3.is_int_value(value):
         return str(value.as_long())
     if z3.is_bool(value):

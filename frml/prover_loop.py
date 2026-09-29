@@ -9,9 +9,9 @@ from `frml.prover_basic`.
 
 import z3
 
-from . import ast_nodes as ast
 from .prover_basic import Obligation, ProverResult, State, check_obligations
 from .prover_basic import Prover as BasicProver
+from .stmt import StmtAssign, StmtIf, StmtWhile
 
 __all__ = [
     "Obligation",
@@ -37,13 +37,13 @@ class ScalarWriterCollector:
             self._collect_stmt(stmt)
 
     def _collect_stmt(self, stmt):
-        if isinstance(stmt, ast.StmtAssign):
+        if isinstance(stmt, StmtAssign):
             self.names.add(stmt.name)
-        elif isinstance(stmt, ast.StmtIf):
+        elif isinstance(stmt, StmtIf):
             self.collect(stmt.then)
             if stmt.else_ is not None:
                 self.collect(stmt.else_)
-        elif isinstance(stmt, ast.StmtWhile):
+        elif isinstance(stmt, StmtWhile):
             self.collect(stmt.body)
 
 
