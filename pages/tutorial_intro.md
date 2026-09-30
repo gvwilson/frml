@@ -4,7 +4,8 @@ This tutorial walks through the Frml verification engine, explaining how a Frml
 program becomes Boolean logic that the Z3 solver can check, and what Z3 does
 with that logic.  The verifier and tutorial are layered:
 
--   `basic` handles scalars, conditionals, and functions (no loops or arrays).
+-   `scalar` handles straight-line and branching code (no functions or loops).
+-   `contracts` adds contracts and function calls.
 -   `loop` adds `while` loops.
 -   `array` adds fixed-size arrays.
 -   `builtin` adds built-in functions to do I/O and `push`/`pop` array values.

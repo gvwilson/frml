@@ -1,18 +1,18 @@
 """Static type checking for Frml's `loop` language level.
 
-The `loop` level is `basic` plus `while` loops.  It still has no arrays
+The `loop` level is `contracts` plus `while` loops.  It still has no arrays
 and no built-in functions; `frml.levelchecker` enforces those
 restrictions, so this module only has to type-check loop syntax.  It
-subclasses the `basic` type checker and adds the `StmtWhile` visitor.
+subclasses the `contracts` type checker and adds the `StmtWhile` visitor.
 The `array` level builds on this class in turn, then `builtin` builds on
 `array`, and `complete` builds on `builtin`.
 """
 
-from .typechecker_basic import TypeChecker as BasicTypeChecker
+from .typechecker_contracts import TypeChecker as ContractsTypeChecker
 from .types import BOOL, INT
 
 
-class TypeChecker(BasicTypeChecker):
+class TypeChecker(ContractsTypeChecker):
     """Type checker for the `loop` level: scalars plus `while` loops."""
 
     def visit_StmtWhile(self, stmt, ret):

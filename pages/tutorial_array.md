@@ -13,7 +13,8 @@ Two files implement the level:
     arrays.
 
 Start with the [intro](tutorial_intro.md), the
-[basic tutorial](tutorial_basic.md), and the
+[scalar tutorial](tutorial_scalar.md), the
+[contracts tutorial](tutorial_contracts.md), and the
 [loop tutorial](tutorial_loop.md) if you have not already read them; this page
 assumes the machinery described there.
 
@@ -388,4 +389,4 @@ result == ForAll(i, Implies(And(0 <= i, i < len), a[i] >= 0))
     -   `exec_while`: loop verification with array-aware havoc.
     -   `written_params`: tracks which array parameters a function writes.
 -   The Z3 check loop (`check_obligations`) is defined in
-    `frml/prover_basic.py` and inherited here.
+    `frml/prover_contracts.py` and inherited here.

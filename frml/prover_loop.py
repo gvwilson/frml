@@ -1,16 +1,16 @@
 """Verification-condition generation and Z3-based proof for Frml's `loop` level.
 
-The `loop` level is `basic` plus `while` loops.  It has no arrays and no
+The `loop` level is `contracts` plus `while` loops.  It has no arrays and no
 built-in functions, so this prover only has to model scalar loop
-invariants and termination measures.  It subclasses the `basic` prover
+invariants and termination measures.  It subclasses the `contracts` prover
 and adds a `StmtWhile` visitor; the shared Z3 check loop is inherited
-from `frml.prover_basic`.
+from `frml.prover_contracts`.
 """
 
 import z3
 
-from .prover_basic import Obligation, ProverResult, State, check_obligations
-from .prover_basic import Prover as BasicProver
+from .prover_contracts import Obligation, ProverResult, State, check_obligations
+from .prover_contracts import Prover as ContractsProver
 from .stmt import StmtAssign, StmtIf, StmtWhile
 
 __all__ = [
@@ -47,7 +47,7 @@ class ScalarWriterCollector:
             self.collect(stmt.body)
 
 
-class Prover(BasicProver):
+class Prover(ContractsProver):
     """Prover for the `loop` level: scalar programs with `while` loops."""
 
     def visit_StmtWhile(self, stmt, state):

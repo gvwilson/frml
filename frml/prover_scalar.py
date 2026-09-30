@@ -1,15 +1,14 @@
-"""Verification-condition generation and Z3-based proof for Frml's `basic` level.
+"""Verification-condition generation and Z3-based proof for Frml's `scalar` level.
 
-The `basic` level verifies programs that use only scalar values (`Int`,
-`Bool`, `String`), with branching, function calls, and recursion, but no
-arrays, I/O, `push`/`pop`, or `while` loops.  The language-level checker
-guarantees those restrictions, so this prover never needs to model arrays
-or loops.
+The `scalar` level verifies straight-line and branching code over scalar
+values (`Int`, `Bool`, `String`) with no function calls, contracts,
+`old(...)`, recursion or quantifiers.  The only proof obligations are
+`assert` and non-zero-divisor `division`.
 
-This module is also the base of the prover hierarchy: every higher level
-(`loop`, `array`, `builtin`, `complete`) builds on the `Prover` defined
-here, and the shared Z3 proof-checking harness lives here so that no level
-has to import from a level above it.
+This module is the engine on which every higher prover builds: `State`,
+fresh names, path conditions, the `exec_stmts`/`exec_stmt`/`eval_expr`
+visitor loops, and the shared Z3 `check_obligations` harness all live here
+so that no higher level has to reimplement them.
 """
 
 import z3
@@ -19,8 +18,8 @@ from .errors import FrmlVerificationError
 __all__ = [
     "CheckOutcome",
     "Obligation",
-    "Prover",
     "ProverResult",
+    "ScalarProver",
     "State",
     "check_obligations",
     "verify_program",
@@ -58,7 +57,7 @@ class ProverResult:
         self.obligations = obligations
 
 
-class Prover:
+class ScalarProver:
     def __init__(self, program):
         self.program = program
         self.current_fn = None
@@ -89,28 +88,13 @@ class Prover:
         for p in fn.params:
             state.vars[p.name] = self._fresh_scalar(p.type, p.name)
 
-        # Snapshot for `old(...)`.
+        # Snapshot for `old(...)` (unused at this level; higher levels read it).
         state.old_vars = dict(state.vars)
 
-        # Assume the preconditions.
-        for req in fn.requires:
-            state.path.append(self.eval_expr(req, state))
-
-        # Function-level decreases must be non-negative.
-        if fn.decreases is not None:
-            d = self.eval_expr(fn.decreases, state)
-            self.entry_decreases = d
-            self._emit(
-                "decreases",
-                f"decreases {fn.decreases.render()} >= 0",
-                state.path,
-                d >= 0,
-                fn.decreases.pos,
-            )
+        self._assume_spec(fn, state)
 
         # Run the body.  Surviving states reached the end without `return`; for
-        # a value-returning function that is an error, and for a void function
-        # those states are where its `ensures` clauses are checked.
+        # a value-returning function that is an error.
         end_states = self.exec_stmts(fn.body, state)
         if fn.return_type is not None:
             if end_states:
@@ -120,8 +104,13 @@ class Prover:
                 )
         else:
             for s in end_states:
-                for ens in fn.ensures:
-                    self.check_postcondition(ens, s, None)
+                self._check_ensures(fn, s, None)
+
+    def _assume_spec(self, fn, state):
+        """Assume `requires` and emit the `decreases` obligation; scalar has neither."""
+
+    def _check_ensures(self, fn, state, result):
+        """Check `ensures` clauses; scalar has none."""
 
     # -- statement execution ------------------------------------------------
 
@@ -159,11 +148,6 @@ class Prover:
         state.vars[stmt.name] = value
         return [state]
 
-    def visit_StmtCall(self, stmt, state):
-        fn = self.functions[stmt.name]
-        arg_vals = [self.eval_expr(a, state) for a in stmt.args]
-        return [self.model_call(fn, arg_vals, state)]
-
     def visit_StmtIf(self, stmt, state):
         cond, state = self.eval_rhs(stmt.cond, state)
         then_state = state.copy()
@@ -182,8 +166,7 @@ class Prover:
 
     def visit_StmtReturn(self, stmt, state):
         value, state = self.eval_rhs(stmt.expr, state)
-        for ens in self.current_fn.ensures:
-            self.check_postcondition(ens, state, value)
+        self._check_ensures(self.current_fn, state, value)
         return []
 
     def visit_StmtAssert(self, stmt, state):
@@ -205,64 +188,6 @@ class Prover:
     def eval_rhs(self, expr, state):
         """Evaluate a right-hand-side expression without changing the state."""
         return self.eval_expr(expr, state), state
-
-    # -- function calls -----------------------------------------------------
-
-    def model_call(self, fn, arg_vals, caller_state):
-        """Model a statement call using the callee's contract.
-
-        Returns a new state in which the callee's `ensures` clauses have been
-        assumed.
-        """
-        # Prove the callee's preconditions under the caller's current path.
-        req_state = State()
-        for p, val in zip(fn.params, arg_vals):
-            req_state.vars[p.name] = val
-        for req in fn.requires:
-            goal = self.eval_expr(req, req_state)
-            self._emit(
-                "precondition",
-                f"precondition of {fn.name}: {req.render()}",
-                caller_state.path,
-                goal,
-                req.pos,
-            )
-
-        # Recursive-call termination check (direct self-recursion only).
-        if (
-            self.current_fn is not None
-            and fn.name == self.current_fn.name
-            and fn.decreases is not None
-        ):
-            d_call = self.eval_expr(fn.decreases, req_state)
-            if self.entry_decreases is not None:
-                self._emit(
-                    "termination",
-                    f"recursive decreases {fn.decreases.render()} strictly decreases",
-                    caller_state.path,
-                    d_call < self.entry_decreases,
-                    fn.decreases.pos,
-                )
-
-        # Build the post-state and assume the callee's postconditions.
-        post_state = State()
-        post_state.vars = dict(req_state.vars)
-        post_state.old_vars = dict(req_state.vars)
-
-        new_state = caller_state.copy()
-        for ens in fn.ensures:
-            new_state.path.append(self._eval_assumption(ens, post_state))
-        return new_state
-
-    def check_postcondition(self, ens, state, result):
-        goal = self.eval_expr(ens, state, result_term=result)
-        self._emit(
-            "postcondition",
-            ens.render(),
-            state.path,
-            goal,
-            ens.pos,
-        )
 
     # -- expression evaluation ---------------------------------------------
 
@@ -389,56 +314,15 @@ class Prover:
                         return left / right
                     case _:
                         return left % right
-
             case "==" | "!=":
                 eq = self._symbolic_eq(left, right)
                 if op == "!=":
                     eq = z3.Not(eq)
                 return eq
-
             case _:
                 raise FrmlVerificationError(
                     f"unknown binary operator {op!r}", expr.pos
                 )
-
-    def visit_ExprCall(
-        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
-    ):
-        fn = self.functions[expr.name]
-        arg_vals = [
-            self.eval_expr(a, state, use_old=use_old, result_term=result_term)
-            for a in expr.args
-        ]
-        req_state = State()
-        for p, val in zip(fn.params, arg_vals):
-            req_state.vars[p.name] = val
-        for req in fn.requires:
-            goal = self.eval_expr(req, req_state)
-            self._emit(
-                "precondition",
-                f"precondition of {fn.name}: {req.render()}",
-                state.path,
-                goal,
-                req.pos,
-            )
-        assert fn.return_type is not None
-        result = self._fresh_result(fn.return_type, fn.name + "_result")
-        ens_state = State()
-        ens_state.vars = dict(req_state.vars)
-        ens_state.old_vars = dict(req_state.vars)
-        for ens in fn.ensures:
-            state.path.append(self._eval_assumption(ens, ens_state, result_term=result))
-        return result
-
-    def visit_ExprOld(
-        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
-    ):
-        return self.eval_expr(expr.arg, state, use_old=True, result_term=result_term)
-
-    def visit_ExprQuantifier(
-        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
-    ):
-        return self._eval_quantifier(expr, state, use_old, result_term)
 
     def visit_Expr(
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
@@ -447,7 +331,7 @@ class Prover:
             f"unknown expression {type(expr).__name__}", expr.pos
         )
 
-    # -- equality / quantifiers --------------------------------------------
+    # -- equality / strings -------------------------------------------------
 
     def _stringify_term(self, v):
         if z3.is_bool(v):
@@ -460,40 +344,6 @@ class Prover:
 
     def _symbolic_eq(self, left, right):
         return left == right
-
-    def _eval_quantifier(self, expr, state, use_old, result_term):
-        var = expr.var_type.fresh(self._fresh(expr.var_name))
-        inner = State()
-        inner.vars = dict(state.vars)
-        inner.path = list(state.path)
-        inner.old_vars = dict(state.old_vars)
-        inner.vars[expr.var_name] = var
-        body = self._quant_depth_wrap(expr, inner, use_old, result_term)
-        if expr.quant == "forall":
-            return z3.ForAll([var], body)
-        return z3.Exists([var], body)
-
-    def _quant_depth_wrap(self, expr, state, use_old, result_term):
-        self._quant_depth += 1
-        try:
-            return self.eval_expr(
-                expr.body, state, use_old=use_old, result_term=result_term
-            )
-        finally:
-            self._quant_depth -= 1
-
-    def _eval_assumption(self, expr, state, result_term=None):
-        """Evaluate a postcondition as an assumption at a call site.
-
-        Well-formedness obligations (non-zero divisors) inside the
-        postcondition are part of what is being assumed, not something the
-        caller must prove, so they are suppressed here.
-        """
-        self._assume_depth += 1
-        try:
-            return self.eval_expr(expr, state, result_term=result_term)
-        finally:
-            self._assume_depth -= 1
 
     # -- fresh names and sorts ---------------------------------------------
 
@@ -629,7 +479,7 @@ def check_obligations(obligations, timeout_ms=10000, trace=False):
 
 def verify_program(program, timeout_ms=10000, trace=False):
     """Return `(results, outcomes)` for all functions in `program`."""
-    prover = Prover(program)
+    prover = ScalarProver(program)
     results = prover.verify()
     outcomes = []
     for r in results:

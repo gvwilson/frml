@@ -1,6 +1,6 @@
-"""Static type checking for Frml's `basic` language level.
+"""Static type checking for Frml's `contracts` language level.
 
-The `basic` level handles only scalar values (`Int`, `Bool` and
+The `contracts` level handles only scalar values (`Int`, `Bool` and
 `String`), branching, function calls, recursion, `old(...)`, and
 quantifiers over `Int` and `Bool`.  Whether a program stays within a
 language level is enforced by `frml.levelchecker`, so this module can
@@ -19,7 +19,7 @@ from .utils import _failif
 
 
 class TypeChecker:
-    """Type checker for the `basic` level: scalars only, no loops, no built-ins."""
+    """Type checker for the `contracts` level: scalars only, no loops, no built-ins."""
 
     def __init__(self, program):
         self.program = program

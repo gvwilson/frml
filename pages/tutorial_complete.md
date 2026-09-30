@@ -4,7 +4,8 @@ The `complete` level is Frml's default level.  It selects the full language:
 scalars, loops, fixed-size arrays, and the built-in functions.  The individual
 features are explained in the earlier tutorials:
 
--   [basic](tutorial_basic.md): scalars, branching, functions, recursion.
+-   [scalar](tutorial_scalar.md): scalars, branching, `assert`, division.
+-   [contracts](tutorial_contracts.md): contracts, function calls, recursion, quantifiers.
 -   [loop](tutorial_loop.md): `while` loops and invariants.
 -   [array](tutorial_array.md): fixed-size arrays.
 -   [builtin](tutorial_builtin.md): I/O built-ins and `push`/`pop`.
@@ -18,7 +19,7 @@ Two files implement the level:
 -   `frml/typechecker_complete.py` is a trivial subclass of the builtin type
     checker.
 -   `frml/prover_complete.py` is a trivial subclass of the builtin prover.  The
-    shared Z3 check loop lives in `frml/prover_basic.py`, at the bottom of the
+    shared Z3 check loop lives in `frml/prover_contracts.py`, at the bottom of the
     prover hierarchy.
 
 Because `complete` is the default, no `--level` flag is needed:
