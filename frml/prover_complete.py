@@ -10,7 +10,6 @@ proof-checking symbols (which now live in the lower levels) so that the
 complete level remains the single entry point for full-language clients.
 """
 
-from .prover_basic import _render_model, _render_model_value
 from .prover_builtin import (
     ArrayVal,
     CheckOutcome,
@@ -21,6 +20,7 @@ from .prover_builtin import (
     check_obligations,
 )
 from .prover_builtin import Prover as BuiltinProver
+from .prover_contracts import _render_model, _render_model_value
 
 __all__ = [
     "ArrayVal",

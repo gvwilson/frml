@@ -1,7 +1,7 @@
 # The Loop Level: Scalar Loops
 
 This tutorial explains how Frml checks and validates programs at the `loop`
-level: everything from the [basic level](tutorial_basic.md), plus `while`
+level: everything from the [contracts level](tutorial_contracts.md), plus `while`
 loops with invariants and termination measures. The `loop` level still has no
 arrays and no built-in functions, so loops here only ever modify scalar
 variables (`Int`, `Bool`, and `String`).
@@ -11,8 +11,9 @@ Two files implement the level:
 -   `frml/typechecker_loop.py` type-checks loop syntax.
 -   `frml/prover_loop.py` generates verification conditions for scalar loops.
 
-Start with the [intro](tutorial_intro.md) and the
-[basic tutorial](tutorial_basic.md) if you have not already read them; this
+Start with the [intro](tutorial_intro.md), the
+[scalar tutorial](tutorial_scalar.md), and the
+[contracts tutorial](tutorial_contracts.md) if you have not already read them; this
 page assumes the machinery described there.
 
 ## What the `loop` level adds
@@ -75,7 +76,7 @@ def visit_StmtWhile(self, stmt, ret):
 ```
 
 -   The `in_spec` flag is set while checking the loop's specifications, just as
-    the basic checker does for `requires`, `ensures`, and `decreases` clauses.
+    the contracts checker does for `requires`, `ensures`, and `decreases` clauses.
     It has no effect on scalar loops, but the loop checker keeps the pattern so
     the `array`, `builtin`, and `complete` levels inherit the same behavior for
     array built-ins.
@@ -291,7 +292,7 @@ That gives the obligation:
 ## Appendix: structure of `prover_loop.py`
 
 -   `ScalarWriterCollector`: records the scalar names a loop body assigns.
--   `Prover`: subclasses the `basic` prover and adds:
+-   `Prover`: subclasses the `contracts` prover and adds:
     -   `visit_StmtWhile`: dispatches a loop statement to `exec_while`.
     -   `exec_while`: initialization, preservation, termination, and exit.
     -   `_havoc_loop_vars`: replaces assigned scalars with fresh symbols.
@@ -299,4 +300,4 @@ That gives the obligation:
 -   Module-level functions:
     -   `verify_program`: the entry point from the CLI.
     -   The Z3 check loop (`check_obligations`) is defined in
-        `frml/prover_basic.py` and inherited here.
+        `frml/prover_contracts.py` and inherited here.

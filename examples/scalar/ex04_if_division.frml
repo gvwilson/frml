@@ -1,0 +1,9 @@
+fn main() -> Int
+{
+  let x: Int = 10;
+  let y: Int = 2;
+  if y != 0 {
+    assert x / y == 5;
+  }
+  return 0;
+}

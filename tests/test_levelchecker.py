@@ -8,14 +8,14 @@ from frml.parser import parse
 from frml.utils import Level
 
 
-def basic_error(source):
+def contracts_error(source):
     with pytest.raises(FrmlTypeError) as exc:
-        check_level(Level.BASIC, parse(source))
+        check_level(Level.CONTRACTS, parse(source))
     return exc.value
 
 
-def assert_basic_ok(source):
-    check_level(Level.BASIC, parse(source))
+def assert_contracts_ok(source):
+    check_level(Level.CONTRACTS, parse(source))
 
 
 def loop_error(source):
@@ -45,22 +45,22 @@ def assert_builtin_ok(source):
 # -- supported features ----------------------------------------------------
 
 
-def test_basic_accepts_scalar_program():
-    assert_basic_ok("fn main() -> Int { return 0; }")
+def test_contracts_accepts_scalar_program():
+    assert_contracts_ok("fn main() -> Int { return 0; }")
 
 
-def test_basic_accepts_branching_calls_and_recursion():
+def test_contracts_accepts_branching_calls_and_recursion():
     src = (
         "fn f(n: Int) -> Int decreases n"
         " { if n == 0 { return 0; } else { return f(n - 1); } }"
         " fn main() -> Int { return f(3); }"
     )
-    assert_basic_ok(src)
+    assert_contracts_ok(src)
 
 
-def test_basic_accepts_quantifiers():
+def test_contracts_accepts_quantifiers():
     src = "fn f() -> Bool { return forall i: Int :: i >= 0 or i < 0; } fn main() -> Int { return 0; }"
-    assert_basic_ok(src)
+    assert_contracts_ok(src)
 
 
 def test_complete_accepts_everything():
@@ -79,37 +79,37 @@ def test_complete_accepts_everything():
 
 def test_array_parameter_rejected():
     src = "fn f(a: Array<Int>) -> Int { return 0; } fn main() -> Int { return 0; }"
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 def test_array_return_type_rejected():
     src = "fn f() -> Array<Int> { return [1]; } fn main() -> Int { return 0; }"
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 def test_array_let_rejected():
     src = "fn main() -> Int { let a: Array<Int> = [1]; return 0; }"
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 def test_array_literal_rejected():
     src = "fn main() -> Int { let a: Array<Int> = [1]; return 0; }"
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 def test_array_access_rejected():
     src = "fn main() -> Int { let a: Array<Int> = [1]; return a[0]; }"
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 def test_array_assignment_rejected():
     src = "fn main() -> Int { let a: Array<Int> = [1]; a[0] = 2; return 0; }"
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 def test_length_rejected():
     src = "fn main() -> Int { let a: Array<Int> = [1]; return length(a); }"
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 def test_while_loop_rejected():
@@ -117,7 +117,7 @@ def test_while_loop_rejected():
         "fn main() -> Int { let i: Int = 0;"
         " while i < 3 invariant true { i = i + 1; } return 0; }"
     )
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 @pytest.mark.parametrize(
@@ -133,12 +133,12 @@ def test_while_loop_rejected():
     ],
 )
 def test_builtins_are_rejected(source):
-    assert isinstance(basic_error(source), FrmlTypeError)
+    assert isinstance(contracts_error(source), FrmlTypeError)
 
 
 def test_builtin_call_in_nested_statement_rejected():
     src = 'fn main() -> Int { if true { write("x", "y"); } return 0; }'
-    assert isinstance(basic_error(src), FrmlTypeError)
+    assert isinstance(contracts_error(src), FrmlTypeError)
 
 
 # -- loop level ------------------------------------------------------------
@@ -286,6 +286,86 @@ def test_builtin_accepts_arrays_and_loops():
         "}"
     )
     assert_builtin_ok(src)
+
+
+# -- scalar level ---------------------------------------------------------
+
+
+def scalar_error(source):
+    with pytest.raises(FrmlTypeError) as exc:
+        check_level(Level.SCALAR, parse(source))
+    return exc.value
+
+
+def assert_scalar_ok(source):
+    check_level(Level.SCALAR, parse(source))
+
+
+def test_scalar_accepts_straight_line_program():
+    assert_scalar_ok("fn main() -> Int { return 0; }")
+
+
+def test_scalar_accepts_branching_program():
+    src = "fn main() -> Int { if true { return 1; } else { return 0; } }"
+    assert_scalar_ok(src)
+
+
+def test_scalar_rejects_requires():
+    src = "fn main() -> Int requires true { return 0; }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_ensures():
+    src = "fn main() -> Int ensures true { return 0; }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_decreases():
+    src = "fn main() -> Int decreases 0 { return 0; }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_function_call_statement():
+    src = "fn main() -> Int { f(); return 0; }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_function_call_expression():
+    src = "fn main() -> Int { return f(); }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_multiple_functions():
+    src = "fn f() -> Int { return 0; } fn main() -> Int { return 0; }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_non_main_function():
+    src = "fn simple() -> Int { return 0; }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_old():
+    src = "fn main() -> Int { let x: Int = old(1); return 0; }"
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_quantifier():
+    src = (
+        "fn main() -> Int {"
+        " let b: Bool = forall i: Int :: i >= 0;"
+        " return 0;"
+        "}"
+    )
+    assert isinstance(scalar_error(src), FrmlTypeError)
+
+
+def test_scalar_rejects_while_loop():
+    src = (
+        "fn main() -> Int { let i: Int = 0;"
+        " while i < 3 invariant true { i = i + 1; } return 0; }"
+    )
+    assert isinstance(scalar_error(src), FrmlTypeError)
 
 
 def test_unknown_level_rejected():

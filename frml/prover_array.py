@@ -15,7 +15,7 @@ import z3
 
 from .builtins import BUILTINS
 from .errors import FrmlVerificationError
-from .prover_basic import (
+from .prover_contracts import (
     CheckOutcome,
     Obligation,
     ProverResult,

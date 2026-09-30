@@ -13,7 +13,8 @@ Two files implement the level:
 -   `frml/prover_builtin.py` models the built-ins and resizable arrays.
 
 Start with the [intro](tutorial_intro.md), the
-[basic tutorial](tutorial_basic.md), the
+[scalar tutorial](tutorial_scalar.md), the
+[contracts tutorial](tutorial_contracts.md), the
 [loop tutorial](tutorial_loop.md), and the
 [array tutorial](tutorial_array.md) if you have not already read them.
 
@@ -165,4 +166,4 @@ On top of the array prover's machinery, the builtin prover adds:
     machinery: `push`/`pop` mark an array as resized, so loop havoc and call
     modeling refresh both its contents and its length.
 -   The shared Z3 check loop (`check_obligations`) is defined in
-    `frml/prover_basic.py` and inherited by every higher level.
+    `frml/prover_contracts.py` and inherited by every higher level.

@@ -1,0 +1,6 @@
+fn main() -> Int
+{
+  let x: Int = 3;
+  assert x < 0;
+  return 0;
+}

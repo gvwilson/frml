@@ -1,10 +1,10 @@
-"""Tests for the `basic`-level type checker."""
+"""Tests for the `contracts`-level type checker."""
 
 import pytest
 
 from frml.errors import FrmlNameError, FrmlTypeError
 from frml.parser import parse
-from frml.typechecker_basic import TypeChecker
+from frml.typechecker_contracts import TypeChecker
 
 
 def typecheck_error(source):

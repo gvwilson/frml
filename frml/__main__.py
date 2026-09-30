@@ -6,7 +6,7 @@ Usage:
     frml checkrun FILE.frml   verify, then execute main()
 
 Every command accepts `--level XYZ` to select a language level.  The
-`basic` level handles only scalar values and no loops; the `loop` level
+`contracts` level handles only scalar values and no loops; the `loop` level
 adds `while` loops; the `array` level adds fixed-size arrays; the
 `builtin` level adds the built-in functions; the `complete` level (the
 default) handles the full language.
@@ -20,15 +20,17 @@ from .interpreter import Interpreter
 from .levelchecker import check_level
 from .parser import parse
 from .prover_array import verify_program as verify_program_array
-from .prover_basic import verify_program as verify_program_basic
 from .prover_builtin import verify_program as verify_program_builtin
 from .prover_complete import verify_program as verify_program_complete
+from .prover_contracts import verify_program as verify_program_contracts
 from .prover_loop import verify_program as verify_program_loop
+from .prover_scalar import verify_program as verify_program_scalar
 from .typechecker_array import TypeChecker as TypeCheckerArray
-from .typechecker_basic import TypeChecker as TypeCheckerBasic
 from .typechecker_builtin import TypeChecker as TypeCheckerBuiltin
 from .typechecker_complete import TypeChecker as TypeCheckerComplete
+from .typechecker_contracts import TypeChecker as TypeCheckerContracts
 from .typechecker_loop import TypeChecker as TypeCheckerLoop
+from .typechecker_scalar import TypeChecker as TypeCheckerScalar
 from .utils import Level
 
 DEFAULT_TIMEOUT_MS = 10_000
@@ -207,8 +209,10 @@ def load_program(filename, level=DEFAULT_LEVEL):
 def _level_parts(level):
     """Return `(TypeChecker, verify_program)` for the language level."""
     match level:
-        case Level.BASIC:
-            return TypeCheckerBasic, verify_program_basic
+        case Level.SCALAR:
+            return TypeCheckerScalar, verify_program_scalar
+        case Level.CONTRACTS:
+            return TypeCheckerContracts, verify_program_contracts
         case Level.LOOP:
             return TypeCheckerLoop, verify_program_loop
         case Level.ARRAY:

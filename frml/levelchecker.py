@@ -8,9 +8,12 @@ them themselves.
 
 The language levels are defined by the `Level` enumeration:
 
--   `basic` allows only scalar values (`Int`, `Bool`, `String`), with no
-    `while` loops, no arrays and no built-in functions.
--   `loop` adds `while` loops on top of `basic`, but still has no arrays
+-   `scalar` allows only a single `main` function containing straight-line
+    and branching code over scalar values (`Int`, `Bool`, `String`), with no
+    function calls, contracts, `old(...)`, quantifiers or `while` loops.
+-   `contracts` adds contracts and function calls on top of `scalar`, but
+    still has no `while` loops, no arrays and no built-in functions.
+-   `loop` adds `while` loops on top of `contracts`, but still has no arrays
     and no built-in functions.
 -   `array` adds fixed-size arrays on top of `loop`, but still has no
     built-in functions.
@@ -63,6 +66,13 @@ class LevelChecker:
             ValueError,
             f"unknown language level {self.level!r}",
         )
+        if not self.level.allows_calls:
+            _failif(
+                [f.name for f in self.program.functions] != ["main"],
+                FrmlTypeError,
+                "the 'scalar' level allows only a single 'main' function",
+                self.program.functions[0].pos if self.program.functions else None,
+            )
         for fn in self.program.functions:
             self._check_function(fn)
 
@@ -80,6 +90,25 @@ class LevelChecker:
                 fn.return_type is not None and fn.return_type.is_array(),
                 FrmlTypeError,
                 f"array return types are not available at level '{self.level.value}'",
+                fn.pos,
+            )
+        if not self.level.allows_calls:
+            _failif(
+                fn.requires,
+                FrmlTypeError,
+                f"requires clauses are not available at level '{self.level.value}'",
+                fn.pos,
+            )
+            _failif(
+                fn.ensures,
+                FrmlTypeError,
+                f"ensures clauses are not available at level '{self.level.value}'",
+                fn.pos,
+            )
+            _failif(
+                fn.decreases is not None,
+                FrmlTypeError,
+                f"decreases clauses are not available at level '{self.level.value}'",
                 fn.pos,
             )
         for expr in fn.requires:
@@ -104,6 +133,13 @@ class LevelChecker:
                 isinstance(stmt, StmtWhile),
                 FrmlTypeError,
                 f"while loops are not available at level '{self.level.value}'",
+                stmt.pos,
+            )
+        if not self.level.allows_calls:
+            _failif(
+                isinstance(stmt, StmtCall),
+                FrmlTypeError,
+                f"function calls are not available at level '{self.level.value}'",
                 stmt.pos,
             )
 
@@ -160,6 +196,25 @@ class LevelChecker:
                 isinstance(expr, ExprLength),
                 FrmlTypeError,
                 f"length() is not available at level '{self.level.value}'",
+                expr.pos,
+            )
+        if not self.level.allows_calls:
+            _failif(
+                isinstance(expr, ExprCall),
+                FrmlTypeError,
+                f"function calls are not available at level '{self.level.value}'",
+                expr.pos,
+            )
+            _failif(
+                isinstance(expr, ExprOld),
+                FrmlTypeError,
+                f"old() is not available at level '{self.level.value}'",
+                expr.pos,
+            )
+            _failif(
+                isinstance(expr, ExprQuantifier),
+                FrmlTypeError,
+                f"quantifiers are not available at level '{self.level.value}'",
                 expr.pos,
             )
 

@@ -79,21 +79,21 @@ def test_do_check_verified(capsys, write_frml):
     assert "VERIFIED" in capsys.readouterr().out
 
 
-def test_do_check_basic_accepts_scalar_program(capsys, write_frml):
+def test_do_check_contracts_accepts_scalar_program(capsys, write_frml):
     path = write_frml("fn main() -> Int { return 0; }")
-    assert do_check(path, level=Level.BASIC) == 0
+    assert do_check(path, level=Level.CONTRACTS) == 0
     assert "VERIFIED" in capsys.readouterr().out
 
 
-def test_do_check_basic_rejects_loop(capsys, write_frml):
+def test_do_check_contracts_rejects_loop(capsys, write_frml):
     path = write_frml(
         "fn main() -> Int { let i: Int = 0;"
         " while i < 3 invariant true { i = i + 1; } return 0; }"
     )
-    assert do_check(path, level=Level.BASIC) == 1
+    assert do_check(path, level=Level.CONTRACTS) == 1
     err = capsys.readouterr().err
     assert "TypeError" in err
-    assert "while loops are not available at level 'basic'" in err
+    assert "while loops are not available at level 'contracts'" in err
 
 
 def test_do_check_loop_accepts_loop(capsys, write_frml):
