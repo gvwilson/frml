@@ -200,14 +200,40 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial_basic/" class="md-nav__link">
+      <a href="../tutorial_scalar/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  The Basic Level: Scalars, No Loops
+  The Scalar Level: Straight-Line and Branching Code
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Contracts Level: Functions and Contracts
 
     
   </span>
@@ -525,14 +551,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../contributing.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  Contributing
+  none
 
     
   </span>
@@ -577,14 +603,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
+      <a href="../license.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  MIT License
+  none
 
     
   </span>
@@ -786,7 +812,8 @@ there.</p>
 <li><code>frml/prover_builtin.py</code> models the built-ins and resizable arrays.</li>
 </ul>
 <p>Start with the <a href="../tutorial_intro/">intro</a>, the
-<a href="../tutorial_basic/">basic tutorial</a>, the
+<a href="../tutorial_scalar/">scalar tutorial</a>, the
+<a href="../tutorial_contracts/">contracts tutorial</a>, the
 <a href="../tutorial_loop/">loop tutorial</a>, and the
 <a href="../tutorial_array/">array tutorial</a> if you have not already read them.</p>
 <h2 id="what-the-builtin-level-adds">What the <code>builtin</code> level adds<a class="headerlink" href="#what-the-builtin-level-adds" title="Permanent link">&para;</a></h2>
@@ -901,11 +928,11 @@ tutorials: the invariant is the only information that survives the havoc.</p>
 <li><code>_exec_push</code>: models <code>push</code> as <code>Store</code> plus an incremented length.</li>
 <li><code>_eval_pop</code>: models <code>pop</code> as <code>Select</code> plus a decremented length, with a
     non-empty obligation.</li>
-<li><code>resized_params</code>: tracks array parameters resized by <code>push</code>/<code>pop</code>.</li>
-<li><code>EffectCollector.resized</code>: collects the arrays a loop body resizes, so loop
-    havoc can also refresh their lengths.</li>
-<li>The shared Z3 check loop (<code>check_obligations</code>), which the <code>basic</code>, <code>loop</code>,
-    <code>array</code>, and <code>complete</code> provers also reuse.</li>
+<li>Uses the array prover's <code>resized_params</code> and <code>EffectCollector.resized</code>
+    machinery: <code>push</code>/<code>pop</code> mark an array as resized, so loop havoc and call
+    modeling refresh both its contents and its length.</li>
+<li>The shared Z3 check loop (<code>check_obligations</code>) is defined in
+    <code>frml/prover_contracts.py</code> and inherited by every higher level.</li>
 </ul>
 
 

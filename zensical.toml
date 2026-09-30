@@ -4,7 +4,8 @@ docs_dir = "pages"
 site_dir = "docs"
 nav = [
   "tutorial_intro.md",
-  "tutorial_basic.md",
+  "tutorial_scalar.md",
+  "tutorial_contracts.md",
   "tutorial_loop.md",
   "tutorial_array.md",
   "tutorial_builtin.md",
