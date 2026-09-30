@@ -200,14 +200,40 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial_basic/" class="md-nav__link">
+      <a href="../tutorial_scalar/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  The Basic Level: Scalars, No Loops
+  The Scalar Level: Straight-Line and Branching Code
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Contracts Level: Functions and Contracts
 
     
   </span>
@@ -680,14 +706,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../contributing.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  Contributing
+  none
 
     
   </span>
@@ -732,14 +758,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
+      <a href="../license.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  MIT License
+  none
 
     
   </span>
@@ -1096,7 +1122,8 @@ created from array literals or array-returning function calls; <code>push</code>
     arrays.</li>
 </ul>
 <p>Start with the <a href="../tutorial_intro/">intro</a>, the
-<a href="../tutorial_basic/">basic tutorial</a>, and the
+<a href="../tutorial_scalar/">scalar tutorial</a>, the
+<a href="../tutorial_contracts/">contracts tutorial</a>, and the
 <a href="../tutorial_loop/">loop tutorial</a> if you have not already read them; this page
 assumes the machinery described there.</p>
 <h2 id="what-the-array-level-adds">What the <code>array</code> level adds<a class="headerlink" href="#what-the-array-level-adds" title="Permanent link">&para;</a></h2>
@@ -1412,18 +1439,18 @@ non-zero divisors) are suppressed:</p>
 <li><code>_is_array_valued_call</code>: recognizes calls that return arrays.</li>
 </ul>
 </li>
-<li><code>prover_array.py</code> reuses the full-language prover's array machinery and
-    rejects built-ins if they are encountered directly; the level checker
-    normally prevents them from reaching the prover.  The array machinery it
-    inherits adds:<ul>
+<li><code>prover_array.py</code> subclasses the loop prover and adds the array machinery.
+    It rejects built-ins if they are encountered directly, though the level
+    checker normally prevents them from reaching the prover.  The array
+    machinery it adds includes:<ul>
 <li><code>ArrayVal</code>: an array term plus its length, stored in <code>State.arrays</code>.</li>
 <li><code>State.old_arrays</code>: the snapshot of arrays at function entry.</li>
 <li><code>exec_while</code>: loop verification with array-aware havoc.</li>
 <li><code>written_params</code>: tracks which array parameters a function writes.</li>
 </ul>
 </li>
-<li>The Z3 check loop (<code>check_obligations</code>) is shared with the other levels and
-    lives in <code>frml/prover_complete.py</code>.</li>
+<li>The Z3 check loop (<code>check_obligations</code>) is defined in
+    <code>frml/prover_contracts.py</code> and inherited here.</li>
 </ul>
 
 

@@ -10,7 +10,7 @@
       
       
       
-        <link rel="next" href="../tutorial_basic/">
+        <link rel="next" href="../tutorial_scalar/">
       
       
         
@@ -242,10 +242,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-you-will-get-out-of-it" class="md-nav__link">
+  <a href="#what-you-will-learn" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What you will get out of it
+        What you will learn
       </span>
     </span>
   </a>
@@ -350,14 +350,40 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial_basic/" class="md-nav__link">
+      <a href="../tutorial_scalar/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  The Basic Level: Scalars, No Loops
+  The Scalar Level: Straight-Line and Branching Code
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Contracts Level: Functions and Contracts
 
     
   </span>
@@ -506,14 +532,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../contributing.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  Contributing
+  none
 
     
   </span>
@@ -558,14 +584,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
+      <a href="../license.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  MIT License
+  none
 
     
   </span>
@@ -629,10 +655,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#what-you-will-get-out-of-it" class="md-nav__link">
+  <a href="#what-you-will-learn" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What you will get out of it
+        What you will learn
       </span>
     </span>
   </a>
@@ -742,74 +768,53 @@
 program becomes Boolean logic that the Z3 solver can check, and what Z3 does
 with that logic.  The verifier and tutorial are layered:</p>
 <ul>
-<li><code>basic</code> handles only scalar values, conditionals and functions (no loops or
-    arrays).</li>
-<li><code>loop</code> adds <code>while</code> loops on top of <code>basic</code> (still no arrays).</li>
-<li><code>array</code> adds fixed-size arrays on top of <code>loop</code> (still no built-ins).</li>
-<li><code>builtin</code> adds the built-in functions (I/O and <code>push</code>/<code>pop</code>) on top of
-    <code>array</code>.</li>
-<li><code>complete</code> handles the full language and is the default level.</li>
+<li><code>scalar</code> handles straight-line and branching code (no functions or loops).</li>
+<li><code>contracts</code> adds contracts and function calls.</li>
+<li><code>loop</code> adds <code>while</code> loops.</li>
+<li><code>array</code> adds fixed-size arrays.</li>
+<li><code>builtin</code> adds built-in functions to do I/O and <code>push</code>/<code>pop</code> array values.</li>
+<li><code>complete</code> handles the full language.</li>
 </ul>
 <h2 id="who-this-is-for">Who this is for<a class="headerlink" href="#who-this-is-for" title="Permanent link">&para;</a></h2>
 <ul>
 <li>You are an experienced programmer.</li>
 <li>You understand basic Boolean logic (<code>and</code>, <code>or</code>, <code>not</code>, implication).</li>
 <li>You have no prior background in formal verification.</li>
-<li>You already know what a lexer, parser, and AST are, so this tutorial skips them.</li>
+<li>You already know what a lexer, parser, and abstract syntax tree (AST) are.</li>
 </ul>
-<h2 id="what-you-will-get-out-of-it">What you will get out of it<a class="headerlink" href="#what-you-will-get-out-of-it" title="Permanent link">&para;</a></h2>
+<h2 id="what-you-will-learn">What you will learn<a class="headerlink" href="#what-you-will-learn" title="Permanent link">&para;</a></h2>
 <ul>
-<li>You will understand what a verification condition is.</li>
-<li>You will see how contracts, loops, arrays, calls, and quantifiers become Z3
-    formulas.</li>
-<li>You will know what <code>unsat</code>, <code>sat</code>, and <code>unknown</code> mean for a proof.</li>
+<li>What a verification condition is.</li>
+<li>How contracts, loops, arrays, calls, and quantifiers become Z3 formulas.</li>
 </ul>
 <h2 id="the-files-that-matter">The files that matter<a class="headerlink" href="#the-files-that-matter" title="Permanent link">&para;</a></h2>
 <ul>
-<li><code>frml/cli.py</code> runs the verifier.</li>
+<li><code>frml/typechecker_XYZ.py</code> does type checking at the <code>XYZ</code> level.</li>
 <li><code>frml/prover_XYZ.py</code> verifies programs at the <code>XYZ</code> level.</li>
-<li><code>frml/typechecker_basic.py</code> defines the base type checker for the <code>basic</code>
-    level; it rejects features that level does not support.</li>
-<li><code>frml/typechecker_loop.py</code> subclasses the basic type checker and adds
-    <code>while</code> loops.</li>
-<li><code>frml/typechecker_array.py</code> subclasses the loop type checker and adds
-    fixed-size arrays.</li>
-<li><code>frml/typechecker_builtin.py</code> subclasses the array type checker and adds
-    I/O and <code>push</code>/<code>pop</code>.</li>
-<li><code>frml/typechecker_complete.py</code> subclasses the builtin type checker and is
-    the full-language default.</li>
-<li>Higher levels, if added later, are built the same way: each subclasses the
-    level below it and overrides only what it adds.</li>
 </ul>
-<p>The rest of <code>frml/</code> (lexer, parser, interpreter) prepares the program, but is
-not the topic here.</p>
+<p>The rest of <code>frml/*.py</code> parses and runs programs.</p>
 <h2 id="the-big-picture">The big picture<a class="headerlink" href="#the-big-picture" title="Permanent link">&para;</a></h2>
 <ul>
-<li>A Frml program is text.</li>
-<li>The lexer and parser turn the text into an AST.</li>
+<li>The lexer and parser turn program text into an AST.</li>
 <li>The typechecker rejects programs with type errors.</li>
-<li>The prover turns the AST into a list of <em>verification conditions</em>.</li>
-<li>Each verification condition is a logical claim of the form:</li>
+<li>The prover turns the AST into <em>verification conditions</em> of the form:</li>
 </ul>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>hypotheses =&gt; goal
 </span></code></pre></div>
 <ul>
 <li>The prover asks Z3 to confirm every verification condition.</li>
-<li>If Z3 confirms all of them, the program is <code>VERIFIED</code>.</li>
+<li>If Z3 confirms all of them, the program is verified.</li>
 </ul>
-<p>The pipeline is:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>source -&gt; AST -&gt; verification conditions -&gt; Z3 -&gt; VERIFIED / FAILED / UNKNOWN
-</span></code></pre></div>
 <h2 id="what-a-verifier-does">What a verifier does<a class="headerlink" href="#what-a-verifier-does" title="Permanent link">&para;</a></h2>
 <ul>
 <li>A <em>proof obligation</em> is a claim:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>from these hypotheses, this goal always follows
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>from these hypotheses, this goal always follows
 </span></code></pre></div>
 <ul>
-<li>In symbols:</li>
+<li>Symbolically:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>h1 and h2 and ... and hn  =&gt;  goal
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>h1 and h2 and ... and hn  =&gt;  goal
 </span></code></pre></div>
 <ul>
 <li><code>h1 ... hn</code> are facts known at some point in the program.</li>
@@ -824,13 +829,13 @@ not the topic here.</p>
 </ul>
 <h2 id="what-z3-is-and-what-it-does">What Z3 is and what it does<a class="headerlink" href="#what-z3-is-and-what-it-does" title="Permanent link">&para;</a></h2>
 <ul>
-<li>A formula is <em>satisfiable</em> when some assignment of values to its variables
-    makes it true.</li>
 <li>Z3 is an <em>SMT solver</em>.<ul>
 <li>SMT = Satisfiability Modulo Theories.</li>
 </ul>
 </li>
 <li>Z3 knows the theory of integers, arrays, strings, and Boolean logic.</li>
+<li>A formula is <em>satisfiable</em> when some assignment of values to its variables
+    makes it true.</li>
 <li>Given a formula, Z3 returns one of three answers:<ul>
 <li><code>sat</code>: a satisfying assignment exists and Z3 can show you one.</li>
 <li><code>unsat</code>: no satisfying assignment exists.</li>
@@ -839,19 +844,19 @@ not the topic here.</p>
 </li>
 <li>An example that can be safisfied:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>formula:  x &gt; 3 and x &lt; 5
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>answer:   sat          (x = 4 works)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>formula:  x &gt; 3 and x &lt; 5
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>answer:   sat          (x = 4 works)
 </span></code></pre></div>
 <ul>
-<li>An example that cannot be satisfied:</li>
+<li>An example that cannot:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>formula:  x &gt; 3 and x &lt; 4
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>answer:   unsat        (no integer fits)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>formula:  x &gt; 3 and x &lt; 4
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>answer:   unsat        (no integer fits)
 </span></code></pre></div>
 <h2 id="from-is-it-valid-to-is-it-unsatisfiable">From "is it valid?" to "is it unsatisfiable?"<a class="headerlink" href="#from-is-it-valid-to-is-it-unsatisfiable" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The prover wants to prove that <code>hypotheses =&gt; goal</code> is <em>valid</em>.<ul>
-<li>Valid = "true for every possible assignment of the variables".</li>
+<li>Where "valid" means "true for every possible assignment of the variables".</li>
 </ul>
 </li>
 <li>Z3 does not directly check validity: it checks <em>satisfiability</em>.</li>
@@ -859,7 +864,7 @@ not the topic here.</p>
     <code>A =&gt; B</code> is valid exactly when <code>not (A =&gt; B)</code> is unsatisfiable.</li>
 <li>So the prover asks Z3:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>not (hypotheses =&gt; goal)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>not (hypotheses =&gt; goal)
 </span></code></pre></div>
 <ul>
 <li>If Z3 says <code>unsat</code>, then no counterexample exists, so the goal is proved.</li>
@@ -872,44 +877,44 @@ not the topic here.</p>
 </li>
 </ul>
 <h2 id="using-z3-in-python">Using Z3 in Python<a class="headerlink" href="#using-z3-in-python" title="Permanent link">&para;</a></h2>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">z3</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Solver</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">z3</span><span class="w"> </span><span class="kn">import</span> <span class="n">Bool</span><span class="p">,</span> <span class="n">Solver</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
 </span></code></pre></div>
 <ul>
 <li><code>A</code>, <code>B</code>, and <code>C</code> don't have specific values.</li>
 <li>Instead, each represents the set of possible Boolean values.</li>
 <li>We can then specify constraints like <code>A == B</code>.</li>
 </ul>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
 </span></code></pre></div>
 <ul>
 <li>And then ask Z3 to find a <em>model</em> that satisfies those constraints:</li>
 </ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>A == B &amp; B == C: sat
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>A False
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>B False
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>C False
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>A == B &amp; B == C: sat
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>A False
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>B False
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>C False
 </span></code></pre></div>
 <h3 id="an-example-of-unsatisfiability">An example of unsatisfiability<a class="headerlink" href="#an-example-of-unsatisfiability" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Require <code>A</code> to equal <code>B</code> and <code>B</code> to equal <code>C</code> but <code>A</code> and <code>C</code> to be unequal</li>
 </ul>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">!=</span> <span class="n">C</span><span class="p">)</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C &amp; B != C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">A</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"A"</span><span class="p">)</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="n">B</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"B"</span><span class="p">)</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="n">C</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="s2">"C"</span><span class="p">)</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="n">solver</span> <span class="o">=</span> <span class="n">Solver</span><span class="p">()</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">==</span> <span class="n">B</span><span class="p">)</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">B</span> <span class="o">==</span> <span class="n">C</span><span class="p">)</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="n">solver</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">A</span> <span class="o">!=</span> <span class="n">C</span><span class="p">)</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="n">report</span><span class="p">(</span><span class="s2">"A == B &amp; B == C &amp; B != C"</span><span class="p">,</span> <span class="n">solver</span><span class="o">.</span><span class="n">check</span><span class="p">())</span>
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>A == B &amp; B == C &amp; B != C: unsat
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>A == B &amp; B == C &amp; B != C: unsat
 </span></code></pre></div>
 
 

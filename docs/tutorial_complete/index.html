@@ -200,14 +200,40 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial_basic/" class="md-nav__link">
+      <a href="../tutorial_scalar/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  The Basic Level: Scalars, No Loops
+  The Scalar Level: Straight-Line and Branching Code
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Contracts Level: Functions and Contracts
 
     
   </span>
@@ -366,14 +392,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../contributing.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  Contributing
+  none
 
     
   </span>
@@ -418,14 +444,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
+      <a href="../license.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  MIT License
+  none
 
     
   </span>
@@ -484,7 +510,8 @@
 scalars, loops, fixed-size arrays, and the built-in functions.  The individual
 features are explained in the earlier tutorials:</p>
 <ul>
-<li><a href="../tutorial_basic/">basic</a>: scalars, branching, functions, recursion.</li>
+<li><a href="../tutorial_scalar/">scalar</a>: scalars, branching, <code>assert</code>, division.</li>
+<li><a href="../tutorial_contracts/">contracts</a>: contracts, function calls, recursion, quantifiers.</li>
 <li><a href="../tutorial_loop/">loop</a>: <code>while</code> loops and invariants.</li>
 <li><a href="../tutorial_array/">array</a>: fixed-size arrays.</li>
 <li><a href="../tutorial_builtin/">builtin</a>: I/O built-ins and <code>push</code>/<code>pop</code>.</li>
@@ -496,8 +523,9 @@ without disturbing the staged type checkers and provers below it.</p>
 <ul>
 <li><code>frml/typechecker_complete.py</code> is a trivial subclass of the builtin type
     checker.</li>
-<li><code>frml/prover_complete.py</code> is the shared full-language prover and the home
-    of the Z3 check loop used by every level.</li>
+<li><code>frml/prover_complete.py</code> is a trivial subclass of the builtin prover.  The
+    shared Z3 check loop lives in <code>frml/prover_contracts.py</code>, at the bottom of the
+    prover hierarchy.</li>
 </ul>
 <p>Because <code>complete</code> is the default, no <code>--level</code> flag is needed:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/complete/required.frml

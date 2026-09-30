@@ -46,7 +46,7 @@ This installs a `frml` command on your `PATH`. You can also run Frml without
 installing it, using the module form:
 
 ```bash
-python -m frml check examples/contracts/abs.frml
+python -m frml check examples/basic/abs.frml
 ```
 
 ## Usage
@@ -67,17 +67,15 @@ Level-check and type-check the program (without static verification) and execute
 
 Verify first, and then execute `main()` if verification succeeded.
 
-Every subcommand accepts `--level scalar`, `--level contracts`, `--level loop`,
-`--level array`, `--level builtin`, or `--level complete` to select the
-language level. The `scalar` level handles straight-line and branching code
-over scalar values (`Int`, `Bool`, `String`), with no function calls or loops.
-The `contracts` level adds contracts and function calls on top of `scalar`, but
-still has no loops, no arrays and no built-in functions. The `loop` level adds
-`while` loops on top of `contracts`, but still has no arrays and no built-in
-functions. The `array` level adds fixed-size arrays on top of `loop`, but still
-has no built-in functions. The `builtin` level adds I/O and `push`/`pop` on top
-of `array`. The `complete` level (the default) is the full language, currently
-the same as `builtin`.
+Every subcommand accepts `--level basic`, `--level loop`, `--level array`,
+`--level builtin`, or `--level complete` to select the language level. The
+`basic` level handles only scalar values (`Int`, `Bool`, `String`) and no
+loops, but does allow recursion. The `loop` level adds `while` loops on top
+of `basic`, but still has no arrays and no built-in functions. The `array`
+level adds fixed-size arrays on top of `loop`, but still has no built-in
+functions. The `builtin` level adds I/O and `push`/`pop` on top of `array`.
+The `complete` level (the default) is the full language, currently the same as
+`builtin`.
 
 ## The language
 
@@ -230,21 +228,16 @@ are the only built-ins that mutate a program array.
 
 The `examples/` directory is split by language level:
 
-`examples/scalar/` contains programs that use only straight-line and branching
-code, with no function calls:
-
--   `ex01_assign_then_assert.frml` and `ex02_assign_then_add.frml`: the first
-    two walk-throughs from the scalar tutorial.
--   `ex03_assert_failure.frml`: a deliberately failing `assert` (`FAILED`).
--   `ex04_if_division.frml`: branching with a guarded division.
-
-`examples/contracts/` contains programs that also use contracts and function calls:
+`examples/basic/` contains programs that use only scalar values, branching,
+function calls, and recursion:
 
 -   `abs.frml`: absolute value.
 -   `max.frml`: maximum of two integers.
 -   `factorial.frml`: recursive function with `decreases`.
 -   `precondition.frml`: a runtime precondition violation.
 -   `bad.frml`: a deliberately unprovable postcondition (`FAILED`).
+-   `ex01_assign_then_assert.frml` and `ex02_assign_then_add.frml`: the first
+    two walk-throughs from the basic tutorial.
 
 `examples/loop/` contains programs that also use scalar `while` loops:
 
@@ -267,9 +260,9 @@ Try them:
 
 ```bash
 frml check --level complete examples/complete/required.frml
-frml checkrun --level contracts examples/contracts/factorial.frml
-frml check --level contracts examples/contracts/bad.frml
-frml run --level contracts examples/contracts/precondition.frml
+frml checkrun --level basic examples/basic/factorial.frml
+frml check --level basic examples/basic/bad.frml
+frml run --level basic examples/basic/precondition.frml
 ```
 
 ## Intentional limitations
@@ -312,13 +305,13 @@ frml/
   levelchecker.py      language-level conformance checks
   types.py               Int / Bool / String / Array<T> types
   builtins.py            built-in function signatures
-  typechecker_contracts.py   type checking for the `contracts` level
+  typechecker_basic.py   type checking for the `basic` level
   typechecker_loop.py    type checking for the `loop` level
   typechecker_array.py   type checking for the `array` level
   typechecker_builtin.py type checking for the `builtin` level
   typechecker_complete.py type checking for the `complete` level
   interpreter.py         concrete executor with runtime checks
-  prover_contracts.py        verification for the `contracts` level
+  prover_basic.py        verification for the `basic` level
   prover_loop.py         verification for the `loop` level
   prover_array.py        verification for the `array` level
   prover_builtin.py      verification for the `builtin` level

@@ -9,7 +9,7 @@
       
       
       
-        <link rel="prev" href="../tutorial_basic/">
+        <link rel="prev" href="../tutorial_contracts/">
       
       
         <link rel="next" href="../tutorial_array/">
@@ -200,14 +200,40 @@
   
   
     <li class="md-nav__item">
-      <a href="../tutorial_basic/" class="md-nav__link">
+      <a href="../tutorial_scalar/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  The Basic Level: Scalars, No Loops
+  The Scalar Level: Straight-Line and Branching Code
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tutorial_contracts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  The Contracts Level: Functions and Contracts
 
     
   </span>
@@ -552,14 +578,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../contributing.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  Contributing
+  none
 
     
   </span>
@@ -604,14 +630,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../license/" class="md-nav__link">
+      <a href="../license.md" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  MIT License
+  none
 
     
   </span>
@@ -829,7 +855,7 @@
 
 <h1 id="the-loop-level-scalar-loops">The Loop Level: Scalar Loops<a class="headerlink" href="#the-loop-level-scalar-loops" title="Permanent link">&para;</a></h1>
 <p>This tutorial explains how Frml checks and validates programs at the <code>loop</code>
-level: everything from the <a href="../tutorial_basic/">basic level</a>, plus <code>while</code>
+level: everything from the <a href="../tutorial_contracts/">contracts level</a>, plus <code>while</code>
 loops with invariants and termination measures. The <code>loop</code> level still has no
 arrays and no built-in functions, so loops here only ever modify scalar
 variables (<code>Int</code>, <code>Bool</code>, and <code>String</code>).</p>
@@ -838,8 +864,9 @@ variables (<code>Int</code>, <code>Bool</code>, and <code>String</code>).</p>
 <li><code>frml/typechecker_loop.py</code> type-checks loop syntax.</li>
 <li><code>frml/prover_loop.py</code> generates verification conditions for scalar loops.</li>
 </ul>
-<p>Start with the <a href="../tutorial_intro/">intro</a> and the
-<a href="../tutorial_basic/">basic tutorial</a> if you have not already read them; this
+<p>Start with the <a href="../tutorial_intro/">intro</a>, the
+<a href="../tutorial_scalar/">scalar tutorial</a>, and the
+<a href="../tutorial_contracts/">contracts tutorial</a> if you have not already read them; this
 page assumes the machinery described there.</p>
 <h2 id="what-the-loop-level-adds">What the <code>loop</code> level adds<a class="headerlink" href="#what-the-loop-level-adds" title="Permanent link">&para;</a></h2>
 <ul>
@@ -893,7 +920,7 @@ page assumes the machinery described there.</p>
 </span></code></pre></div>
 <ul>
 <li>The <code>in_spec</code> flag is set while checking the loop's specifications, just as
-    the basic checker does for <code>requires</code>, <code>ensures</code>, and <code>decreases</code> clauses.
+    the contracts checker does for <code>requires</code>, <code>ensures</code>, and <code>decreases</code> clauses.
     It has no effect on scalar loops, but the loop checker keeps the pattern so
     the <code>array</code>, <code>builtin</code>, and <code>complete</code> levels inherit the same behavior for
     array built-ins.</li>
@@ -1089,7 +1116,7 @@ not the second.</p>
 <h2 id="appendix-structure-of-prover_looppy">Appendix: structure of <code>prover_loop.py</code><a class="headerlink" href="#appendix-structure-of-prover_looppy" title="Permanent link">&para;</a></h2>
 <ul>
 <li><code>ScalarWriterCollector</code>: records the scalar names a loop body assigns.</li>
-<li><code>Prover</code>: subclasses the <code>basic</code> prover and adds:<ul>
+<li><code>Prover</code>: subclasses the <code>contracts</code> prover and adds:<ul>
 <li><code>visit_StmtWhile</code>: dispatches a loop statement to <code>exec_while</code>.</li>
 <li><code>exec_while</code>: initialization, preservation, termination, and exit.</li>
 <li><code>_havoc_loop_vars</code>: replaces assigned scalars with fresh symbols.</li>
@@ -1098,8 +1125,8 @@ not the second.</p>
 </li>
 <li>Module-level functions:<ul>
 <li><code>verify_program</code>: the entry point from the CLI.</li>
-<li>The Z3 check loop (<code>check_obligations</code>) is shared with the other levels
-    and lives in <code>frml/prover_complete.py</code>.</li>
+<li>The Z3 check loop (<code>check_obligations</code>) is defined in
+    <code>frml/prover_contracts.py</code> and inherited here.</li>
 </ul>
 </li>
 </ul>
