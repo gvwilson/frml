@@ -38,6 +38,8 @@ __all__ = [
 class Prover(ArrayProver):
     """Prover for the `builtin` level: arrays plus built-ins."""
 
+    # -- visitors --
+
     def visit_StmtCall(self, stmt, state):
         if stmt.is_call("push"):
             return self._exec_push(stmt, state)
@@ -46,11 +48,6 @@ class Prover(ArrayProver):
                 self.eval_expr(a, state)
             return [state]
         return super().visit_StmtCall(stmt, state)
-
-    def eval_rhs(self, expr, state, elem_sort_hint=None):
-        if expr.is_call("pop"):
-            return self._eval_pop(expr, state)
-        return super().eval_rhs(expr, state, elem_sort_hint=elem_sort_hint)
 
     def visit_ExprCall(
         self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
@@ -71,17 +68,32 @@ class Prover(ArrayProver):
             array_elem_sort=array_elem_sort,
         )
 
-    # -- built-ins ----------------------------------------------------------
+    # -- evaluator --
 
-    def _exec_push(self, stmt, state):
-        """Model `push(array, item)` as appending `item` to the array's SMT store."""
-        arr = self.eval_expr(stmt.args[0], state)
-        value = self.eval_expr(stmt.args[1], state)
-        if not isinstance(arr, ArrayVal):
-            raise FrmlVerificationError("push expects an array", stmt.pos)
-        new_arr = ArrayVal(z3.Store(arr.term, arr.length, value), arr.length + 1)
-        state.arrays[stmt.args[0].name] = new_arr
-        return [state]
+    def eval_rhs(self, expr, state, elem_sort_hint=None):
+        if expr.is_call("pop"):
+            return self._eval_pop(expr, state)
+        return super().eval_rhs(expr, state, elem_sort_hint=elem_sort_hint)
+
+    # -- built-ins --
+
+    def _eval_builtin_call(self, expr, state, use_old, result_term):
+        """Model a built-in call as an uninterpreted value.
+
+        `read` becomes a fresh string and `split`/`args` become fresh arrays of
+        strings, so the verifier can prove nothing about their contents (which
+        is sound, since file contents and command-line arguments are external).
+        """
+        builtin = BUILTINS[expr.name]
+        # Evaluate arguments so any nested proof obligations are still emitted.
+        for a in expr.args:
+            self.eval_expr(a, state, use_old=use_old, result_term=result_term)
+        if builtin.return_type is not None and builtin.return_type.is_array():
+            arr = self._fresh_array(builtin.return_type.elem, expr.name)
+            if not use_old:
+                state.path.append(arr.length >= 0)
+            return arr
+        return self._fresh_scalar(builtin.return_type, expr.name)
 
     def _eval_pop(self, expr, state):
         """Model `pop(array)` as returning the last element and shrinking length.
@@ -103,23 +115,15 @@ class Prover(ArrayProver):
         state.arrays[expr.args[0].name] = ArrayVal(arr.term, arr.length - 1)
         return result, state
 
-    def _eval_builtin_call(self, expr, state, use_old, result_term):
-        """Model a built-in call as an uninterpreted value.
-
-        `read` becomes a fresh string and `split`/`args` become fresh arrays of
-        strings, so the verifier can prove nothing about their contents (which
-        is sound, since file contents and command-line arguments are external).
-        """
-        builtin = BUILTINS[expr.name]
-        # Evaluate arguments so any nested proof obligations are still emitted.
-        for a in expr.args:
-            self.eval_expr(a, state, use_old=use_old, result_term=result_term)
-        if builtin.return_type is not None and builtin.return_type.is_array():
-            arr = self._fresh_array(builtin.return_type.elem, expr.name)
-            if not use_old:
-                state.path.append(arr.length >= 0)
-            return arr
-        return self._fresh_scalar(builtin.return_type, expr.name)
+    def _exec_push(self, stmt, state):
+        """Model `push(array, item)` as appending `item` to the array's SMT store."""
+        arr = self.eval_expr(stmt.args[0], state)
+        value = self.eval_expr(stmt.args[1], state)
+        if not isinstance(arr, ArrayVal):
+            raise FrmlVerificationError("push expects an array", stmt.pos)
+        new_arr = ArrayVal(z3.Store(arr.term, arr.length, value), arr.length + 1)
+        state.arrays[stmt.args[0].name] = new_arr
+        return [state]
 
 
 def verify_program(program, timeout_ms=10000, trace=False):

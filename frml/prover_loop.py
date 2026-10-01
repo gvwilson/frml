@@ -119,19 +119,19 @@ class Prover(ContractsProver):
         exit_state.path += exit_invs + [z3.Not(exit_cond)]
         return [exit_state]
 
-    def _havoc_loop_vars(self, body, state):
-        collector = ScalarWriterCollector()
-        collector.collect(body)
-        for name in collector.names:
-            if name in state.vars:
-                state.vars[name] = self._fresh_from_term(state.vars[name], name)
-
     def _fresh_from_term(self, term, name):
         if z3.is_bool(term):
             return z3.Bool(self._fresh(name))
         if z3.is_string(term):
             return z3.String(self._fresh(name))
         return z3.Int(self._fresh(name))
+
+    def _havoc_loop_vars(self, body, state):
+        collector = ScalarWriterCollector()
+        collector.collect(body)
+        for name in collector.names:
+            if name in state.vars:
+                state.vars[name] = self._fresh_from_term(state.vars[name], name)
 
 
 def verify_program(program, timeout_ms=10000, trace=False):

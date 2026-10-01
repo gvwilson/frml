@@ -10,7 +10,6 @@ class in turn by adding the built-in functions.
 from .errors import FrmlTypeError
 from .typechecker_loop import TypeChecker as LoopTypeChecker
 from .types import INT, ArrayType
-from .utils import _failif
 
 
 class TypeChecker(LoopTypeChecker):
@@ -18,9 +17,8 @@ class TypeChecker(LoopTypeChecker):
 
     def visit_StmtArrayAssign(self, stmt, ret):
         arr_type = self.check_expr(stmt.array, allow_old=False, result_type=None)
-        _failif(
+        FrmlTypeError.fail(
             not arr_type.is_array(),
-            FrmlTypeError,
             f"expected an array but found {arr_type}",
             stmt.pos,
         )
@@ -33,9 +31,8 @@ class TypeChecker(LoopTypeChecker):
         if not stmt.type.is_array():
             return super().visit_StmtLet(stmt, ret)
 
-        _failif(
+        FrmlTypeError.fail(
             not (stmt.init.is_array_literal() or self._is_array_valued_call(stmt.init)),
-            FrmlTypeError,
             "array-to-array assignment is not supported (arrays are references); "
             "initialize an array with an array literal",
             stmt.pos,
@@ -46,32 +43,29 @@ class TypeChecker(LoopTypeChecker):
         self._declare(stmt.name, stmt.type, stmt.pos)
 
     def visit_StmtReturn(self, stmt, ret):
-        _failif(
+        FrmlTypeError.fail(
             (
                 ret is not None
                 and ret.is_array()
                 and stmt.expr.variable_name() in self.current_params
             ),
-            FrmlTypeError,
             "cannot return an array parameter (arrays are references)",
             stmt.pos,
         )
         super().visit_StmtReturn(stmt, ret)
 
-    # -- expressions --------------------------------------------------------
+    # -- expressions --
 
     def visit_ExprArrayAccess(self, expr, expected, allow_old, result_type):
         arr = expr.array.accept(self, None, allow_old, result_type)
-        _failif(
+        FrmlTypeError.fail(
             not arr.is_array(),
-            FrmlTypeError,
             f"array access expects an array but found {arr}",
             expr.pos,
         )
         idx = expr.index.accept(self, None, allow_old, result_type)
-        _failif(
+        FrmlTypeError.fail(
             idx != INT,
-            FrmlTypeError,
             "array index must have type Int",
             expr.pos,
         )
@@ -81,23 +75,20 @@ class TypeChecker(LoopTypeChecker):
         if not expr.elements:
             if expected is not None and expected.is_array():
                 return expected
-            _failif(
+            FrmlTypeError.fail(
                 True,
-                FrmlTypeError,
                 "cannot infer the type of an empty array literal",
                 expr.pos,
             )
         elem_type = expr.elements[0].accept(self, None, allow_old, result_type)
-        _failif(
+        FrmlTypeError.fail(
             not elem_type.is_scalar(),
-            FrmlTypeError,
             f"array elements must be Int, Bool or String but found {elem_type}",
             expr.pos,
         )
         for e in expr.elements[1:]:
-            _failif(
+            FrmlTypeError.fail(
                 e.accept(self, None, allow_old, result_type) != elem_type,
-                FrmlTypeError,
                 "all elements of an array literal must have the same type",
                 expr.pos,
             )
@@ -105,15 +96,14 @@ class TypeChecker(LoopTypeChecker):
 
     def visit_ExprLength(self, expr, expected, allow_old, result_type):
         arg = expr.arg.accept(self, None, allow_old, result_type)
-        _failif(
+        FrmlTypeError.fail(
             not arg.is_array(),
-            FrmlTypeError,
             f"length expects an array but found {arg}",
             expr.pos,
         )
         return INT
 
-    # -- helpers ------------------------------------------------------------
+    # -- helpers --
 
     def _is_array_valued_call(self, expr):
         """True when `expr` is a call to a function that returns an array."""

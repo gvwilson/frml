@@ -164,6 +164,17 @@ def tokenize(source):
     return tokens
 
 
+def _advance(source, i, line, col, n, amount=1):
+    for _ in range(amount):
+        if i < n and source[i] == "\n":
+            line += 1
+            col = 1
+        else:
+            col += 1
+        i += 1
+    return i, line, col
+
+
 def _is_digit(c):
     return "0" <= c <= "9"
 
@@ -174,14 +185,3 @@ def _is_ident_char(c):
 
 def _is_ident_start(c):
     return ("a" <= c <= "z") or ("A" <= c <= "Z")
-
-
-def _advance(source, i, line, col, n, amount=1):
-    for _ in range(amount):
-        if i < n and source[i] == "\n":
-            line += 1
-            col = 1
-        else:
-            col += 1
-        i += 1
-    return i, line, col

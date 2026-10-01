@@ -20,7 +20,7 @@ from .prover_builtin import (
     check_obligations,
 )
 from .prover_builtin import Prover as BuiltinProver
-from .prover_contracts import _render_model, _render_model_value
+from .prover_contracts import render_model, render_model_value
 
 __all__ = [
     "ArrayVal",
@@ -30,9 +30,9 @@ __all__ = [
     "Prover",
     "ProverResult",
     "State",
-    "_render_model",
-    "_render_model_value",
     "check_obligations",
+    "render_model",
+    "render_model_value",
     "verify_program",
 ]
 

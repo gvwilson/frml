@@ -15,7 +15,6 @@ modules.
 from .builtins import BUILTINS
 from .errors import FrmlNameError, FrmlTypeError
 from .types import BOOL, INT, STRING
-from .utils import _failif
 
 
 class TypeChecker:
@@ -28,19 +27,17 @@ class TypeChecker:
         self.current_params = set()
         self.in_spec = False
 
-    # -- entry point --------------------------------------------------------
+    # -- checks --
 
     def check(self):
         for fn in self.program.functions:
-            _failif(
+            FrmlNameError.fail(
                 fn.name in BUILTINS,
-                FrmlNameError,
                 f"built-in function {fn.name!r} cannot be redefined",
                 fn.pos,
             )
-            _failif(
+            FrmlNameError.fail(
                 fn.name in self.functions,
-                FrmlNameError,
                 f"function {fn.name!r} is declared more than once",
                 fn.pos,
             )
@@ -48,15 +45,13 @@ class TypeChecker:
 
         if "main" in self.functions:
             main = self.functions["main"]
-            _failif(
+            FrmlTypeError.fail(
                 main.params,
-                FrmlTypeError,
                 "'main' must take no parameters",
                 main.pos,
             )
-            _failif(
+            FrmlTypeError.fail(
                 main.return_type != INT,
-                FrmlTypeError,
                 "'main' must return Int",
                 main.pos,
             )
@@ -65,32 +60,28 @@ class TypeChecker:
             self.check_function(fn)
 
         for fn in self.program.functions:
-            _failif(
+            FrmlTypeError.fail(
                 fn.decreases is None and self._calls_itself(fn),
-                FrmlTypeError,
                 f"recursive function {fn.name!r} must have a decreases clause",
                 fn.pos,
             )
 
     def check_call(self, name, args, pos, require_void):
         fn = self.functions.get(name)
-        _failif(
+        FrmlNameError.fail(
             fn is None,
-            FrmlNameError,
             f"unknown function {name!r}",
             pos,
         )
-        _failif(
+        FrmlTypeError.fail(
             len(args) != len(fn.params),
-            FrmlTypeError,
             f"function {name!r} expects {len(fn.params)} argument(s) but got {len(args)}",
             pos,
         )
         for arg, param in zip(args, fn.params):
             self.check_expr(arg, expected=param.type, allow_old=False, result_type=None)
-        _failif(
+        FrmlTypeError.fail(
             require_void and fn.return_type is not None,
-            FrmlTypeError,
             f"function {name!r} returns a value and cannot be used as a statement",
             pos,
         )
@@ -98,9 +89,8 @@ class TypeChecker:
 
     def check_expr(self, expr, expected=None, allow_old=False, result_type=None):
         actual = expr.accept(self, expected, allow_old, result_type)
-        _failif(
+        FrmlTypeError.fail(
             expected is not None and actual != expected,
-            FrmlTypeError,
             f"expected {expected} but found {actual}",
             expr.pos,
         )
@@ -110,9 +100,8 @@ class TypeChecker:
         self._push_scope()
         self.current_params = {p.name for p in fn.params}
         for p in fn.params:
-            _failif(
+            FrmlTypeError.fail(
                 p.name in self.scopes[-1],
-                FrmlTypeError,
                 f"duplicate parameter {p.name!r}",
                 p.pos,
             )
@@ -138,9 +127,8 @@ class TypeChecker:
 
         self._pop_scope()
 
-        _failif(
+        FrmlTypeError.fail(
             ret is not None and not self._definitely_returns(fn.body),
-            FrmlTypeError,
             f"function {fn.name!r} may not return on every path",
             fn.pos,
         )
@@ -148,12 +136,11 @@ class TypeChecker:
     def check_stmt(self, stmt, ret):
         return stmt.accept(self, ret)
 
-    # -- statements ---------------------------------------------------------
+    # -- statements --
 
     def visit_Stmt(self, stmt, ret):
-        _failif(
+        FrmlTypeError.fail(
             True,
-            FrmlTypeError,
             f"unknown statement {type(stmt).__name__}",
             stmt.pos,
         )
@@ -163,15 +150,13 @@ class TypeChecker:
 
     def visit_StmtAssign(self, stmt, ret):
         var_type = self._lookup(stmt.name)
-        _failif(
+        FrmlNameError.fail(
             var_type is None,
-            FrmlNameError,
             f"unknown variable {stmt.name!r}",
             stmt.pos,
         )
-        _failif(
+        FrmlTypeError.fail(
             var_type.is_array(),
-            FrmlTypeError,
             "array-to-array assignment is not supported (arrays are references)",
             stmt.pos,
         )
@@ -199,21 +184,121 @@ class TypeChecker:
         self._declare(stmt.name, stmt.type, stmt.pos)
 
     def visit_StmtReturn(self, stmt, ret):
-        _failif(
+        FrmlTypeError.fail(
             ret is None,
-            FrmlTypeError,
             "a procedure cannot return a value",
             stmt.pos,
         )
         self.check_expr(stmt.expr, expected=ret, allow_old=False, result_type=None)
 
-    # -- expressions --------------------------------------------------------
+    # -- expressions --
+
+    def visit_Expr(self, expr, expected, allow_old, result_type):
+        FrmlTypeError.fail(
+            True,
+            f"unknown expression {type(expr).__name__}",
+            expr.pos,
+        )
+
+    def visit_ExprBinary(self, expr, expected, allow_old, result_type):
+        op = expr.op
+        match op:
+            case "and" | "or" | "=>":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                FrmlTypeError.fail(
+                    lt != BOOL or rt != BOOL,
+                    f"operator {op!r} expects Bool operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return BOOL
+
+            case "++":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                FrmlTypeError.fail(
+                    lt != STRING or rt != STRING,
+                    f"operator '++' expects String operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return STRING
+
+            case "==" | "!=":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                FrmlTypeError.fail(
+                    lt != rt,
+                    f"operator {op!r} requires operands of the same type but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return BOOL
+
+            case "<" | "<=" | ">" | ">=":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                FrmlTypeError.fail(
+                    lt != INT or rt != INT,
+                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return BOOL
+
+            case "+" | "-" | "*" | "/" | "%":
+                lt = expr.left.accept(self, None, allow_old, result_type)
+                rt = expr.right.accept(self, None, allow_old, result_type)
+                FrmlTypeError.fail(
+                    lt != INT or rt != INT,
+                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
+                    expr.pos,
+                )
+                return INT
+
+            case _:
+                FrmlTypeError.fail(
+                    True,
+                    f"unknown binary operator {op!r}",
+                    expr.pos,
+                )
+
+    def visit_ExprCall(self, expr, expected, allow_old, result_type):
+        t = self.check_call(expr.name, expr.args, expr.pos, require_void=False)
+        FrmlTypeError.fail(
+            t is None,
+            f"procedure {expr.name!r} cannot be used inside an expression",
+            expr.pos,
+        )
+        return t
+
+    def visit_ExprOld(self, expr, expected, allow_old, result_type):
+        FrmlTypeError.fail(
+            not allow_old,
+            "'old' is only allowed inside an ensures clause",
+            expr.pos,
+        )
+        return expr.arg.accept(self, None, allow_old=False, result_type=result_type)
+
+    def visit_ExprQuantifier(self, expr, expected, allow_old, result_type):
+        FrmlTypeError.fail(
+            not expr.var_type.is_int_or_bool(),
+            "quantified variables must have type Int or Bool",
+            expr.pos,
+        )
+        self.scopes.append({expr.var_name: expr.var_type})
+        try:
+            body = expr.body.accept(self, None, allow_old, result_type)
+        finally:
+            self._pop_scope()
+        FrmlTypeError.fail(
+            body != BOOL,
+            "quantifier body must have type Bool",
+            expr.pos,
+        )
+        return BOOL
 
     def visit_ExprStringify(self, expr, expected, allow_old, result_type):
         t = expr.operand.accept(self, None, allow_old, result_type)
-        _failif(
+        FrmlTypeError.fail(
             not t.is_scalar(),
-            FrmlTypeError,
             f"backtick cannot convert {t} to a string",
             expr.pos,
         )
@@ -223,159 +308,43 @@ class TypeChecker:
         t = expr.operand.accept(self, None, allow_old, result_type)
         match expr.op:
             case "!":
-                _failif(
+                FrmlTypeError.fail(
                     t != BOOL,
-                    FrmlTypeError,
                     f"operator '!' expects Bool but found {t}",
                     expr.pos,
                 )
                 return BOOL
             case "-":
-                _failif(
+                FrmlTypeError.fail(
                     t != INT,
-                    FrmlTypeError,
                     f"unary '-' expects Int but found {t}",
                     expr.pos,
                 )
                 return INT
             case _:
-                _failif(
+                FrmlTypeError.fail(
                     True,
-                    FrmlTypeError,
                     f"unknown unary operator {expr.op!r}",
                     expr.pos,
                 )
 
     def visit_ExprVar(self, expr, expected, allow_old, result_type):
         if expr.name == "result":
-            _failif(
+            FrmlTypeError.fail(
                 result_type is None,
-                FrmlTypeError,
                 "'result' is only allowed inside an ensures clause",
                 expr.pos,
             )
             return result_type
         t = self._lookup(expr.name)
-        _failif(
+        FrmlNameError.fail(
             t is None,
-            FrmlNameError,
             f"unknown variable {expr.name!r}",
             expr.pos,
         )
         return t
 
-    def visit_ExprBinary(self, expr, expected, allow_old, result_type):
-        op = expr.op
-        match op:
-            case "and" | "or" | "=>":
-                lt = expr.left.accept(self, None, allow_old, result_type)
-                rt = expr.right.accept(self, None, allow_old, result_type)
-                _failif(
-                    lt != BOOL or rt != BOOL,
-                    FrmlTypeError,
-                    f"operator {op!r} expects Bool operands but found {lt} and {rt}",
-                    expr.pos,
-                )
-                return BOOL
-
-            case "++":
-                lt = expr.left.accept(self, None, allow_old, result_type)
-                rt = expr.right.accept(self, None, allow_old, result_type)
-                _failif(
-                    lt != STRING or rt != STRING,
-                    FrmlTypeError,
-                    f"operator '++' expects String operands but found {lt} and {rt}",
-                    expr.pos,
-                )
-                return STRING
-
-            case "==" | "!=":
-                lt = expr.left.accept(self, None, allow_old, result_type)
-                rt = expr.right.accept(self, None, allow_old, result_type)
-                _failif(
-                    lt != rt,
-                    FrmlTypeError,
-                    f"operator {op!r} requires operands of the same type but found {lt} and {rt}",
-                    expr.pos,
-                )
-                return BOOL
-
-            case "<" | "<=" | ">" | ">=":
-                lt = expr.left.accept(self, None, allow_old, result_type)
-                rt = expr.right.accept(self, None, allow_old, result_type)
-                _failif(
-                    lt != INT or rt != INT,
-                    FrmlTypeError,
-                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
-                    expr.pos,
-                )
-                return BOOL
-
-            case "+" | "-" | "*" | "/" | "%":
-                lt = expr.left.accept(self, None, allow_old, result_type)
-                rt = expr.right.accept(self, None, allow_old, result_type)
-                _failif(
-                    lt != INT or rt != INT,
-                    FrmlTypeError,
-                    f"operator {op!r} expects Int operands but found {lt} and {rt}",
-                    expr.pos,
-                )
-                return INT
-
-            case _:
-                _failif(
-                    True,
-                    FrmlTypeError,
-                    f"unknown binary operator {op!r}",
-                    expr.pos,
-                )
-
-    def visit_ExprCall(self, expr, expected, allow_old, result_type):
-        t = self.check_call(expr.name, expr.args, expr.pos, require_void=False)
-        _failif(
-            t is None,
-            FrmlTypeError,
-            f"procedure {expr.name!r} cannot be used inside an expression",
-            expr.pos,
-        )
-        return t
-
-    def visit_ExprOld(self, expr, expected, allow_old, result_type):
-        _failif(
-            not allow_old,
-            FrmlTypeError,
-            "'old' is only allowed inside an ensures clause",
-            expr.pos,
-        )
-        return expr.arg.accept(self, None, allow_old=False, result_type=result_type)
-
-    def visit_ExprQuantifier(self, expr, expected, allow_old, result_type):
-        _failif(
-            not expr.var_type.is_int_or_bool(),
-            FrmlTypeError,
-            "quantified variables must have type Int or Bool",
-            expr.pos,
-        )
-        self.scopes.append({expr.var_name: expr.var_type})
-        try:
-            body = expr.body.accept(self, None, allow_old, result_type)
-        finally:
-            self._pop_scope()
-        _failif(
-            body != BOOL,
-            FrmlTypeError,
-            "quantifier body must have type Bool",
-            expr.pos,
-        )
-        return BOOL
-
-    def visit_Expr(self, expr, expected, allow_old, result_type):
-        _failif(
-            True,
-            FrmlTypeError,
-            f"unknown expression {type(expr).__name__}",
-            expr.pos,
-        )
+    # -- literals --
 
     def visit_LitBool(self, expr, expected, allow_old, result_type):
         return BOOL
@@ -386,7 +355,7 @@ class TypeChecker:
     def visit_LitString(self, expr, expected, allow_old, result_type):
         return STRING
 
-    # -- helpers ------------------------------------------------------
+    # -- helpers --
 
     def _calls_itself(self, fn):
         """True when `fn` directly (self-)recursively calls itself."""
@@ -403,9 +372,8 @@ class TypeChecker:
 
     def _declare(self, name, type_, pos):
         for scope in reversed(self.scopes):
-            _failif(
+            FrmlTypeError.fail(
                 name in scope,
-                FrmlTypeError,
                 f"variable {name!r} is already declared (shadowing is not allowed)",
                 pos,
             )

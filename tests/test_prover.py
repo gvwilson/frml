@@ -22,9 +22,9 @@ from frml.prover_complete import (
     Obligation,
     Prover,
     State,
-    _render_model,
-    _render_model_value,
     check_obligations,
+    render_model,
+    render_model_value,
     verify_program,
 )
 from frml.stmt import Stmt, StmtArrayAssign, StmtCall, StmtWhile
@@ -681,28 +681,28 @@ def test_check_obligations_reports_unknown(monkeypatch):
 
 
 def test_render_model_value_scalars():
-    assert _render_model_value(z3.IntVal(3)) == "3"
-    assert _render_model_value(z3.BoolVal(True)) == "true"
-    assert _render_model_value(z3.BoolVal(False)) == "false"
-    assert _render_model_value(z3.StringVal("hi")) == '"hi"'
+    assert render_model_value(z3.IntVal(3)) == "3"
+    assert render_model_value(z3.BoolVal(True)) == "true"
+    assert render_model_value(z3.BoolVal(False)) == "false"
+    assert render_model_value(z3.StringVal("hi")) == '"hi"'
     # A symbolic (non-numeral) value falls back to its S-expression.
-    assert _render_model_value(z3.Int("x")) == "x"
+    assert render_model_value(z3.Int("x")) == "x"
 
 
 def test_render_model_value_constant_array():
     value = z3.K(z3.IntSort(), z3.IntVal(2))
-    assert _render_model_value(value) == "all -> 2"
+    assert render_model_value(value) == "all -> 2"
 
 
 def test_render_model_value_store_array():
     value = z3.Store(z3.K(z3.IntSort(), z3.IntVal(2)), z3.IntVal(0), z3.IntVal(7))
-    assert _render_model_value(value) == "{0: 7, else: 2}"
+    assert render_model_value(value) == "{0: 7, else: 2}"
 
 
 def test_render_model_value_lambda_array():
     i = z3.Int("i")
     value = z3.Lambda([i], z3.If(i == 0, z3.IntVal(7), z3.IntVal(2)))
-    assert _render_model_value(value) == "((= i 0) ? 7 : 2)"
+    assert render_model_value(value) == "((= i 0) ? 7 : 2)"
 
 
 def test_array_counterexample_renders_without_crashing():
@@ -740,7 +740,7 @@ def test_render_model_skips_internal_declarations():
     solver = z3.Solver()
     solver.add(x == 1)
     assert solver.check() == z3.sat
-    assert _render_model(solver.model()) == []
+    assert render_model(solver.model()) == []
 
 
 def test_render_model_renders_length_symbol():
@@ -748,7 +748,7 @@ def test_render_model_renders_length_symbol():
     solver = z3.Solver()
     solver.add(length == 2)
     assert solver.check() == z3.sat
-    assert _render_model(solver.model()) == ["length(a) = 2"]
+    assert render_model(solver.model()) == ["length(a) = 2"]
 
 
 def test_render_model_renders_scalar_symbol():
@@ -756,7 +756,7 @@ def test_render_model_renders_scalar_symbol():
     solver = z3.Solver()
     solver.add(value == 1)
     assert solver.check() == z3.sat
-    assert _render_model(solver.model()) == ["i = 1"]
+    assert render_model(solver.model()) == ["i = 1"]
 
 
 # -- trace output ----------------------------------------------------------

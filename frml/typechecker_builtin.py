@@ -11,7 +11,6 @@ class in turn.
 from .builtins import BUILTINS
 from .errors import FrmlTypeError
 from .typechecker_array import TypeChecker as ArrayTypeChecker
-from .utils import _failif
 
 
 class TypeChecker(ArrayTypeChecker):
@@ -22,9 +21,8 @@ class TypeChecker(ArrayTypeChecker):
         if builtin is not None:
             if builtin.poly:
                 return self._check_poly_builtin(name, args, pos, require_void)
-            _failif(
+            FrmlTypeError.fail(
                 len(args) != len(builtin.param_types),
-                FrmlTypeError,
                 f"built-in function {name!r} expects {len(builtin.param_types)} "
                 f"argument(s) but got {len(args)}",
                 pos,
@@ -33,9 +31,8 @@ class TypeChecker(ArrayTypeChecker):
                 self.check_expr(
                     arg, expected=param_type, allow_old=False, result_type=None
                 )
-            _failif(
+            FrmlTypeError.fail(
                 require_void and builtin.return_type is not None,
-                FrmlTypeError,
                 f"built-in function {name!r} returns a value and cannot be used "
                 f"as a statement",
                 pos,
@@ -44,35 +41,33 @@ class TypeChecker(ArrayTypeChecker):
 
         return super().check_call(name, args, pos, require_void)
 
+    # -- helpers --
+
     def _check_poly_builtin(self, name, args, pos, require_void):
         """Type-check `push`/`pop`, whose signatures depend on the element type."""
-        _failif(
+        FrmlTypeError.fail(
             self.in_spec,
-            FrmlTypeError,
             f"built-in function {name!r} cannot be used in a specification",
             pos,
         )
 
         match name:
             case "push":
-                _failif(
+                FrmlTypeError.fail(
                     len(args) != 2,
-                    FrmlTypeError,
                     f"built-in function 'push' expects 2 arguments but got {len(args)}",
                     pos,
                 )
-                _failif(
+                FrmlTypeError.fail(
                     args[0].variable_name() is None,
-                    FrmlTypeError,
                     "push expects an array variable as its first argument",
                     args[0].pos,
                 )
                 arr_type = args[0].accept(
                     self, None, allow_old=False, result_type=None
                 )
-                _failif(
+                FrmlTypeError.fail(
                     not arr_type.is_array(),
-                    FrmlTypeError,
                     f"push expects an array but found {arr_type}",
                     args[0].pos,
                 )
@@ -82,30 +77,26 @@ class TypeChecker(ArrayTypeChecker):
                 return None
 
             case "pop":
-                _failif(
+                FrmlTypeError.fail(
                     len(args) != 1,
-                    FrmlTypeError,
                     f"built-in function 'pop' expects 1 argument but got {len(args)}",
                     pos,
                 )
-                _failif(
+                FrmlTypeError.fail(
                     args[0].variable_name() is None,
-                    FrmlTypeError,
                     "pop expects an array variable as its argument",
                     args[0].pos,
                 )
                 arr_type = args[0].accept(
                     self, None, allow_old=False, result_type=None
                 )
-                _failif(
+                FrmlTypeError.fail(
                     not arr_type.is_array(),
-                    FrmlTypeError,
                     f"pop expects an array but found {arr_type}",
                     args[0].pos,
                 )
-                _failif(
+                FrmlTypeError.fail(
                     require_void,
-                    FrmlTypeError,
                     "built-in function 'pop' returns a value and cannot be used "
                     "as a statement",
                     pos,
@@ -113,9 +104,8 @@ class TypeChecker(ArrayTypeChecker):
                 return arr_type.elem
 
             case _:
-                _failif(
+                FrmlTypeError.fail(
                     True,
-                    FrmlTypeError,
                     f"unknown built-in function {name!r}",
                     pos,
                 )  # pragma: no cover - defensive
