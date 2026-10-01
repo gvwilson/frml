@@ -3,10 +3,7 @@
 from dataclasses import dataclass
 
 from .ast_nodes import Node, Stmt
-from .builtins import BUILTINS
-from .errors import FrmlRuntimeError, FrmlTerminationError
 from .expr import Expr
-from .runtime import ReturnSignal, _as_int, _truthy
 from .types import Type
 from .utils import Position
 
@@ -27,12 +24,6 @@ class StmtArrayAssign(Stmt):
     def children(self):
         return [self.array, self.index, self.value]
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        arr = interp.eval_expr(self.array)
-        index = interp.eval_expr(self.index)
-        value = interp.eval_expr(self.value)
-        interp._store(arr, index, value, self.pos)
-
 
 @dataclass
 class StmtAssign(Stmt):
@@ -48,10 +39,6 @@ class StmtAssign(Stmt):
     def children(self):
         return [self.expr]
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        value = interp.eval_expr(self.expr)
-        interp.scope.assign(self.name, value)
-
 
 @dataclass
 class StmtAssert(Stmt):
@@ -64,11 +51,6 @@ class StmtAssert(Stmt):
 
     def children(self):
         return [self.expr]
-
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        value = _truthy(interp.eval_expr(self.expr))
-        if not value:
-            raise FrmlRuntimeError(f"assertion failed: {self.expr.render()}", self.pos)
 
 
 @dataclass
@@ -90,17 +72,6 @@ class StmtCall(Stmt):
 
     def is_call_node(self):
         return True
-
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        if self.name in BUILTINS:
-            args = [interp.eval_expr(a) for a in self.args]
-            interp.call_builtin(self.name, args, self.pos)
-        else:
-            args = [
-                interp.eval_expr(a, elem_hint=interp._param_elem_hint(self.name, i, a))
-                for i, a in enumerate(self.args)
-            ]
-            interp.call(self.name, args)
 
 
 @dataclass
@@ -125,20 +96,6 @@ class StmtIf(Stmt):
     def is_if_with_else(self):
         return self.else_ is not None
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        if _truthy(interp.eval_expr(self.cond)):
-            interp.scope.push()
-            try:
-                interp.execute_stmt_list(self.then)
-            finally:
-                interp.scope.pop()
-        elif self.else_ is not None:
-            interp.scope.push()
-            try:
-                interp.execute_stmt_list(self.else_)
-            finally:
-                interp.scope.pop()
-
 
 @dataclass
 class StmtLet(Stmt):
@@ -156,10 +113,6 @@ class StmtLet(Stmt):
     def children(self):
         return [self.init]
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        value = interp.eval_expr(self.init, elem_hint=interp._elem_hint(self.type))
-        interp.scope.define(self.name, value)
-
 
 @dataclass
 class StmtReturn(Stmt):
@@ -175,9 +128,6 @@ class StmtReturn(Stmt):
 
     def is_return(self):
         return True
-
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        raise ReturnSignal(interp.eval_expr(self.expr))
 
 
 @dataclass
@@ -201,38 +151,3 @@ class StmtWhile(Stmt):
             result.append(self.decreases)
         result += list(self.body)
         return result
-
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        iterations = 0
-        while True:
-            cond = _truthy(interp.eval_expr(self.cond))
-            if not cond:
-                break
-
-            d_before = 0
-            if self.decreases is not None:
-                d_before = _as_int(interp.eval_expr(self.decreases))
-                if d_before < 0:
-                    raise FrmlTerminationError(
-                        "loop decreases expression became negative", self.pos
-                    )
-
-            iterations += 1
-            if iterations > interp.max_iterations:
-                raise FrmlTerminationError(
-                    "loop did not terminate within the iteration limit", self.pos
-                )
-
-            interp.scope.push()
-            try:
-                interp.execute_stmt_list(self.body)
-            finally:
-                interp.scope.pop()
-
-            if self.decreases is not None:
-                d_after = _as_int(interp.eval_expr(self.decreases))
-                if not (d_after < d_before):
-                    raise FrmlTerminationError(
-                        "loop decreases expression did not strictly decrease",
-                        self.pos,
-                    )

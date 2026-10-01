@@ -56,8 +56,3 @@ class Position:
         if self.col is None:
             return str(self.line)
         return f"{self.line}:{self.col}"
-
-
-def _failif(cond, cls, msg, *args):
-    if cond:
-        raise cls(msg, *args)

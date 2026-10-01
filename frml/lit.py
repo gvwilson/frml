@@ -19,9 +19,6 @@ class LitBool(Expr):
     def render(self):
         return "true" if self.value else "false"
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        return self.value
-
 
 @dataclass
 class LitInt(Expr):
@@ -38,9 +35,6 @@ class LitInt(Expr):
     def render(self):
         return str(self.value)
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        return self.value
-
 
 @dataclass
 class LitString(Expr):
@@ -53,6 +47,3 @@ class LitString(Expr):
 
     def render(self):
         return '"' + self.value + '"'
-
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        return self.value

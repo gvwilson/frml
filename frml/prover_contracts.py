@@ -18,10 +18,9 @@ from .prover_scalar import (
     ProverResult,
     ScalarProver,
     State,
-    _render_model,
-    _render_model_value,
     check_obligations,
 )
+from .z3render import render_model, render_model_value
 
 __all__ = [
     "CheckOutcome",
@@ -29,40 +28,70 @@ __all__ = [
     "Prover",
     "ProverResult",
     "State",
-    "_render_model",
-    "_render_model_value",
     "check_obligations",
+    "render_model",
+    "render_model_value",
     "verify_program",
 ]
 
 
 class Prover(ScalarProver):
-    # -- specifications -----------------------------------------------------
-
-    def _assume_spec(self, fn, state):
-        for req in fn.requires:
-            state.path.append(self.eval_expr(req, state))
-        if fn.decreases is not None:
-            d = self.eval_expr(fn.decreases, state)
-            self.entry_decreases = d
-            self._emit(
-                "decreases",
-                f"decreases {fn.decreases.render()} >= 0",
-                state.path,
-                d >= 0,
-                fn.decreases.pos,
-            )
-
-    def _check_ensures(self, fn, state, result):
-        for ens in fn.ensures:
-            self.check_postcondition(ens, state, result)
-
-    # -- statement calls ----------------------------------------------------
-
+    # -- visitors --
     def visit_StmtCall(self, stmt, state):
         fn = self.functions[stmt.name]
         arg_vals = [self.eval_expr(a, state) for a in stmt.args]
         return [self.model_call(fn, arg_vals, state)]
+
+    def visit_ExprCall(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        fn = self.functions[expr.name]
+        arg_vals = [
+            self.eval_expr(a, state, use_old=use_old, result_term=result_term)
+            for a in expr.args
+        ]
+        req_state = State()
+        for p, val in zip(fn.params, arg_vals):
+            req_state.vars[p.name] = val
+        for req in fn.requires:
+            goal = self.eval_expr(req, req_state)
+            self._emit(
+                "precondition",
+                f"precondition of {fn.name}: {req.render()}",
+                state.path,
+                goal,
+                req.pos,
+            )
+        assert fn.return_type is not None
+        result = self._fresh_result(fn.return_type, fn.name + "_result")
+        ens_state = State()
+        ens_state.vars = dict(req_state.vars)
+        ens_state.old_vars = dict(req_state.vars)
+        for ens in fn.ensures:
+            state.path.append(self._eval_assumption(ens, ens_state, result_term=result))
+        return result
+
+    def visit_ExprOld(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        return self.eval_expr(expr.arg, state, use_old=True, result_term=result_term)
+
+    def visit_ExprQuantifier(
+        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
+    ):
+        return self._eval_quantifier(expr, state, use_old, result_term)
+
+    # -- statement calls --
+
+    def check_postcondition(self, ens, state, result):
+        goal = self.eval_expr(ens, state, result_term=result)
+        self._emit(
+            "postcondition",
+            ens.render(),
+            state.path,
+            goal,
+            ens.pos,
+        )
 
     def model_call(self, fn, arg_vals, caller_state):
         """Model a statement call using the callee's contract.
@@ -110,58 +139,40 @@ class Prover(ScalarProver):
             new_state.path.append(self._eval_assumption(ens, post_state))
         return new_state
 
-    def check_postcondition(self, ens, state, result):
-        goal = self.eval_expr(ens, state, result_term=result)
-        self._emit(
-            "postcondition",
-            ens.render(),
-            state.path,
-            goal,
-            ens.pos,
-        )
+    # -- specifications --
 
-    # -- expression calls / old / quantifiers -------------------------------
-
-    def visit_ExprCall(
-        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
-    ):
-        fn = self.functions[expr.name]
-        arg_vals = [
-            self.eval_expr(a, state, use_old=use_old, result_term=result_term)
-            for a in expr.args
-        ]
-        req_state = State()
-        for p, val in zip(fn.params, arg_vals):
-            req_state.vars[p.name] = val
+    def _assume_spec(self, fn, state):
         for req in fn.requires:
-            goal = self.eval_expr(req, req_state)
+            state.path.append(self.eval_expr(req, state))
+        if fn.decreases is not None:
+            d = self.eval_expr(fn.decreases, state)
+            self.entry_decreases = d
             self._emit(
-                "precondition",
-                f"precondition of {fn.name}: {req.render()}",
+                "decreases",
+                f"decreases {fn.decreases.render()} >= 0",
                 state.path,
-                goal,
-                req.pos,
+                d >= 0,
+                fn.decreases.pos,
             )
-        assert fn.return_type is not None
-        result = self._fresh_result(fn.return_type, fn.name + "_result")
-        ens_state = State()
-        ens_state.vars = dict(req_state.vars)
-        ens_state.old_vars = dict(req_state.vars)
+
+    def _check_ensures(self, fn, state, result):
         for ens in fn.ensures:
-            state.path.append(self._eval_assumption(ens, ens_state, result_term=result))
-        return result
+            self.check_postcondition(ens, state, result)
 
-    def visit_ExprOld(
-        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
-    ):
-        return self.eval_expr(expr.arg, state, use_old=True, result_term=result_term)
+    # -- quantifiers --
 
-    def visit_ExprQuantifier(
-        self, expr, state, *, use_old=False, result_term=None, array_elem_sort=None
-    ):
-        return self._eval_quantifier(expr, state, use_old, result_term)
+    def _eval_assumption(self, expr, state, result_term=None):
+        """Evaluate a postcondition as an assumption at a call site.
 
-    # -- quantifiers --------------------------------------------------------
+        Well-formedness obligations (non-zero divisors) inside the
+        postcondition are part of what is being assumed, not something the
+        caller must prove, so they are suppressed here.
+        """
+        self._assume_depth += 1
+        try:
+            return self.eval_expr(expr, state, result_term=result_term)
+        finally:
+            self._assume_depth -= 1
 
     def _eval_quantifier(self, expr, state, use_old, result_term):
         var = expr.var_type.fresh(self._fresh(expr.var_name))
@@ -183,19 +194,6 @@ class Prover(ScalarProver):
             )
         finally:
             self._quant_depth -= 1
-
-    def _eval_assumption(self, expr, state, result_term=None):
-        """Evaluate a postcondition as an assumption at a call site.
-
-        Well-formedness obligations (non-zero divisors) inside the
-        postcondition are part of what is being assumed, not something the
-        caller must prove, so they are suppressed here.
-        """
-        self._assume_depth += 1
-        try:
-            return self.eval_expr(expr, state, result_term=result_term)
-        finally:
-            self._assume_depth -= 1
 
 
 def verify_program(program, timeout_ms=10000, trace=False):

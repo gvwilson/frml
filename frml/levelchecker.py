@@ -49,7 +49,7 @@ from .stmt import (
     StmtReturn,
     StmtWhile,
 )
-from .utils import Level, _failif
+from .utils import Level
 
 
 class LevelChecker:
@@ -61,53 +61,101 @@ class LevelChecker:
 
     def check(self):
         """Raise `FrmlTypeError` if the program does not conform to the level."""
-        _failif(
-            self.level not in Level,
-            ValueError,
-            f"unknown language level {self.level!r}",
-        )
+        if self.level not in Level:
+            raise ValueError(f"unknown language level {self.level!r}")
         if not self.level.allows_calls:
-            _failif(
+            FrmlTypeError.fail(
                 [f.name for f in self.program.functions] != ["main"],
-                FrmlTypeError,
                 "the 'scalar' level allows only a single 'main' function",
                 self.program.functions[0].pos if self.program.functions else None,
             )
         for fn in self.program.functions:
             self._check_function(fn)
 
+    def _check_call_name(self, name, pos):
+        FrmlTypeError.fail(
+            name in BUILTINS,
+            f"built-in function {name!r} is not available at level "
+            f"'{self.level.value}'",
+            pos,
+        )
+
+    def _check_expr(self, expr):
+        if not self.level.allows_arrays:
+            FrmlTypeError.fail(
+                isinstance(expr, ExprArrayAccess),
+                f"array access is not available at level '{self.level.value}'",
+                expr.pos,
+            )
+            FrmlTypeError.fail(
+                isinstance(expr, ExprArrayLiteral),
+                f"array literals are not available at level '{self.level.value}'",
+                expr.pos,
+            )
+            FrmlTypeError.fail(
+                isinstance(expr, ExprLength),
+                f"length() is not available at level '{self.level.value}'",
+                expr.pos,
+            )
+        if not self.level.allows_calls:
+            FrmlTypeError.fail(
+                isinstance(expr, ExprCall),
+                f"function calls are not available at level '{self.level.value}'",
+                expr.pos,
+            )
+            FrmlTypeError.fail(
+                isinstance(expr, ExprOld),
+                f"old() is not available at level '{self.level.value}'",
+                expr.pos,
+            )
+            FrmlTypeError.fail(
+                isinstance(expr, ExprQuantifier),
+                f"quantifiers are not available at level '{self.level.value}'",
+                expr.pos,
+            )
+
+        if isinstance(expr, ExprCall):
+            if not self.level.allows_builtins:
+                self._check_call_name(expr.name, expr.pos)
+            for arg in expr.args:
+                self._check_expr(arg)
+        elif isinstance(expr, ExprBinary):
+            self._check_expr(expr.left)
+            self._check_expr(expr.right)
+        elif isinstance(expr, (ExprUnary, ExprStringify)):
+            self._check_expr(expr.operand)
+        elif isinstance(expr, ExprOld):
+            self._check_expr(expr.arg)
+        elif isinstance(expr, ExprQuantifier):
+            self._check_expr(expr.body)
+
     def _check_function(self, fn):
         if not self.level.allows_arrays:
             for param in fn.params:
-                _failif(
+                FrmlTypeError.fail(
                     param.type.is_array(),
-                    FrmlTypeError,
                     f"array parameter {param.name!r} is not available "
                     f"at level '{self.level.value}'",
                     param.pos,
                 )
-            _failif(
+            FrmlTypeError.fail(
                 fn.return_type is not None and fn.return_type.is_array(),
-                FrmlTypeError,
                 f"array return types are not available at level '{self.level.value}'",
                 fn.pos,
             )
         if not self.level.allows_calls:
-            _failif(
+            FrmlTypeError.fail(
                 fn.requires,
-                FrmlTypeError,
                 f"requires clauses are not available at level '{self.level.value}'",
                 fn.pos,
             )
-            _failif(
+            FrmlTypeError.fail(
                 fn.ensures,
-                FrmlTypeError,
                 f"ensures clauses are not available at level '{self.level.value}'",
                 fn.pos,
             )
-            _failif(
+            FrmlTypeError.fail(
                 fn.decreases is not None,
-                FrmlTypeError,
                 f"decreases clauses are not available at level '{self.level.value}'",
                 fn.pos,
             )
@@ -122,32 +170,28 @@ class LevelChecker:
 
     def _check_stmt(self, stmt):
         if not self.level.allows_arrays:
-            _failif(
+            FrmlTypeError.fail(
                 isinstance(stmt, StmtArrayAssign),
-                FrmlTypeError,
                 f"array assignment is not available at level '{self.level.value}'",
                 stmt.pos,
             )
         if not self.level.allows_loops:
-            _failif(
+            FrmlTypeError.fail(
                 isinstance(stmt, StmtWhile),
-                FrmlTypeError,
                 f"while loops are not available at level '{self.level.value}'",
                 stmt.pos,
             )
         if not self.level.allows_calls:
-            _failif(
+            FrmlTypeError.fail(
                 isinstance(stmt, StmtCall),
-                FrmlTypeError,
                 f"function calls are not available at level '{self.level.value}'",
                 stmt.pos,
             )
 
         if isinstance(stmt, StmtLet):
             if not self.level.allows_arrays:
-                _failif(
+                FrmlTypeError.fail(
                     stmt.type.is_array(),
-                    FrmlTypeError,
                     f"array variable {stmt.name!r} is not available "
                     f"at level '{self.level.value}'",
                     stmt.pos,
@@ -177,70 +221,6 @@ class LevelChecker:
                 self._check_stmt(s)
         elif isinstance(stmt, StmtReturn):
             self._check_expr(stmt.expr)
-
-    def _check_expr(self, expr):
-        if not self.level.allows_arrays:
-            _failif(
-                isinstance(expr, ExprArrayAccess),
-                FrmlTypeError,
-                f"array access is not available at level '{self.level.value}'",
-                expr.pos,
-            )
-            _failif(
-                isinstance(expr, ExprArrayLiteral),
-                FrmlTypeError,
-                f"array literals are not available at level '{self.level.value}'",
-                expr.pos,
-            )
-            _failif(
-                isinstance(expr, ExprLength),
-                FrmlTypeError,
-                f"length() is not available at level '{self.level.value}'",
-                expr.pos,
-            )
-        if not self.level.allows_calls:
-            _failif(
-                isinstance(expr, ExprCall),
-                FrmlTypeError,
-                f"function calls are not available at level '{self.level.value}'",
-                expr.pos,
-            )
-            _failif(
-                isinstance(expr, ExprOld),
-                FrmlTypeError,
-                f"old() is not available at level '{self.level.value}'",
-                expr.pos,
-            )
-            _failif(
-                isinstance(expr, ExprQuantifier),
-                FrmlTypeError,
-                f"quantifiers are not available at level '{self.level.value}'",
-                expr.pos,
-            )
-
-        if isinstance(expr, ExprCall):
-            if not self.level.allows_builtins:
-                self._check_call_name(expr.name, expr.pos)
-            for arg in expr.args:
-                self._check_expr(arg)
-        elif isinstance(expr, ExprBinary):
-            self._check_expr(expr.left)
-            self._check_expr(expr.right)
-        elif isinstance(expr, (ExprUnary, ExprStringify)):
-            self._check_expr(expr.operand)
-        elif isinstance(expr, ExprOld):
-            self._check_expr(expr.arg)
-        elif isinstance(expr, ExprQuantifier):
-            self._check_expr(expr.body)
-
-    def _check_call_name(self, name, pos):
-        _failif(
-            name in BUILTINS,
-            FrmlTypeError,
-            f"built-in function {name!r} is not available at level "
-            f"'{self.level.value}'",
-            pos,
-        )
 
 
 def check_level(level, program):

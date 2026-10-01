@@ -1,4 +1,4 @@
-"""Runtime values and helpers shared by the interpreter and the node `do` methods."""
+"""Runtime values and helpers shared by the interpreter and the built-in functions."""
 
 import math
 from typing import cast
@@ -33,16 +33,13 @@ class ReturnSignal(Exception):
         self.value = value
 
 
-# Internal signal used when a runtime contract clause cannot be evaluated
-# (e.g. an unbounded quantifier).  Such clauses are skipped rather than treated
-# as failures, matching the spec's "runtime does not need to execute arbitrary
-# quantified expressions".
 class _SkipCheck(Exception):
-    pass
-
-
-def _truthy(value):
-    return bool(value)
+    """
+    Internal signal used when a runtime contract clause cannot be evaluated
+    (e.g. an unbounded quantifier).  Such clauses are skipped rather than treated
+    as failures, matching the spec's 'runtime does not need to execute arbitrary
+    quantified expressions'.
+    """
 
 
 def _as_int(value):
@@ -66,3 +63,7 @@ def _euclid_mod(a, b):
     if b == 0:
         raise ZeroDivisionError("division by zero")
     return a - b * _euclid_div(a, b)
+
+
+def _truthy(value):
+    return bool(value)

@@ -189,7 +189,7 @@ class Prover(LoopProver):
         # Run the body.  Surviving states reached the end without `return`; for
         # a value-returning function that is an error, and for a void function
         # those states are where its `ensures` clauses are checked.
-        end_states = self.exec_stmts(fn.body, state)
+        end_states = self.exec_stmt_seq(fn.body, state)
         if fn.return_type is not None:
             if end_states:
                 raise FrmlVerificationError(
@@ -207,7 +207,7 @@ class Prover(LoopProver):
         """Execute a nested block, pruning block-local declarations afterwards."""
         before_vars = set(state.vars)
         before_arrays = set(state.arrays)
-        states = self.exec_stmts(stmts, state)
+        states = self.exec_stmt_seq(stmts, state)
         for s in states:
             for name in list(s.vars):
                 if name not in before_vars:

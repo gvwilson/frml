@@ -16,6 +16,11 @@ class FrmlError(Exception):
         self.pos = pos
         super().__init__(message)
 
+    @classmethod
+    def fail(cls, cond, message, pos=None):
+        if cond:
+            raise cls(message, pos)
+
     def format(self, filename=None):
         prefix = filename or ""
         if self.pos is not None:

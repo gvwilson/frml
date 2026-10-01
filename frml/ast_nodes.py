@@ -1,6 +1,6 @@
 """Abstract-syntax-tree node base classes and top-level declarations."""
 
-from abc import ABC, abstractmethod
+from abc import ABC
 from dataclasses import dataclass, field
 
 from .types import Type
@@ -16,10 +16,6 @@ class Node(ABC):
 
     def __init__(self, pos):
         self.pos = pos
-
-    @abstractmethod
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        """Execute this node in `interp`."""
 
     def accept(self, visitor, *args, **kwargs):
         """Dispatch to the `visit_<ClassName>` method on `visitor`."""
@@ -76,14 +72,9 @@ class Expr(Node):
         """A best-effort source rendering of this expression."""
         return "<expr>"
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        raise NotImplementedError("Expr is a base class, not an executable node")
-
-
 @dataclass
 class Stmt(Node):
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        raise NotImplementedError("Stmt is a base class, not an executable node")
+    """Base class for statements."""
 
 
 # ---------------------------------------------------------------------------
@@ -102,10 +93,6 @@ class Parameter(Node):
         self.name = name
         self.type = type_
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        raise NotImplementedError(
-            "Parameter is a declaration, not an executable node"
-        )
 
 
 @dataclass
@@ -131,8 +118,6 @@ class Function(Node):
         self.decreases = decreases
         self.body = body
 
-    def do(self, interp, *, result_value=None, elem_hint=None, use_old=False):
-        raise NotImplementedError("Function is a declaration, not an executable node")
 
 
 @dataclass
