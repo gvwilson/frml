@@ -7,7 +7,7 @@ the [scalar level](tutorial_scalar.md), plus multiple functions,
 which subclasses the `scalar` prover (`frml/prover_scalar.py`).
 
 If you have not read the scalar tutorial, start there: this page assumes the
-data model, the `exec_stmts`/`eval_expr` visitor loops, and the Z3 check loop
+data model, the `exec_stmt_seq`/`eval_expr` visitor loops, and the Z3 check loop
 are already familiar.
 
 ## How `contracts` extends `scalar`
@@ -20,7 +20,7 @@ def verify_function(self, fn):
     for p in fn.params:
         state.vars[p.name] = self._fresh_scalar(p.type, p.name)
     self._assume_spec(fn, state)
-    end_states = self.exec_stmts(fn.body, state)
+    end_states = self.exec_stmt_seq(fn.body, state)
     if fn.return_type is not None:
         if end_states:
             raise FrmlVerificationError(...)
@@ -40,7 +40,13 @@ class Prover(ScalarProver):
         if fn.decreases is not None:
             d = self.eval_expr(fn.decreases, state)
             self.entry_decreases = d
-            self._emit("decreases", ..., d >= 0, fn.decreases.pos)
+            self._emit(
+                "decreases",
+                f"decreases {fn.decreases.render()} >= 0",
+                state.path,
+                d >= 0,
+                fn.decreases.pos,
+            )
 
     def _check_ensures(self, fn, state, result):
         for ens in fn.ensures:
@@ -125,7 +131,7 @@ Step by step:
     -   `state.vars["x"] = Int("x!1")`: a fresh integer symbol.
     -   `state.old_vars["x"] = Int("x!1")`: the `old(...)` snapshot.
     -   No `requires`, no `decreases`, so `_assume_spec` leaves the path `[]`.
-1.  `exec_stmts([return x + x], state)` starts with `states = [state]`.
+1.  `exec_stmt_seq([return x + x], state)` starts with `states = [state]`.
 1.  The single statement is `return x + x`, so `exec_stmt` calls `visit_StmtReturn`.
 1.  `eval_rhs(x + x, state)` falls through to `eval_expr(x + x, state)`:
     -   `visit_ExprBinary` sees the operator `+`.

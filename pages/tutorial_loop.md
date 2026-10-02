@@ -300,4 +300,4 @@ That gives the obligation:
 -   Module-level functions:
     -   `verify_program`: the entry point from the CLI.
     -   The Z3 check loop (`check_obligations`) is defined in
-        `frml/prover_contracts.py` and inherited here.
+        `frml/z3check.py` and inherited here.

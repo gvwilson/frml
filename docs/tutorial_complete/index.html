@@ -12,7 +12,7 @@
         <link rel="prev" href="../tutorial_builtin/">
       
       
-        <link rel="next" href="../conduct/">
+        <link rel="next" href="../license/">
       
       
         
@@ -166,6 +166,32 @@
   </label>
   
   <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
     
       
       
@@ -366,6 +392,32 @@
   
   
     <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../conduct/" class="md-nav__link">
         
   
@@ -392,66 +444,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing.md" class="md-nav__link">
+      <a href="../contributing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  none
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../frml/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  Frml
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../license.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  none
+  Contributing
 
     
   </span>
@@ -524,8 +524,7 @@ without disturbing the staged type checkers and provers below it.</p>
 <li><code>frml/typechecker_complete.py</code> is a trivial subclass of the builtin type
     checker.</li>
 <li><code>frml/prover_complete.py</code> is a trivial subclass of the builtin prover.  The
-    shared Z3 check loop lives in <code>frml/prover_contracts.py</code>, at the bottom of the
-    prover hierarchy.</li>
+    shared Z3 check loop lives in <code>frml/z3check.py</code>.</li>
 </ul>
 <p>Because <code>complete</code> is the default, no <code>--level</code> flag is needed:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>frml<span class="w"> </span>check<span class="w"> </span>examples/complete/required.frml

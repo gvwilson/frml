@@ -3,6 +3,7 @@ site_name = "frml"
 docs_dir = "pages"
 site_dir = "docs"
 nav = [
+  "frml.md",
   "tutorial_intro.md",
   "tutorial_scalar.md",
   "tutorial_contracts.md",
@@ -10,10 +11,9 @@ nav = [
   "tutorial_array.md",
   "tutorial_builtin.md",
   "tutorial_complete.md",
+  "license.md",
   "conduct.md",
   "contributing.md",
-  "frml.md",
-  "license.md",
 ]
 
 [project.plugins.mkdocstrings.handlers.python]
