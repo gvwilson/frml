@@ -166,4 +166,4 @@ On top of the array prover's machinery, the builtin prover adds:
     machinery: `push`/`pop` mark an array as resized, so loop havoc and call
     modeling refresh both its contents and its length.
 -   The shared Z3 check loop (`check_obligations`) is defined in
-    `frml/prover_contracts.py` and inherited by every higher level.
+    `frml/z3check.py` and inherited by every higher level.

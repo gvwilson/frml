@@ -174,6 +174,32 @@
   
   
     <li class="md-nav__item">
+      <a href="../frml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  Frml
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../tutorial_intro/" class="md-nav__link">
         
   
@@ -624,6 +650,32 @@
   
   
     <li class="md-nav__item">
+      <a href="../license/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+  MIT License
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../conduct/" class="md-nav__link">
         
   
@@ -650,66 +702,14 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing.md" class="md-nav__link">
+      <a href="../contributing/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-  none
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../frml/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  Frml
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../license.md" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-  none
+  Contributing
 
     
   </span>
@@ -1000,8 +1000,10 @@
 <h1 id="the-scalar-level-straight-line-and-branching-code">The Scalar Level: Straight-Line and Branching Code<a class="headerlink" href="#the-scalar-level-straight-line-and-branching-code" title="Permanent link">&para;</a></h1>
 <p>This tutorial explains how Frml checks <code>scalar</code>-level programs: straight-line
 and branching code over scalar values (<code>Int</code>, <code>Bool</code>, <code>String</code>), with no
-function calls, contracts, loops, or quantifiers. The implementation is in
-<code>frml/prover_scalar.py</code>.</p>
+function calls, contracts, loops, or quantifiers. The engine is in
+<code>frml/prover_scalar.py</code>; the shared records (<code>State</code>, <code>Obligation</code>,
+<code>ProverResult</code>) live in <code>frml/prover_types.py</code>, model rendering in
+<code>frml/z3render.py</code>, and the Z3 check loop in <code>frml/z3check.py</code>.</p>
 <h2 id="the-provers-data-model">The prover's data model<a class="headerlink" href="#the-provers-data-model" title="Permanent link">&para;</a></h2>
 <ul>
 <li>The prover tracks a program point with a <code>State</code> object.<ul>
@@ -1081,29 +1083,38 @@ function calls, contracts, loops, or quantifiers. The implementation is in
 <div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">verify_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fn</span><span class="p">):</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">state</span> <span class="o">=</span> <span class="n">State</span><span class="p">()</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="c1"># Fresh constants for the parameters.</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="c1"># Entry state: fresh constants for the parameters.</span>
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">fn</span><span class="o">.</span><span class="n">params</span><span class="p">:</span>
 </span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>        <span class="n">state</span><span class="o">.</span><span class="n">vars</span><span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fresh_scalar</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="c1"># Run the body.  A path that reaches the end without `return` is an error</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="c1"># for a value-returning function.</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="n">end_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_stmts</span><span class="p">(</span><span class="n">fn</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">return_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>        <span class="k">if</span> <span class="n">end_states</span><span class="p">:</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>            <span class="k">raise</span> <span class="n">FrmlVerificationError</span><span class="p">(</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>                <span class="sa">f</span><span class="s2">"function </span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has a path that does not return"</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="n">pos</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>            <span class="p">)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    <span class="c1"># Snapshot for `old(...)` (unused at this level; higher levels read it).</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    <span class="n">state</span><span class="o">.</span><span class="n">old_vars</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_assume_spec</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>    <span class="c1"># Run the body.  Surviving states reached the end without `return`; for</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>    <span class="c1"># a value-returning function that is an error.</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>    <span class="n">end_states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_stmt_seq</span><span class="p">(</span><span class="n">fn</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>    <span class="k">if</span> <span class="n">fn</span><span class="o">.</span><span class="n">return_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a>        <span class="k">if</span> <span class="n">end_states</span><span class="p">:</span>
+</span><span id="__span-3-18"><a id="__codelineno-3-18" name="__codelineno-3-18" href="#__codelineno-3-18"></a>            <span class="k">raise</span> <span class="n">FrmlVerificationError</span><span class="p">(</span>
+</span><span id="__span-3-19"><a id="__codelineno-3-19" name="__codelineno-3-19" href="#__codelineno-3-19"></a>                <span class="sa">f</span><span class="s2">"function </span><span class="si">{</span><span class="n">fn</span><span class="o">.</span><span class="n">name</span><span class="si">!r}</span><span class="s2"> has a path that does not return"</span><span class="p">,</span> <span class="n">fn</span><span class="o">.</span><span class="n">pos</span>
+</span><span id="__span-3-20"><a id="__codelineno-3-20" name="__codelineno-3-20" href="#__codelineno-3-20"></a>            <span class="p">)</span>
+</span><span id="__span-3-21"><a id="__codelineno-3-21" name="__codelineno-3-21" href="#__codelineno-3-21"></a>    <span class="k">else</span><span class="p">:</span>
+</span><span id="__span-3-22"><a id="__codelineno-3-22" name="__codelineno-3-22" href="#__codelineno-3-22"></a>        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">end_states</span><span class="p">:</span>
+</span><span id="__span-3-23"><a id="__codelineno-3-23" name="__codelineno-3-23" href="#__codelineno-3-23"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">_check_ensures</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </span></code></pre></div>
 <ul>
-<li>There are no <code>requires</code>, <code>ensures</code>, or <code>decreases</code> clauses at this level, so
-    the entry path is empty and the body's fall-through is simply checked.</li>
-<li><code>exec_stmts</code> returns the states of paths that fell off the end of the body.
+<li><code>_assume_spec</code> and <code>_check_ensures</code> do nothing at this level because there
+    are no <code>requires</code>, <code>ensures</code>, or <code>decreases</code> clauses, so the entry path is
+    empty and the body's fall-through is simply checked.</li>
+<li><code>exec_stmt_seq</code> returns the states of paths that fell off the end of the body.
     A <code>return</code> produces no end state (see below), so if a value-returning
     function has any end state, some path never returned, which is an error.</li>
 </ul>
 <h2 id="the-statement-loop">The statement loop<a class="headerlink" href="#the-statement-loop" title="Permanent link">&para;</a></h2>
 <p>Statements are handled by three related methods:</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">exec_stmts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmts</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">exec_stmt_seq</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmts</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>    <span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="n">state</span><span class="p">]</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>    <span class="k">for</span> <span class="n">stmt</span> <span class="ow">in</span> <span class="n">stmts</span><span class="p">:</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>        <span class="n">new_states</span> <span class="o">=</span> <span class="p">[]</span>
@@ -1117,7 +1128,7 @@ function calls, contracts, loops, or quantifiers. The implementation is in
 </span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>
 </span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="k">def</span><span class="w"> </span><span class="nf">exec_block</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmts</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 </span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>    <span class="n">before_vars</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">state</span><span class="o">.</span><span class="n">vars</span><span class="p">)</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_stmts</span><span class="p">(</span><span class="n">stmts</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>    <span class="n">states</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exec_stmt_seq</span><span class="p">(</span><span class="n">stmts</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
 </span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">states</span><span class="p">:</span>
 </span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a>        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">vars</span><span class="p">):</span>
 </span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a>            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">before_vars</span><span class="p">:</span>
@@ -1128,7 +1139,7 @@ function calls, contracts, loops, or quantifiers. The implementation is in
 </span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="k">def</span><span class="w"> </span><span class="nf">exec_stmt</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 </span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a>    <span class="k">return</span> <span class="n">stmt</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
 </span></code></pre></div>
-<p><code>exec_stmts</code> handles the statement list:</p>
+<p><code>exec_stmt_seq</code> handles the statement list:</p>
 <ul>
 <li><code>states</code> is the set of live paths, starting with the single entry state.</li>
 <li>Each statement maps every live state to zero or more successor states
@@ -1139,13 +1150,14 @@ function calls, contracts, loops, or quantifiers. The implementation is in
 </ul>
 <div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_StmtReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>    <span class="n">value</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">eval_rhs</span><span class="p">(</span><span class="n">stmt</span><span class="o">.</span><span class="n">expr</span><span class="p">,</span> <span class="n">state</span><span class="p">)</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="k">return</span> <span class="p">[]</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_check_ensures</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_fn</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>    <span class="k">return</span> <span class="p">[]</span>
 </span></code></pre></div>
 <p>A <code>return</code> returns the empty list. <code>new_states.extend([])</code> adds nothing, so that
 path is dropped from <code>states</code>: execution stops there, exactly as it does at run
 time. This is also what makes the <code>verify_function</code> fall-through check work:
 only paths that reach the end of the body survive in <code>end_states</code>.</p>
-<p><code>exec_block</code> is <code>exec_stmts</code> plus scoping. After a nested block (an <code>if</code> body)
+<p><code>exec_block</code> is <code>exec_stmt_seq</code> plus scoping. After a nested block (an <code>if</code> body)
 runs, any variable introduced inside it is deleted from the resulting states,
 so local declarations do not leak outward.</p>
 <h2 id="the-expression-loop">The expression loop<a class="headerlink" href="#the-expression-loop" title="Permanent link">&para;</a></h2>
@@ -1172,7 +1184,7 @@ current symbolic state.</p>
 <li><code>verify()</code> sets <code>current_fn = main</code> and calls <code>verify_function(main)</code>.</li>
 <li><code>verify_function</code> builds the entry state: <code>state.vars</code> is empty (no
     parameters), and the path is empty.</li>
-<li><code>exec_stmts([let, assert, return], state)</code> starts with <code>states = [state]</code>.</li>
+<li><code>exec_stmt_seq([let, assert, return], state)</code> starts with <code>states = [state]</code>.</li>
 <li><code>let x: Int = 3;</code> evaluates the literal <code>3</code> and stores it in
     <code>state.vars["x"]</code> as the Z3 integer <code>3</code> (not a fresh symbol).</li>
 <li>At <code>assert x &gt; 0;</code>, the prover evaluates the assertion expression:<ul>
@@ -1292,7 +1304,7 @@ current symbolic state.</p>
 <li>With no <code>else</code>, the fall-through branch is just the state with <code>not cond</code>
     appended, and no statements to run.</li>
 <li><code>visit_StmtIf</code> returns the union of the two branches' end states — this is
-    exactly how one state becomes two inside <code>exec_stmts</code>.</li>
+    exactly how one state becomes two inside <code>exec_stmt_seq</code>.</li>
 </ul>
 <h2 id="assert"><code>assert</code><a class="headerlink" href="#assert" title="Permanent link">&para;</a></h2>
 <ul>

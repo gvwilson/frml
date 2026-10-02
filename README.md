@@ -294,29 +294,4 @@ The verifier never claims success on a program it cannot prove. If Z3 cannot
 decide an obligation it reports `UNKNOWN`, and a genuinely unprovable program is
 reported as `FAILED`: it is never silently accepted.
 
-## Project layout
-
-```
-frml/
-  errors.py       error types and source-location formatting
-  lexer.py        tokenizer
-  parser.py       recursive-descent parser -> AST
-  ast_nodes.py    AST node definitions
-  levelchecker.py      language-level conformance checks
-  types.py               Int / Bool / String / Array<T> types
-  builtins.py            built-in function signatures
-  typechecker_basic.py   type checking for the `basic` level
-  typechecker_loop.py    type checking for the `loop` level
-  typechecker_array.py   type checking for the `array` level
-  typechecker_builtin.py type checking for the `builtin` level
-  typechecker_complete.py type checking for the `complete` level
-  interpreter.py         concrete executor with runtime checks
-  prover_basic.py        verification for the `basic` level
-  prover_loop.py         verification for the `loop` level
-  prover_array.py        verification for the `array` level
-  prover_builtin.py      verification for the `builtin` level
-  prover_complete.py     verification for the `complete` level
-  cli.py                 the `frml` command-line interface
-```
-
 [z3]: https://github.com/Z3Prover/z3

@@ -65,14 +65,17 @@ It then returns the array's element type.
 ```python
 def visit_ExprArrayAccess(self, expr, expected, allow_old, result_type):
     arr = expr.array.accept(self, None, allow_old, result_type)
-    _failif(
+    FrmlTypeError.fail(
         not arr.is_array(),
-        FrmlTypeError,
         f"array access expects an array but found {arr}",
         expr.pos,
     )
     idx = expr.index.accept(self, None, allow_old, result_type)
-    _failif(idx != INT, FrmlTypeError, "array index must have type Int", expr.pos)
+    FrmlTypeError.fail(
+        idx != INT,
+        "array index must have type Int",
+        expr.pos,
+    )
     return arr.elem
 ```
 
@@ -114,11 +117,12 @@ that returns an array is fine.
 
 ```python
 def visit_StmtReturn(self, stmt, ret):
-    _failif(
-        ret is not None
-        and ret.is_array()
-        and stmt.expr.variable_name() in self.current_params,
-        FrmlTypeError,
+    FrmlTypeError.fail(
+        (
+            ret is not None
+            and ret.is_array()
+            and stmt.expr.variable_name() in self.current_params
+        ),
         "cannot return an array parameter (arrays are references)",
         stmt.pos,
     )
@@ -389,4 +393,4 @@ result == ForAll(i, Implies(And(0 <= i, i < len), a[i] >= 0))
     -   `exec_while`: loop verification with array-aware havoc.
     -   `written_params`: tracks which array parameters a function writes.
 -   The Z3 check loop (`check_obligations`) is defined in
-    `frml/prover_contracts.py` and inherited here.
+    `frml/z3check.py` and inherited here.

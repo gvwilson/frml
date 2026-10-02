@@ -19,8 +19,7 @@ Two files implement the level:
 -   `frml/typechecker_complete.py` is a trivial subclass of the builtin type
     checker.
 -   `frml/prover_complete.py` is a trivial subclass of the builtin prover.  The
-    shared Z3 check loop lives in `frml/prover_contracts.py`, at the bottom of the
-    prover hierarchy.
+    shared Z3 check loop lives in `frml/z3check.py`.
 
 Because `complete` is the default, no `--level` flag is needed:
 

@@ -2,8 +2,10 @@
 
 This tutorial explains how Frml checks `scalar`-level programs: straight-line
 and branching code over scalar values (`Int`, `Bool`, `String`), with no
-function calls, contracts, loops, or quantifiers. The implementation is in
-`frml/prover_scalar.py`.
+function calls, contracts, loops, or quantifiers. The engine is in
+`frml/prover_scalar.py`; the shared records (`State`, `Obligation`,
+`ProverResult`) live in `frml/prover_types.py`, model rendering in
+`frml/z3render.py`, and the Z3 check loop in `frml/z3check.py`.
 
 ## The prover's data model
 
@@ -83,23 +85,32 @@ def verify(self):
 def verify_function(self, fn):
     state = State()
 
-    # Fresh constants for the parameters.
+    # Entry state: fresh constants for the parameters.
     for p in fn.params:
         state.vars[p.name] = self._fresh_scalar(p.type, p.name)
 
-    # Run the body.  A path that reaches the end without `return` is an error
-    # for a value-returning function.
-    end_states = self.exec_stmts(fn.body, state)
+    # Snapshot for `old(...)` (unused at this level; higher levels read it).
+    state.old_vars = dict(state.vars)
+
+    self._assume_spec(fn, state)
+
+    # Run the body.  Surviving states reached the end without `return`; for
+    # a value-returning function that is an error.
+    end_states = self.exec_stmt_seq(fn.body, state)
     if fn.return_type is not None:
         if end_states:
             raise FrmlVerificationError(
                 f"function {fn.name!r} has a path that does not return", fn.pos
             )
+    else:
+        for s in end_states:
+            self._check_ensures(fn, s, None)
 ```
 
--   There are no `requires`, `ensures`, or `decreases` clauses at this level, so
-    the entry path is empty and the body's fall-through is simply checked.
--   `exec_stmts` returns the states of paths that fell off the end of the body.
+-   `_assume_spec` and `_check_ensures` do nothing at this level because there
+    are no `requires`, `ensures`, or `decreases` clauses, so the entry path is
+    empty and the body's fall-through is simply checked.
+-   `exec_stmt_seq` returns the states of paths that fell off the end of the body.
     A `return` produces no end state (see below), so if a value-returning
     function has any end state, some path never returned, which is an error.
 
@@ -108,7 +119,7 @@ def verify_function(self, fn):
 Statements are handled by three related methods:
 
 ```python
-def exec_stmts(self, stmts, state):
+def exec_stmt_seq(self, stmts, state):
     states = [state]
     for stmt in stmts:
         new_states = []
@@ -122,7 +133,7 @@ def exec_stmts(self, stmts, state):
 
 def exec_block(self, stmts, state):
     before_vars = set(state.vars)
-    states = self.exec_stmts(stmts, state)
+    states = self.exec_stmt_seq(stmts, state)
     for s in states:
         for name in list(s.vars):
             if name not in before_vars:
@@ -134,7 +145,7 @@ def exec_stmt(self, stmt, state):
     return stmt.accept(self, state)
 ```
 
-`exec_stmts` handles the statement list:
+`exec_stmt_seq` handles the statement list:
 
 -   `states` is the set of live paths, starting with the single entry state.
 -   Each statement maps every live state to zero or more successor states
@@ -146,6 +157,7 @@ def exec_stmt(self, stmt, state):
 ```python
 def visit_StmtReturn(self, stmt, state):
     value, state = self.eval_rhs(stmt.expr, state)
+    self._check_ensures(self.current_fn, state, value)
     return []
 ```
 
@@ -154,7 +166,7 @@ path is dropped from `states`: execution stops there, exactly as it does at run
 time. This is also what makes the `verify_function` fall-through check work:
 only paths that reach the end of the body survive in `end_states`.
 
-`exec_block` is `exec_stmts` plus scoping. After a nested block (an `if` body)
+`exec_block` is `exec_stmt_seq` plus scoping. After a nested block (an `if` body)
 runs, any variable introduced inside it is deleted from the resulting states,
 so local declarations do not leak outward.
 
@@ -191,7 +203,7 @@ Step by step:
 1.  `verify()` sets `current_fn = main` and calls `verify_function(main)`.
 1.  `verify_function` builds the entry state: `state.vars` is empty (no
     parameters), and the path is empty.
-1.  `exec_stmts([let, assert, return], state)` starts with `states = [state]`.
+1.  `exec_stmt_seq([let, assert, return], state)` starts with `states = [state]`.
 1.  `let x: Int = 3;` evaluates the literal `3` and stores it in
     `state.vars["x"]` as the Z3 integer `3` (not a fresh symbol).
 1.  At `assert x > 0;`, the prover evaluates the assertion expression:
@@ -314,7 +326,7 @@ def visit_StmtIf(self, stmt, state):
 -   With no `else`, the fall-through branch is just the state with `not cond`
     appended, and no statements to run.
 -   `visit_StmtIf` returns the union of the two branches' end states — this is
-    exactly how one state becomes two inside `exec_stmts`.
+    exactly how one state becomes two inside `exec_stmt_seq`.
 
 ## `assert`
 
