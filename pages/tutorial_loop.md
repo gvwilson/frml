@@ -96,6 +96,49 @@ def visit_StmtWhile(self, stmt, ret):
 The prover generates one obligation for each of those two moments, plus a
 post-loop exit state for whatever code follows the loop.
 
+The invariant tells the prover *what is true* at those moments, but it does not
+say *what value each variable has*. That is a real problem: a loop that assigns
+to a variable may run any number of times, so there is no single value the
+prover can hand to the rest of the proof. The prover's answer is to deliberately
+forget those values — to *havoc* them — as the next section explains.
+
+## Havoc: forgetting what a loop changes
+
+To *havoc* a variable is to replace its value with a fresh, unknown symbol,
+deliberately forgetting everything the prover previously knew about it. This is
+how the prover stays sound when a value is genuinely unknown: rather than
+pretending to know the final value of an assigned variable, it admits that it
+does not.
+
+Why this is necessary and sound:
+
+-   A loop may run any number of times.
+-   We cannot know the exact final value of an assigned variable.
+-   We only know what the invariant tells us about it.
+-   The invariant is the only bridge from before the loop to after it.
+
+Before checking the inductive step, the prover scans the loop body and applies
+havoc to every scalar variable the body assigns:
+
+-   A `ScalarWriterCollector` walks the body and records every name that
+    appears on the left of an assignment, including assignments inside nested
+    `if` and `while` statements.
+-   It deliberately ignores `let` declarations inside the loop body: those
+    names are local to a single iteration and do not exist before the loop.
+-   Each recorded name that already exists in the state is replaced with a
+    fresh symbol of the same Z3 sort:
+
+```python
+def _fresh_from_term(self, term, name):
+    if z3.is_bool(term):
+        return z3.Bool(self._fresh(name))
+    if z3.is_string(term):
+        return z3.String(self._fresh(name))
+    return z3.Int(self._fresh(name))
+```
+
+The `count` example in the next section makes this concrete.
+
 ## The `count` example
 
 ```
@@ -124,8 +167,9 @@ fn count(n: Int) -> Int
     -   One final postcondition.
 
 The loop prover follows the same shape as the array-, builtin-, and
-complete-level loop provers, but its state has only scalar variables, so it
-never has to havoc array contents or lengths.
+complete-level loop provers, but its state has only scalar variables, so `i`
+is the only variable it has to havoc. (Later levels must also forget entire
+arrays and their lengths when a loop modifies them.)
 
 ## Initialization obligations
 
@@ -165,34 +209,6 @@ For `count`, the two preservation obligations are:
 ```
 
 The second one uses `i < n` to prove `i + 1 <= n`.
-
-## Havoc for scalars
-
--   Havoc is how the prover forgets what a loop did to a variable.
--   The loop prover scans the loop body for scalar assignments.
--   A `ScalarWriterCollector` walks the body and records every name that appears
-    on the left of an assignment, including assignments inside nested `if` and
-    `while` statements.
--   It deliberately ignores `let` declarations inside the loop body: those names
-    are local to a single iteration and do not exist before the loop.
--   Each recorded name that already exists in the state is replaced with a fresh
-    symbol of the same sort:
-
-```python
-def _fresh_from_term(self, term, name):
-    if z3.is_bool(term):
-        return z3.Bool(self._fresh(name))
-    if z3.is_string(term):
-        return z3.String(self._fresh(name))
-    return z3.Int(self._fresh(name))
-```
-
-Why this is sound:
-
--   The loop may run any number of times.
--   We cannot know the exact final value of an assigned variable.
--   We only know what the invariant tells us about it.
--   The invariant is the only bridge from before the loop to after it.
 
 ## Exit state
 
