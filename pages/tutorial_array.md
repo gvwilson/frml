@@ -1,33 +1,10 @@
-# The Array Level: Fixed-Size Arrays
+# Arrays in Frml
 
-This tutorial explains how Frml checks and validates programs at the `array`
-level: everything from the [loop level](tutorial_loop.md), plus fixed-size
-arrays. The `array` level has no built-in functions, so arrays can only be
-created from array literals or array-returning function calls; `push` and
-`pop` are left to the [builtin level](tutorial_builtin.md).
+This tutorial shows how Frml handles arrays.
 
-Two files implement the level:
+## What We're Doing
 
--   `frml/typechecker_array.py` type-checks array syntax.
--   `frml/prover_array.py` generates verification conditions for fixed-size
-    arrays.
-
-Start with the [intro](tutorial_intro.md), the
-[scalar tutorial](tutorial_scalar.md), the
-[contracts tutorial](tutorial_contracts.md), and the
-[loop tutorial](tutorial_loop.md) if you have not already read them; this page
-assumes the machinery described there.
-
-## What the `array` level adds
-
--   The parser already knows how to build array types, literals, access,
-    `length(...)`, and array assignment.
--   The level checker allows arrays but still rejects built-in functions.
--   The array type checker adds the array visitors to the loop type checker.
--   The array prover adds a symbolic array store and array-aware obligations to
-    the loop prover.
-
-A minimal array program:
+A minimal array program is:
 
 ```
 fn main() -> Int
@@ -38,28 +15,16 @@ fn main() -> Int
 }
 ```
 
-Array-level programs are checked by selecting the level explicitly:
+The array type checker subclasses the loop type checker
+and adds visitors for the array syntax.
+Everything scalar and every `while` loop is checked exactly as before;
+the new visitors only handle array nodes.
 
-```bash
-frml check --level array examples/complete/array_return.frml
-```
-
-The fixed-size array examples still live in `examples/complete/` for now; they
-do not use `push`/`pop` or I/O, so they also verify at the `array` level.
-
-## Type checking arrays
-
-The array type checker subclasses the loop type checker and adds visitors for
-the array syntax.  Everything scalar and every `while` loop is checked exactly
-as before; the new visitors only handle array nodes.
-
-### Array access
+### Array Access
 
 `visit_ExprArrayAccess` checks two things:
-
-1.  The expression being indexed must have an array type.
-2.  The index must have type `Int`.
-
+the expression being indexed must have an array type,
+and the index must have type `Int`.
 It then returns the array's element type.
 
 ```python
@@ -79,41 +44,39 @@ def visit_ExprArrayAccess(self, expr, expected, allow_old, result_type):
     return arr.elem
 ```
 
-### Array literals
+### Array Literals
 
-`visit_ExprArrayLiteral` requires every element to be a scalar (`Int`, `Bool`,
-or `String`) and all elements to have the same type.  It returns `Array<T>`
-for that element type.
+`visit_ExprArrayLiteral` requires every element to be a scalar (`Int`, `Bool`, or `String`)
+and all elements to have the same type.
+It returns `Array<T>` for that element type.
+An empty literal `[]` has no elements from which to infer `T`,
+so it is only accepted when the expected type is already known
+from the surrounding `let` declaration, parameter type, or return type.
 
-An empty literal `[]` has no elements from which to infer `T`, so it is only
-accepted when the expected type is already known from the surrounding `let`
-declaration, parameter type, or return type.
+### Array Assignment
 
-### Array assignment
-
-`visit_StmtArrayAssign` checks `a[i] = v`:
-
--   `a` must have an array type.
--   `i` must have type `Int`.
--   `v` must have the array's element type.
+`visit_StmtArrayAssign` checks `a[i] = v`,
+requiring `a` to have an array type,
+`i` to have type `Int`,
+and `v` to have the array's element type.
 
 ### Array declarations
 
-Scalar `let` declarations are inherited unchanged.  For an array declaration
-the checker requires the initializer to be either:
+Scalar `let` declarations are inherited unchanged.
+For an array declaration,
+the checker requires the initializer to be either an array literal
+or a call to a function that returns an array.
+Array-to-array assignment such as `let b: Array<Int> = a;` is rejected,
+because Frml treats arrays as references
+and allowing that form would create two names for one array;
+the language avoids that aliasing.
 
--   an array literal, or
--   a call to a function that returns an array.
+### Array Returns
 
-Array-to-array assignment such as `let b: Array<Int> = a;` is rejected.  Frml
-treats arrays as references, and allowing that form would create two names for
-one array; the language avoids that aliasing.
-
-### Array returns
-
-A function may return an array, but the checker rejects returning an array
-*parameter* directly.  Returning a literal, a function-local array, or a call
-that returns an array is fine.
+A function may return an array,
+but the checker rejects returning an array *parameter* directly
+(again, to avoid aliasing issues).
+Returning a literal, a function-local array, or a call that returns an array is fine.
 
 ```python
 def visit_StmtReturn(self, stmt, ret):
@@ -133,39 +96,39 @@ def visit_StmtReturn(self, stmt, ret):
 
 `visit_ExprLength` requires its argument to be an array and returns `Int`.
 
-## The prover's array model
+## The Prover's Array Model
 
 Arrays need more machinery than integers.
 
 ### Representation
 
--   An array is a Z3 `Array(Int, elem)` plus a length.
-    -   The array maps integer indexes to element values.
-    -   The length is a separate symbolic integer.
--   The prover stores an array as an `ArrayVal`, which pairs the Z3 array term
-    with its length.
--   `State.arrays` maps array variable names to `ArrayVal` values.
--   `State.old_arrays` is the snapshot of those values at function entry.
+An array is a Z3 `Array(Int, elem)` plus a length.
+The array maps integer indexes to element values,
+and the length is a separate symbolic integer.
+The prover stores an array as an `ArrayVal`,
+which pairs the Z3 array term with its length.
+`State.arrays` maps array variable names to `ArrayVal` values,
+and `State.old_arrays` is the snapshot of those values at function entry.
 
-### Array literals
+### Array Literals
 
-`[3, 4]` becomes a chain of `Store` operations:
+An array literal like `[3, 4]` becomes a chain of `Store` operations:
 
 ```
 Store(Store(fresh_array, 0, 3), 1, 4)
 ```
 
-Its length is the literal `2`.  An empty literal produces a fresh array over
-the expected element sort with length `0`.
+Its length is the literal `2`.
+An empty literal produces a fresh array over the expected element sort with length `0`.
 
-### Access and assignment
+### Access and Assignment
 
--   `a[i]` becomes `z3.Select(arr.term, i)`.
-    -   It also emits a bounds obligation `0 <= i and i < length(a)`.
--   `a[i] = v` becomes `z3.Store(arr.term, i, v)`, a new array.
-    -   It also emits a bounds obligation for `i`.
+`a[i]` becomes `z3.Select(arr.term, i)`,
+and it also emits a bounds obligation `0 <= i and i < length(a)`.
+`a[i] = v` becomes `z3.Store(arr.term, i, v)`,
+and it also emits a bounds obligation for `i`.
 
-### Bounds obligations
+### Bounds Obligations
 
 Every array read and write produces:
 
@@ -174,19 +137,17 @@ hypotheses:  current path
 goal:        0 <= i and i < length(a)
 ```
 
-Example from `increment_first`:
+For example, from `increment_first`:
 
 ```
 goal:  And(0 >= 0, 0 < a_len!2)
 ```
 
-### Array equality
+### Array Equality
 
 Frml `a == b` on two arrays is not a single Z3 equality:
-
--   The lengths must be equal.
--   Every element in range must be equal.
-
+the lengths must be equal,
+and every element in range must be equal.
 The prover builds:
 
 ```
@@ -195,12 +156,10 @@ and
 forall i: 0 <= i and i < length(a) => a[i] == b[i]
 ```
 
-This is why array equality is defined by a quantified formula.
+## `old(...)` with Arrays
 
-## `old(...)` with arrays
-
-`old(e)` means "the value of `e` at the moment the function was entered".  The
-prover snapshots parameters at entry into `old_vars` and `old_arrays`.
+`old(e)` means "the value of `e` at the moment the function was entered".
+The prover snapshots parameters at entry into `old_vars` and `old_arrays`.
 
 ```
 fn increment_first(a: Array<Int>)
@@ -211,34 +170,36 @@ fn increment_first(a: Array<Int>)
 }
 ```
 
--   At entry, `a` is a fresh array symbol `a!1` with some length.
-    -   `old_arrays["a"]` keeps that original `a!1`.
--   After the assignment, `state.arrays["a"]` is the updated array.
-    -   `a[0]` in the postcondition reads the updated array.
-    -   `old(a[0])` reads the original `a!1`.
--   The emitted postcondition goal looks like:
+At entry, `a` is a fresh array symbol `a!1` with some length,
+and `old_arrays["a"]` keeps that original `a!1`.
+After the assignment,
+`state.arrays["a"]` is the updated array,
+so `a[0]` in the postcondition reads the updated array
+while `old(a[0])` reads the original `a!1`.
+The emitted postcondition goal looks like:
 
 ```
 Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
 ```
 
--   Both sides simplify to the same value, so Z3 proves it.
+Both sides simplify to the same value, so Z3 proves it.
 
-## Loops and arrays
+## Loops and Arrays
 
-The array level inherits loop verification from the loop level.  The only
-difference is that havoc must also account for arrays.
+The array level inherits loop verification from the loop level.
+The only difference is that havoc must also account for arrays.
+(As a reminder,
+this is how the prover forgets what a loop did to a variable.)
+An assigned scalar becomes a fresh symbol of the same sort,
+and an assigned array becomes a fresh array over the same index and element sorts,
+keeping its length.
+At the `array` language level,
+lengths never change inside a loop because there is no `push` or `pop` (yet).
 
--   Havoc is how the prover forgets what a loop did to a variable.
--   An assigned scalar becomes a fresh symbol of the same sort.
--   An assigned array becomes a fresh array over the same index and element
-    sorts, keeping its length.
--   At the `array` level, lengths never change inside a loop because there is no
-    `push` or `pop`.
-
-For a loop body that writes `a[i]`, the prover havocs the *contents* of `a`
-while preserving `length(a)`.  This keeps the induction sound: the inductive
-step does not silently assume which elements were already updated.
+For a loop body that writes `a[i]`,
+the prover havocs the *contents* of `a` while preserving `length(a)`.
+This keeps the induction sound:
+the inductive step does not silently assume which elements were already updated.
 
 ```
 while i < length(a)
@@ -249,22 +210,22 @@ while i < length(a)
 }
 ```
 
--   After havoc, `a` is a fresh array with the same length.
--   The invariant is the only bridge from before the loop to after it.
+After havoc,
+`a` is a fresh array with the same length,
+and the invariant is the only bridge from before the loop to after it.
 
-## Function calls with arrays
+## Function Calls with Arrays
 
 When one function calls another, the prover uses the callee's contract.
 
-### Array arguments
+### Array Arguments
 
-A callee may mutate an array argument:
-
--   `written_params` tracks which array parameters a function writes.
--   A written array gets a fresh post-array.
--   A read-only array keeps the caller's array unchanged.
--   After the call, the caller's array argument is updated to the callee's
-    post-array.
+A callee may mutate an array argument.
+`written_params` tracks which array parameters a function writes.
+A written array gets a fresh post-array,
+while a read-only array keeps the caller's array unchanged.
+After the call,
+the caller's array argument is updated to the callee's post-array:
 
 ```
 fn increment_first(a: Array<Int>)
@@ -282,33 +243,32 @@ fn main() -> Int
 }
 ```
 
--   `increment_first` writes `a[0]`, so `a` is in `written_params`.
--   At the call `increment_first(xs)`:
-    -   The precondition `length(a) > 0` becomes `length(xs) > 0`, which Z3
-        proves from `xs = [5]` (length `1`).
-    -   The prover creates a fresh post-array `a_post!N` with the same length.
-    -   It assumes the postcondition `a_post!N[0] == xs[0] + 1`.
-    -   It rebinds `xs` to `a_post!N`.
--   The later check `xs[0] == 6` uses that assumed relationship, so it holds.
+`increment_first` writes `a[0]`, so `a` is in `written_params`.
+At the call `increment_first(xs)`,
+the precondition `length(a) > 0` becomes `length(xs) > 0`,
+which Z3 proves from `xs = [5]` (length `1`).
+The prover creates a fresh post-array `a_post!N` with the same length,
+assumes the postcondition `a_post!N[0] == xs[0] + 1`,
+and rebinds `xs` to `a_post!N`.
+The later check `xs[0] == 6` uses that assumed relationship, so it holds.
 
-### Array returns
+### Array Returns
 
-A function may return an array, but only a *fresh* one:
+A function may return an array, but as noted earlier,
+it may only return a *fresh* one,
+i.e.,
+an array literal,
+a call to another array-returning function,
+or a function-local array variable.
 
--   an array literal,
--   a call to another array-returning function, or
--   a function-local array variable.
-
-Returning an array parameter is rejected by the type checker, as described
-above.
-
-At a call site, the returned array is a fresh `ArrayVal` with an unknown
-`length >= 0`, exactly like any other result.  The callee's `ensures` are
-assumed, and the well-formedness obligations inside them (array bounds,
-non-zero divisors) are suppressed:
-
--   They are part of what is being assumed, not something the caller proves.
-
+At a call site,
+the returned array is a fresh `ArrayVal` with an unknown `length >= 0`,
+exactly like any other result.
+The callee's `ensures` are assumed,
+and the well-formedness obligations inside them
+like array bounds and non-zero divisors are suppressed,
+because they are part of what is being assumed
+rather than something the caller proves.
 For example:
 
 ```
@@ -328,69 +288,33 @@ fn main() -> Int
 }
 ```
 
--   At the call, `primes` becomes a fresh array whose length is constrained by
-    `ensures length(result) == 4`.
--   The later `primes[3]` is therefore in bounds, and its value is `7` by the
-    second `ensures`.
+At the call,
+`primes` becomes a fresh array
+whose length is constrained by `ensures length(result) == 4`.
+The later `primes[3]` is therefore in bounds,
+and its value is `7` by the second `ensures`.
 
-## Quantifiers over arrays
+## Quantifiers Over Arrays
 
-### Why `_quant_depth` exists
+Consider evaluating the body `0 <= i and i < length(a) => a[i] >= 0`
+inside `forall i: Int :: ...`.
+`a[i]` normally emits a bounds obligation `0 <= i and i < length(a)`
+because an out-of-bounds array read is a proof obligation at that program point.
+Inside a quantifier there is no single program point:
+`i` is a bound variable that ranges over *all* integers,
+including ones for which `0 <= i and i < length(a)` is false.
+Emitting the bounds obligation there would ask Z3 to prove `0 <= i and i < length(a)`
+for an unconstrained `i`,
+which is false,
+so the verifier would wrongly reject the formula.
 
--   Consider evaluating the body `0 <= i and i < length(a) => a[i] >= 0`
-    inside `forall i: Int :: ...`.
--   Normally, `a[i]` emits a bounds obligation `0 <= i and i < length(a)`,
-    because an out-of-bounds array read is a proof obligation at that program
-    point.
--   Inside a quantifier there is no single program point: `i` is a bound
-    variable that ranges over *all* integers, including ones for which
-    `0 <= i and i < length(a)` is false.
--   Emitting the bounds obligation there would ask Z3 to prove
-    `0 <= i and i < length(a)` for an unconstrained `i`, which is false, so the
-    verifier would wrongly reject the formula.
--   The bounds are instead part of the quantified formula's own hypothesis: the
-    implication only requires `a[i]` to be well-defined when its left side is
-    true.
--   The prover therefore increments `_quant_depth` while it evaluates a
-    quantified body.  Array accesses and divisions inside that body skip their
-    bounds/division obligations while `_quant_depth > 0`.
--   The quantified body is still built as a Z3 term, and Z3 reasons about the
-    whole `ForAll`/`Exists` formula directly.
+Instead,
+the bounds are part of the quantified formula's own hypothesis,
+since the implication only requires `a[i]` to be well-defined when its left side is true.
+The prover therefore increments `_quant_depth` while it evaluates a quantified body,
+and array accesses and divisions inside that body
+skip their bounds and division obligations while `_quant_depth > 0`.
+The quantified body is still built as a Z3 term,
+and Z3 reasons about the whole `ForAll`/`Exists` formula directly.
 
-### Array property example
-
-```
-ensures
-  result ==
-    (forall i: Int ::
-      0 <= i and i < length(a) => a[i] >= 0)
-```
-
--   The `ensures` goal is a Z3 term:
-
-```
-result == ForAll(i, Implies(And(0 <= i, i < len), a[i] >= 0))
-```
-
--   Z3 knows how to decide quantified integer formulas like this one.
-
-## Appendix: structure of the array level
-
--   `typechecker_array.py` subclasses the loop type checker and adds:
-    -   `visit_StmtArrayAssign`: array element assignment.
-    -   `visit_StmtLet`: array declarations from literals or array calls.
-    -   `visit_StmtReturn`: rejects returning array parameters.
-    -   `visit_ExprArrayAccess`: array reads.
-    -   `visit_ExprArrayLiteral`: array literals.
-    -   `visit_ExprLength`: `length(...)`.
-    -   `_is_array_valued_call`: recognizes calls that return arrays.
--   `prover_array.py` subclasses the loop prover and adds the array machinery.
-    It rejects built-ins if they are encountered directly, though the level
-    checker normally prevents them from reaching the prover.  The array
-    machinery it adds includes:
-    -   `ArrayVal`: an array term plus its length, stored in `State.arrays`.
-    -   `State.old_arrays`: the snapshot of arrays at function entry.
-    -   `exec_while`: loop verification with array-aware havoc.
-    -   `written_params`: tracks which array parameters a function writes.
--   The Z3 check loop (`check_obligations`) is defined in
-    `frml/z3check.py` and inherited here.
+[frml]: https://gvwilson.github.io/frml

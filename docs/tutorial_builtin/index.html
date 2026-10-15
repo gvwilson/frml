@@ -23,7 +23,7 @@
     
     
       
-        <title>The Builtin Level: I/O and Resizable Arrays - frml</title>
+        <title>Built-in Functions in Frml - frml</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-builtin-level-io-and-resizable-arrays" class="md-skip">
+        <a href="#built-in-functions-in-frml" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              The Builtin Level: I/O and Resizable Arrays
+              Built-in Functions in Frml
             
           </span>
         </div>
@@ -207,7 +207,7 @@
   <span class="md-ellipsis">
     
   
-  How the Frml Verifier Works
+  Introducing Frml
 
     
   </span>
@@ -233,7 +233,7 @@
   <span class="md-ellipsis">
     
   
-  The Scalar Level: Straight-Line and Branching Code
+  Scalar Code in Frml
 
     
   </span>
@@ -259,7 +259,7 @@
   <span class="md-ellipsis">
     
   
-  The Contracts Level: Functions and Contracts
+  Contracts in Frml
 
     
   </span>
@@ -285,7 +285,7 @@
   <span class="md-ellipsis">
     
   
-  The Loop Level: Scalar Loops
+  Loops in Frml
 
     
   </span>
@@ -311,7 +311,7 @@
   <span class="md-ellipsis">
     
   
-  The Array Level: Fixed-Size Arrays
+  Arrays in Frml
 
     
   </span>
@@ -346,7 +346,7 @@
   <span class="md-ellipsis">
     
   
-  The Builtin Level: I/O and Resizable Arrays
+  Built-in Functions in Frml
 
     
   </span>
@@ -363,7 +363,7 @@
   <span class="md-ellipsis">
     
   
-  The Builtin Level: I/O and Resizable Arrays
+  Built-in Functions in Frml
 
     
   </span>
@@ -389,94 +389,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-the-builtin-level-adds" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        What the <code>builtin</code> level adds
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#built-in-functions" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Built-in functions
+        Built-in Functions
       </span>
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Built-in functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#type-checking-built-ins" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Type checking built-ins
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#verifying-built-ins" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Verifying built-ins
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#push-and-pop" class="md-nav__link">
+  <a href="#verifying-built-ins" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>push</code> and <code>pop</code>
+        Verifying Built-Ins
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="push and pop">
+    <nav class="md-nav" aria-label="Verifying Built-Ins">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pusharray-value" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        <code>push(array, value)</code>
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#poparray" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        <code>pop(array)</code>
-      </span>
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#resizing-in-loops" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Resizing in loops
+        Resizing in Loops
       </span>
     </span>
   </a>
@@ -487,7 +426,7 @@
   <a href="#resizing-across-function-calls" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Resizing across function calls
+        Resizing Across Function Calls
       </span>
     </span>
   </a>
@@ -496,17 +435,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix-what-the-builtin-prover-adds" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Appendix: what the builtin prover adds
-      </span>
-    </span>
-  </a>
   
 </li>
       
@@ -532,7 +460,7 @@
   <span class="md-ellipsis">
     
   
-  The Complete Level: The Full Language
+  Next Steps
 
     
   </span>
@@ -663,94 +591,33 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-the-builtin-level-adds" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        What the <code>builtin</code> level adds
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#built-in-functions" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Built-in functions
+        Built-in Functions
       </span>
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Built-in functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#type-checking-built-ins" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Type checking built-ins
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#verifying-built-ins" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Verifying built-ins
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#push-and-pop" class="md-nav__link">
+  <a href="#verifying-built-ins" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>push</code> and <code>pop</code>
+        Verifying Built-Ins
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="push and pop">
+    <nav class="md-nav" aria-label="Verifying Built-Ins">
       <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#pusharray-value" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        <code>push(array, value)</code>
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#poparray" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        <code>pop(array)</code>
-      </span>
-    </span>
-  </a>
-  
-</li>
         
           <li class="md-nav__item">
   <a href="#resizing-in-loops" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Resizing in loops
+        Resizing in Loops
       </span>
     </span>
   </a>
@@ -761,7 +628,7 @@
   <a href="#resizing-across-function-calls" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Resizing across function calls
+        Resizing Across Function Calls
       </span>
     </span>
   </a>
@@ -770,17 +637,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix-what-the-builtin-prover-adds" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Appendix: what the builtin prover adds
-      </span>
-    </span>
-  </a>
   
 </li>
       
@@ -799,32 +655,9 @@
                 
                   
 
-<h1 id="the-builtin-level-io-and-resizable-arrays">The Builtin Level: I/O and Resizable Arrays<a class="headerlink" href="#the-builtin-level-io-and-resizable-arrays" title="Permanent link">&para;</a></h1>
-<p>This tutorial covers the features the <code>builtin</code> level adds on top of the
-<a href="../tutorial_array/">array level</a>: the I/O built-ins and <code>push</code>/<code>pop</code>. Fixed-size
-arrays and <code>while</code> loops are explained in the
-<a href="../tutorial_array/">array tutorial</a> and the
-<a href="../tutorial_loop/">loop tutorial</a>; this page assumes the machinery described
-there.</p>
-<p>Two files implement the level:</p>
-<ul>
-<li><code>frml/typechecker_builtin.py</code> type-checks the built-in functions.</li>
-<li><code>frml/prover_builtin.py</code> models the built-ins and resizable arrays.</li>
-</ul>
-<p>Start with the <a href="../tutorial_intro/">intro</a>, the
-<a href="../tutorial_scalar/">scalar tutorial</a>, the
-<a href="../tutorial_contracts/">contracts tutorial</a>, the
-<a href="../tutorial_loop/">loop tutorial</a>, and the
-<a href="../tutorial_array/">array tutorial</a> if you have not already read them.</p>
-<h2 id="what-the-builtin-level-adds">What the <code>builtin</code> level adds<a class="headerlink" href="#what-the-builtin-level-adds" title="Permanent link">&para;</a></h2>
-<ul>
-<li>The level checker allows the built-in functions.</li>
-<li>The builtin type checker resolves the built-in signatures and the
-    polymorphic <code>push</code>/<code>pop</code> signatures.</li>
-<li>The builtin prover models I/O as uninterpreted values and models
-    <code>push</code>/<code>pop</code> as array resize operations.</li>
-</ul>
-<p>A minimal builtin program:</p>
+<h1 id="built-in-functions-in-frml">Built-in Functions in Frml<a class="headerlink" href="#built-in-functions-in-frml" title="Permanent link">&para;</a></h1>
+<p>This tutorial shows how Frml handles built-in functions like <code>push</code> and <code>pop</code>.
+Here's an example program to motivate the discussion:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn main() -&gt; Int
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  let a: Array&lt;Int&gt; = [1];
@@ -833,107 +666,74 @@ there.</p>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  return 0;
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>}
 </span></code></pre></div>
-<p>Builtin-level programs are selected by passing the level explicitly.  The
-<code>push</code>/<code>pop</code> walk-through is a runtime example rather than a static-check one,
-so run it instead of checking it:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>frml<span class="w"> </span>run<span class="w"> </span>--level<span class="w"> </span><span class="nb">builtin</span><span class="w"> </span>examples/complete/push_pop.frml
+<h2 id="built-in-functions">Built-in Functions<a class="headerlink" href="#built-in-functions" title="Permanent link">&para;</a></h2>
+<p>Frml's built-in functions live in <code>frml/builtins.py</code>:</p>
+<ul>
+<li><code>read(path: String) -&gt; String</code> returns the contents of a file</li>
+<li><code>write(path: String, text: String)</code> writes text to a file</li>
+<li><code>print(text: String)</code> writes text to standard output</li>
+<li><code>split(text: String, sep: String) -&gt; Array&lt;String&gt;</code> splits text on a separator</li>
+<li><code>args() -&gt; Array&lt;String&gt;</code> returns the command-line arguments</li>
+<li><code>push(array, value)</code> appends a value to an array</li>
+<li><code>pop(array) -&gt; value</code> removes and returns the last element</li>
+</ul>
+<p><code>TypeChecker.check_call</code> first looks the name up in <code>BUILTINS</code>.
+For a non-polymorphic built-in,
+it checks the argument count and each argument type against the recorded signature,
+then checks that a value-returning built-in is not used as a statement.
+The same path is reached whether the built-in appears as a statement or as an expression.</p>
+<p><code>push</code> and <code>pop</code> are marked <code>poly=True</code>
+because their signatures depend on the element type of the array argument:
+<code>_check_poly_builtin</code> resolves them.
+<code>push(a, v)</code> requires <code>a</code> to be an array variable and <code>v</code> to have <code>a</code>'s element type;
+since it is a procedure, it returns no value.
+<code>pop(a)</code> requires <code>a</code> to be an array variable,
+returns <code>a</code>'s element type,
+and cannot be used as a statement.
+Both are also rejected inside specifications,
+because a specification must describe a function without mutating arrays.</p>
+<h2 id="verifying-built-ins">Verifying Built-Ins<a class="headerlink" href="#verifying-built-ins" title="Permanent link">&para;</a></h2>
+<p>The prover models most built-ins as uninterpreted values:
+<code>read</code> becomes a fresh string,
+<code>split</code> and <code>args</code> become fresh arrays of strings,
+and <code>print</code> and <code>write</code> evaluate their arguments and then have no further effect.
+The verifier can therefore prove nothing about a built-in's contents,
+which is sound because file contents and command-line arguments are external to the program.</p>
+<p><code>push</code> and <code>pop</code> are the only built-ins that mutate a program array,
+so the prover treats them specially.
+The prover models <code>push(a, v)</code> as appending <code>v</code> at the current length:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>a = Store(a, length(a), v)
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>length(a) = length(a) + 1
 </span></code></pre></div>
-<p>The builtin examples still live in <code>examples/complete/</code> for now.</p>
-<h2 id="built-in-functions">Built-in functions<a class="headerlink" href="#built-in-functions" title="Permanent link">&para;</a></h2>
-<p>Frml's built-ins are listed in <code>frml/builtins.py</code>:</p>
-<ul>
-<li><code>read(path: String) -&gt; String</code> returns the contents of a file.</li>
-<li><code>write(path: String, text: String)</code> writes text to a file.</li>
-<li><code>print(text: String)</code> writes text to standard output.</li>
-<li><code>split(text: String, sep: String) -&gt; Array&lt;String&gt;</code> splits text on a
-    separator.</li>
-<li><code>args() -&gt; Array&lt;String&gt;</code> returns the command-line arguments.</li>
-<li><code>push(array, value)</code> appends a value to an array.</li>
-<li><code>pop(array) -&gt; value</code> removes and returns the last element.</li>
-</ul>
-<h3 id="type-checking-built-ins">Type checking built-ins<a class="headerlink" href="#type-checking-built-ins" title="Permanent link">&para;</a></h3>
-<p><code>TypeChecker.check_call</code> first looks the name up in <code>BUILTINS</code>.  For a
-non-polymorphic built-in it checks the argument count and each argument type
-against the recorded signature, then checks that a value-returning built-in is
-not used as a statement.  The same path is reached whether the built-in
-appears as a statement or as an expression.</p>
-<p><code>push</code> and <code>pop</code> are marked <code>poly=True</code> because their signatures depend on the
-element type of the array argument.  <code>_check_poly_builtin</code> resolves them:</p>
-<ul>
-<li><code>push(a, v)</code> requires <code>a</code> to be an array variable and <code>v</code> to have <code>a</code>'s
-    element type; it is a procedure, so it returns no value.</li>
-<li><code>pop(a)</code> requires <code>a</code> to be an array variable, returns <code>a</code>'s element type,
-    and cannot be used as a statement.</li>
-</ul>
-<p>Both are also rejected inside specifications, because a specification must
-describe a function without mutating arrays.</p>
-<h3 id="verifying-built-ins">Verifying built-ins<a class="headerlink" href="#verifying-built-ins" title="Permanent link">&para;</a></h3>
-<p>The prover models most built-ins as uninterpreted values:</p>
-<ul>
-<li><code>read</code> becomes a fresh string.</li>
-<li><code>split</code> and <code>args</code> become fresh arrays of strings.</li>
-<li><code>print</code> and <code>write</code> evaluate their arguments and then have no further
-    effect.</li>
-</ul>
-<p>The verifier can therefore prove nothing about a built-in's contents, which is
-sound: file contents and command-line arguments are external to the program.</p>
-<h2 id="push-and-pop"><code>push</code> and <code>pop</code><a class="headerlink" href="#push-and-pop" title="Permanent link">&para;</a></h2>
-<p><code>push</code> and <code>pop</code> are the only built-ins that mutate a program array, so the
-prover treats them specially.</p>
-<h3 id="pusharray-value"><code>push(array, value)</code><a class="headerlink" href="#pusharray-value" title="Permanent link">&para;</a></h3>
-<p>The prover models <code>push(a, v)</code> as appending <code>v</code> at the current length:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>a = Store(a, length(a), v)
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>length(a) = length(a) + 1
-</span></code></pre></div>
-<p>There is no bounds obligation: appending is always legal.  The array variable
-is rebound to the new <code>ArrayVal</code>.</p>
-<h3 id="poparray"><code>pop(array)</code><a class="headerlink" href="#poparray" title="Permanent link">&para;</a></h3>
+<p>There is no bounds obligation: appending is always legal.
+The array variable is rebound to the new <code>ArrayVal</code>.</p>
 <p>The prover models <code>pop(a)</code> as removing the last element:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>result = a[length(a) - 1]
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>length(a) = length(a) - 1
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>result = a[length(a) - 1]
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>length(a) = length(a) - 1
 </span></code></pre></div>
 <p>Unlike <code>push</code>, <code>pop</code> emits an obligation that the array is non-empty:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>hypotheses:  current path
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>goal:        0 &lt; length(a)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>hypotheses:  current path
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>goal:        0 &lt; length(a)
 </span></code></pre></div>
-<p>Popping an empty array is therefore a failed verification condition rather
-than a runtime error.</p>
-<h3 id="resizing-in-loops">Resizing in loops<a class="headerlink" href="#resizing-in-loops" title="Permanent link">&para;</a></h3>
-<p>A loop that calls <code>push</code> or <code>pop</code> changes an array's length, so loop havoc must
-forget both the contents and the length:</p>
-<ul>
-<li>A scalar assignment havocs the scalar's value.</li>
-<li>A fixed-size array assignment havocs the array's contents but keeps its
-    length.</li>
-<li>An array changed by <code>push</code> or <code>pop</code> havocs the contents <em>and</em> the length.</li>
-</ul>
-<p>This is the same induction soundness argument as in the loop and array
-tutorials: the invariant is the only information that survives the havoc.</p>
-<h3 id="resizing-across-function-calls">Resizing across function calls<a class="headerlink" href="#resizing-across-function-calls" title="Permanent link">&para;</a></h3>
-<p>The builtin prover also tracks which array parameters a callee resizes:</p>
-<ul>
-<li><code>written_params</code> contains array parameters the callee writes.</li>
-<li><code>resized_params</code> is the subset of <code>written_params</code> that the callee resizes
-    with <code>push</code> or <code>pop</code>.</li>
-<li>At a call site, a written-but-not-resized array parameter gets a fresh
-    post-array with the same length.</li>
-<li>A resized array parameter gets a fresh post-array with a fresh, unknown
-    length, and the prover assumes that length is non-negative.</li>
-</ul>
-<h2 id="appendix-what-the-builtin-prover-adds">Appendix: what the builtin prover adds<a class="headerlink" href="#appendix-what-the-builtin-prover-adds" title="Permanent link">&para;</a></h2>
-<p>On top of the array prover's machinery, the builtin prover adds:</p>
-<ul>
-<li><code>_eval_builtin_call</code>: models I/O and array-producing built-ins as
-    uninterpreted values.</li>
-<li><code>_exec_push</code>: models <code>push</code> as <code>Store</code> plus an incremented length.</li>
-<li><code>_eval_pop</code>: models <code>pop</code> as <code>Select</code> plus a decremented length, with a
-    non-empty obligation.</li>
-<li>Uses the array prover's <code>resized_params</code> and <code>EffectCollector.resized</code>
-    machinery: <code>push</code>/<code>pop</code> mark an array as resized, so loop havoc and call
-    modeling refresh both its contents and its length.</li>
-<li>The shared Z3 check loop (<code>check_obligations</code>) is defined in
-    <code>frml/z3check.py</code> and inherited by every higher level.</li>
-</ul>
+<p>Popping an empty array is therefore a failed verification condition
+rather than a runtime error.</p>
+<h3 id="resizing-in-loops">Resizing in Loops<a class="headerlink" href="#resizing-in-loops" title="Permanent link">&para;</a></h3>
+<p>A loop that calls <code>push</code> or <code>pop</code> changes an array's length,
+so loop havoc must forget both the contents and the length.
+A scalar assignment havocs the scalar's value,
+a fixed-size array assignment havocs the array's contents but keeps its length,
+and an array changed by <code>push</code> or <code>pop</code> havocs the contents and the length.
+This is the same induction soundness argument as in the loop and array tutorials:
+the invariant is the only information that survives the havoc.</p>
+<h3 id="resizing-across-function-calls">Resizing Across Function Calls<a class="headerlink" href="#resizing-across-function-calls" title="Permanent link">&para;</a></h3>
+<p>The builtin prover also tracks which array parameters a callee resizes.
+<code>written_params</code> contains the array parameters the callee writes,
+and <code>resized_params</code> is the subset of <code>written_params</code> that the callee resizes with <code>push</code> or <code>pop</code>.
+At a call site,
+a written-but-not-resized array parameter gets a fresh post-array with the same length,
+while a resized array parameter gets a fresh post-array with a fresh,
+unknown length,
+and the prover assumes that length is non-negative.</p>
 
 
 

@@ -23,7 +23,7 @@
     
     
       
-        <title>The Loop Level: Scalar Loops - frml</title>
+        <title>Loops in Frml - frml</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-loop-level-scalar-loops" class="md-skip">
+        <a href="#loops-in-frml" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              The Loop Level: Scalar Loops
+              Loops in Frml
             
           </span>
         </div>
@@ -207,7 +207,7 @@
   <span class="md-ellipsis">
     
   
-  How the Frml Verifier Works
+  Introducing Frml
 
     
   </span>
@@ -233,7 +233,7 @@
   <span class="md-ellipsis">
     
   
-  The Scalar Level: Straight-Line and Branching Code
+  Scalar Code in Frml
 
     
   </span>
@@ -259,7 +259,7 @@
   <span class="md-ellipsis">
     
   
-  The Contracts Level: Functions and Contracts
+  Contracts in Frml
 
     
   </span>
@@ -294,7 +294,7 @@
   <span class="md-ellipsis">
     
   
-  The Loop Level: Scalar Loops
+  Loops in Frml
 
     
   </span>
@@ -311,7 +311,7 @@
   <span class="md-ellipsis">
     
   
-  The Loop Level: Scalar Loops
+  Loops in Frml
 
     
   </span>
@@ -337,10 +337,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-the-loop-level-adds" class="md-nav__link">
+  <a href="#what-it-does" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What the <code>loop</code> level adds
+        What It Does
       </span>
     </span>
   </a>
@@ -348,10 +348,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#type-checking-a-loop" class="md-nav__link">
+  <a href="#why-loops-are-hard" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Type checking a loop
+        Why Loops Are Hard
       </span>
     </span>
   </a>
@@ -359,10 +359,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-loops-are-the-hard-part" class="md-nav__link">
+  <a href="#causing-havoc" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Why loops are the hard part
+        Causing Havoc
       </span>
     </span>
   </a>
@@ -370,57 +370,52 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#havoc-forgetting-what-a-loop-changes" class="md-nav__link">
+  <a href="#an-example" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Havoc: forgetting what a loop changes
+        An Example
       </span>
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-count-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        The <code>count</code> example
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
+    <nav class="md-nav" aria-label="An Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#initialization-obligations" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Initialization obligations
+        Initialization Obligations
       </span>
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#preservation-obligations" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Preservation obligations
+        Preservation Obligations
       </span>
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#exit-state" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Exit state
+        Exit State
       </span>
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -440,7 +435,7 @@
   <a href="#before-the-loop" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Before the loop
+        Before the Loop
       </span>
     </span>
   </a>
@@ -451,7 +446,7 @@
   <a href="#after-the-body" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        After the body
+        After the Body
       </span>
     </span>
   </a>
@@ -467,18 +462,7 @@
   <a href="#a-broken-loop-invariant" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        A broken loop invariant
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix-structure-of-prover_looppy" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Appendix: structure of <code>prover_loop.py</code>
+        A Broken Loop Invariant
       </span>
     </span>
   </a>
@@ -507,7 +491,7 @@
   <span class="md-ellipsis">
     
   
-  The Array Level: Fixed-Size Arrays
+  Arrays in Frml
 
     
   </span>
@@ -533,7 +517,7 @@
   <span class="md-ellipsis">
     
   
-  The Builtin Level: I/O and Resizable Arrays
+  Built-in Functions in Frml
 
     
   </span>
@@ -559,7 +543,7 @@
   <span class="md-ellipsis">
     
   
-  The Complete Level: The Full Language
+  Next Steps
 
     
   </span>
@@ -690,10 +674,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-the-loop-level-adds" class="md-nav__link">
+  <a href="#what-it-does" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What the <code>loop</code> level adds
+        What It Does
       </span>
     </span>
   </a>
@@ -701,10 +685,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#type-checking-a-loop" class="md-nav__link">
+  <a href="#why-loops-are-hard" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Type checking a loop
+        Why Loops Are Hard
       </span>
     </span>
   </a>
@@ -712,10 +696,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-loops-are-the-hard-part" class="md-nav__link">
+  <a href="#causing-havoc" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Why loops are the hard part
+        Causing Havoc
       </span>
     </span>
   </a>
@@ -723,57 +707,52 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#havoc-forgetting-what-a-loop-changes" class="md-nav__link">
+  <a href="#an-example" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Havoc: forgetting what a loop changes
+        An Example
       </span>
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-count-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        The <code>count</code> example
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
+    <nav class="md-nav" aria-label="An Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
   <a href="#initialization-obligations" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Initialization obligations
+        Initialization Obligations
       </span>
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#preservation-obligations" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Preservation obligations
+        Preservation Obligations
       </span>
     </span>
   </a>
   
 </li>
-      
-        <li class="md-nav__item">
+        
+          <li class="md-nav__item">
   <a href="#exit-state" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Exit state
+        Exit State
       </span>
     </span>
   </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -793,7 +772,7 @@
   <a href="#before-the-loop" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Before the loop
+        Before the Loop
       </span>
     </span>
   </a>
@@ -804,7 +783,7 @@
   <a href="#after-the-body" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        After the body
+        After the Body
       </span>
     </span>
   </a>
@@ -820,18 +799,7 @@
   <a href="#a-broken-loop-invariant" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        A broken loop invariant
-      </span>
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix-structure-of-prover_looppy" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Appendix: structure of <code>prover_loop.py</code>
+        A Broken Loop Invariant
       </span>
     </span>
   </a>
@@ -853,30 +821,11 @@
                 
                   
 
-<h1 id="the-loop-level-scalar-loops">The Loop Level: Scalar Loops<a class="headerlink" href="#the-loop-level-scalar-loops" title="Permanent link">&para;</a></h1>
-<p>This tutorial explains how Frml checks and validates programs at the <code>loop</code>
-level: everything from the <a href="../tutorial_contracts/">contracts level</a>, plus <code>while</code>
-loops with invariants and termination measures. The <code>loop</code> level still has no
-arrays and no built-in functions, so loops here only ever modify scalar
-variables (<code>Int</code>, <code>Bool</code>, and <code>String</code>).</p>
-<p>Two files implement the level:</p>
-<ul>
-<li><code>frml/typechecker_loop.py</code> type-checks loop syntax.</li>
-<li><code>frml/prover_loop.py</code> generates verification conditions for scalar loops.</li>
-</ul>
-<p>Start with the <a href="../tutorial_intro/">intro</a>, the
-<a href="../tutorial_scalar/">scalar tutorial</a>, and the
-<a href="../tutorial_contracts/">contracts tutorial</a> if you have not already read them; this
-page assumes the machinery described there.</p>
-<h2 id="what-the-loop-level-adds">What the <code>loop</code> level adds<a class="headerlink" href="#what-the-loop-level-adds" title="Permanent link">&para;</a></h2>
-<ul>
-<li>The parser already knows how to build a <code>while</code> statement.</li>
-<li>The level checker allows <code>while</code> but still rejects arrays and built-ins.</li>
-<li>The loop type checker adds one visitor: <code>visit_StmtWhile</code>.</li>
-<li>The loop prover adds the same visitor and the logic that turns a loop into
-    obligations.</li>
-</ul>
-<p>A minimal loop program:</p>
+<h1 id="loops-in-frml">Loops in Frml<a class="headerlink" href="#loops-in-frml" title="Permanent link">&para;</a></h1>
+<p>This tutorial shows how Frml handles <code>while</code> loops
+with invariants and termination measures.</p>
+<h2 id="what-it-does">What It Does<a class="headerlink" href="#what-it-does" title="Permanent link">&para;</a></h2>
+<p>Here's a minimal program with a loop:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn main() -&gt; Int
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  let i: Int = 0;
@@ -890,258 +839,200 @@ page assumes the machinery described there.</p>
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>  return i;
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>}
 </span></code></pre></div>
-<p>Loop-level programs are checked by selecting the level explicitly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>frml<span class="w"> </span>check<span class="w"> </span>--level<span class="w"> </span>loop<span class="w"> </span>examples/loop/count.frml
+<p>The loop type checker adds one visitor to the existing code called <code>visit_StmtWhile</code>,
+and the loop prover adds the same visitor plus the logic that turns a loop into obligations.
+<code>visit_StmtWhile</code> checks four things:
+the loop condition must have type <code>Bool</code>,
+every <code>invariant</code> must have type <code>Bool</code>,
+the <code>decreases</code> expression when present must have type <code>Int</code>,
+and the loop body is type-checked in a fresh scope.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_StmtWhile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span><span class="n">stmt</span><span class="o">.</span><span class="n">cond</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">BOOL</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">in_spec</span> <span class="o">=</span> <span class="kc">True</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>    <span class="k">try</span><span class="p">:</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="k">for</span> <span class="n">inv</span> <span class="ow">in</span> <span class="n">stmt</span><span class="o">.</span><span class="n">invariants</span><span class="p">:</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span><span class="n">inv</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">BOOL</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>        <span class="k">if</span> <span class="n">stmt</span><span class="o">.</span><span class="n">decreases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>                <span class="n">stmt</span><span class="o">.</span><span class="n">decreases</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">INT</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>            <span class="p">)</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>    <span class="k">finally</span><span class="p">:</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">in_spec</span> <span class="o">=</span> <span class="kc">False</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_push_scope</span><span class="p">()</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stmt</span><span class="o">.</span><span class="n">body</span><span class="p">:</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">check_stmt</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+</span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_pop_scope</span><span class="p">()</span>
 </span></code></pre></div>
-<h2 id="type-checking-a-loop">Type checking a loop<a class="headerlink" href="#type-checking-a-loop" title="Permanent link">&para;</a></h2>
-<p><code>visit_StmtWhile</code> checks four things:</p>
-<ol>
-<li>The loop condition must have type <code>Bool</code>.</li>
-<li>Every <code>invariant</code> must have type <code>Bool</code>.</li>
-<li>The <code>decreases</code> expression, when present, must have type <code>Int</code>.</li>
-<li>The loop body is type-checked in a fresh scope.</li>
-</ol>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_StmtWhile</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span><span class="n">stmt</span><span class="o">.</span><span class="n">cond</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">BOOL</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">in_spec</span> <span class="o">=</span> <span class="kc">True</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">try</span><span class="p">:</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="k">for</span> <span class="n">inv</span> <span class="ow">in</span> <span class="n">stmt</span><span class="o">.</span><span class="n">invariants</span><span class="p">:</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span><span class="n">inv</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">BOOL</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="k">if</span> <span class="n">stmt</span><span class="o">.</span><span class="n">decreases</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>            <span class="bp">self</span><span class="o">.</span><span class="n">check_expr</span><span class="p">(</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>                <span class="n">stmt</span><span class="o">.</span><span class="n">decreases</span><span class="p">,</span> <span class="n">expected</span><span class="o">=</span><span class="n">INT</span><span class="p">,</span> <span class="n">allow_old</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">result_type</span><span class="o">=</span><span class="kc">None</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>            <span class="p">)</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="k">finally</span><span class="p">:</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">in_spec</span> <span class="o">=</span> <span class="kc">False</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_push_scope</span><span class="p">()</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">stmt</span><span class="o">.</span><span class="n">body</span><span class="p">:</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>        <span class="bp">self</span><span class="o">.</span><span class="n">check_stmt</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_pop_scope</span><span class="p">()</span>
-</span></code></pre></div>
-<ul>
-<li>The <code>in_spec</code> flag is set while checking the loop's specifications, just as
-    the contracts checker does for <code>requires</code>, <code>ensures</code>, and <code>decreases</code> clauses.
-    It has no effect on scalar loops, but the loop checker keeps the pattern so
-    the <code>array</code>, <code>builtin</code>, and <code>complete</code> levels inherit the same behavior for
-    array built-ins.</li>
-<li>The body gets its own scope, so variables declared inside the loop do not
-    leak out of it.</li>
-</ul>
-<h2 id="why-loops-are-the-hard-part">Why loops are the hard part<a class="headerlink" href="#why-loops-are-the-hard-part" title="Permanent link">&para;</a></h2>
-<ul>
-<li>A loop runs an unknown number of times.</li>
-<li>The prover cannot execute the loop symbolically "until it ends".</li>
-<li>It therefore reasons about the loop <em>inductively</em>, using invariants.</li>
-<li>A loop invariant is a fact that is true:<ul>
-<li>before the first iteration, and</li>
-<li>after every iteration.</li>
-</ul>
-</li>
-<li>If both hold, the invariant is also true immediately after the loop exits.</li>
-</ul>
-<p>The prover generates one obligation for each of those two moments, plus a
-post-loop exit state for whatever code follows the loop.</p>
-<p>The invariant tells the prover <em>what is true</em> at those moments, but it does not
-say <em>what value each variable has</em>. That is a real problem: a loop that assigns
-to a variable may run any number of times, so there is no single value the
-prover can hand to the rest of the proof. The prover's answer is to deliberately
-forget those values — to <em>havoc</em> them — as the next section explains.</p>
-<h2 id="havoc-forgetting-what-a-loop-changes">Havoc: forgetting what a loop changes<a class="headerlink" href="#havoc-forgetting-what-a-loop-changes" title="Permanent link">&para;</a></h2>
+<p>The <code>in_spec</code> flag is set while checking the loop's specifications,
+just as the contracts checker does for <code>requires</code>, <code>ensures</code>, and <code>decreases</code> clauses.
+It has no effect on scalar loops,
+but the loop checker keeps the pattern so that subsequent levels will inherit
+the same behavior.
+The body gets its own scope,
+so variables declared inside the loop do not leak out of it.</p>
+<h2 id="why-loops-are-hard">Why Loops Are Hard<a class="headerlink" href="#why-loops-are-hard" title="Permanent link">&para;</a></h2>
+<p>A loop runs an unknown number of times,
+and the prover cannot execute the loop symbolically "until it ends".
+It therefore reasons about the loop inductively using invariants.
+A loop invariant is a fact that is true before the first iteration and after every iteration;
+if both hold,
+the invariant is also true immediately after the loop exits.
+The prover generates one obligation for each of those two moments,
+plus a post-loop exit state for whatever code follows the loop.</p>
+<p>The invariant tells the prover what is true at those moments,
+but it does not say what value each variable has.
+That is a real problem:
+a loop that assigns to a variable may run any number of times,
+so there is no single value the prover can hand to the rest of the proof.
+The prover's answer is to deliberately forget those values
+as explained in the next section.</p>
+<h2 id="causing-havoc">Causing Havoc<a class="headerlink" href="#causing-havoc" title="Permanent link">&para;</a></h2>
 <p>To <em>havoc</em> a variable is to replace its value with a fresh, unknown symbol,
-deliberately forgetting everything the prover previously knew about it. This is
-how the prover stays sound when a value is genuinely unknown: rather than
-pretending to know the final value of an assigned variable, it admits that it
-does not.</p>
-<p>Why this is necessary and sound:</p>
-<ul>
-<li>A loop may run any number of times.</li>
-<li>We cannot know the exact final value of an assigned variable.</li>
-<li>We only know what the invariant tells us about it.</li>
-<li>The invariant is the only bridge from before the loop to after it.</li>
-</ul>
-<p>Before checking the inductive step, the prover scans the loop body and applies
-havoc to every scalar variable the body assigns:</p>
-<ul>
-<li>A <code>ScalarWriterCollector</code> walks the body and records every name that
-    appears on the left of an assignment, including assignments inside nested
-    <code>if</code> and <code>while</code> statements.</li>
-<li>It deliberately ignores <code>let</code> declarations inside the loop body: those
-    names are local to a single iteration and do not exist before the loop.</li>
-<li>Each recorded name that already exists in the state is replaced with a
-    fresh symbol of the same Z3 sort:</li>
-</ul>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_fresh_from_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="k">if</span> <span class="n">z3</span><span class="o">.</span><span class="n">is_bool</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    <span class="k">if</span> <span class="n">z3</span><span class="o">.</span><span class="n">is_string</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+deliberately forgetting everything the prover previously knew about it.
+This is how the prover stays sound when a value is genuinely unknown:
+rather than pretending to know the final value of an assigned variable,
+it admits that it does not.</p>
+<p>This is necessary and sound because a loop may run any number of times,
+so we cannot know the exact final value of an assigned variable;
+we only know what the invariant tells us about it.
+The invariant is the only bridge from before the loop to after it.</p>
+<p>Before checking the inductive step,
+the prover scans the loop body and applies havoc to every scalar variable the body assigns.
+A <code>ScalarWriterCollector</code> walks the body
+and records every name that appears on the left of an assignment,
+including assignments inside nested <code>if</code> and <code>while</code> statements.
+It deliberately ignores <code>let</code> declarations inside the loop body,
+because those names are local to a single iteration
+and do not exist before the loop.
+Each recorded name that already exists in the state is replaced with
+a fresh symbol of the same Z3 sort:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">_fresh_from_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="k">if</span> <span class="n">z3</span><span class="o">.</span><span class="n">is_bool</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Bool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>    <span class="k">if</span> <span class="n">z3</span><span class="o">.</span><span class="n">is_string</span><span class="p">(</span><span class="n">term</span><span class="p">):</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">String</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>    <span class="k">return</span> <span class="n">z3</span><span class="o">.</span><span class="n">Int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_fresh</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
 </span></code></pre></div>
-<p>The <code>count</code> example in the next section makes this concrete.</p>
-<h2 id="the-count-example">The <code>count</code> example<a class="headerlink" href="#the-count-example" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>fn count(n: Int) -&gt; Int
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  requires n &gt;= 0
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  ensures result == n
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>{
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  let i: Int = 0;
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  while i &lt; n
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>    invariant 0 &lt;= i
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>    invariant i &lt;= n
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a>    decreases n - i
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a>  {
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a>    i = i + 1;
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a>  }
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a>  return i;
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a>}
+<h2 id="an-example">An Example<a class="headerlink" href="#an-example" title="Permanent link">&para;</a></h2>
+<p>Let's take a look at an example:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>fn count(n: Int) -&gt; Int
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  requires n &gt;= 0
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  ensures result == n
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>{
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  let i: Int = 0;
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>  while i &lt; n
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    invariant 0 &lt;= i
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>    invariant i &lt;= n
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    decreases n - i
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>  {
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a>    i = i + 1;
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a>  }
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a>  return i;
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a>}
 </span></code></pre></div>
-<ul>
-<li>Verifying <code>count</code> emits seven obligations:<ul>
-<li>Two initialization.</li>
-<li>Two preservation.</li>
-<li>Two termination.</li>
-<li>One final postcondition.</li>
-</ul>
-</li>
-</ul>
-<p>The loop prover follows the same shape as the array-, builtin-, and
-complete-level loop provers, but its state has only scalar variables, so <code>i</code>
-is the only variable it has to havoc. (Later levels must also forget entire
-arrays and their lengths when a loop modifies them.)</p>
-<h2 id="initialization-obligations">Initialization obligations<a class="headerlink" href="#initialization-obligations" title="Permanent link">&para;</a></h2>
-<p>Before the first iteration, every invariant must hold:</p>
-<ul>
-<li><code>0 &lt;= i</code> with <code>i = 0</code> becomes <code>0 &lt;= 0</code>.</li>
-<li><code>i &lt;= n</code> with <code>i = 0</code> becomes <code>0 &lt;= n</code>, proved from <code>requires n &gt;= 0</code>.</li>
-</ul>
-<p>The prover evaluates each invariant in the state that reaches the <code>while</code> and
-emits:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>hypotheses:  current path
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>goal:        invariant
+<p>Verifying <code>count</code> emits seven obligations:
+two initialization,
+two preservation,
+two termination,
+and one final postcondition.</p>
+<h3 id="initialization-obligations">Initialization Obligations<a class="headerlink" href="#initialization-obligations" title="Permanent link">&para;</a></h3>
+<p>Every invariant must hold before the first iteration.
+With <code>i = 0</code>,
+<code>0 &lt;= i</code> becomes <code>0 &lt;= 0</code>
+and <code>i &lt;= n</code> becomes <code>0 &lt;= n</code>,
+proved from <code>requires n &gt;= 0</code>.
+The prover evaluates each invariant in the state that reaches the <code>while</code> and emits:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>hypotheses:  current path
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>goal:        invariant
 </span></code></pre></div>
-<h2 id="preservation-obligations">Preservation obligations<a class="headerlink" href="#preservation-obligations" title="Permanent link">&para;</a></h2>
-<p>This is the inductive step. It checks an <em>arbitrary</em> loop iteration, not just
-the first one:</p>
+<h3 id="preservation-obligations">Preservation Obligations<a class="headerlink" href="#preservation-obligations" title="Permanent link">&para;</a></h3>
+<p>This is the inductive step,
+which checks an arbitrary loop iteration,
+not just the first one.</p>
 <ol>
-<li><strong>Havoc</strong> every scalar variable the loop body assigns.<ul>
-<li><code>i</code> becomes a fresh, unknown symbol such as <code>i!2</code>.</li>
-<li>This forgets whatever value <code>i</code> had on entry, so the check is about an
-    arbitrary iteration.</li>
-</ul>
-</li>
-<li><strong>Assume</strong> the invariants and the loop condition:
-    <code>0 &lt;= i</code>, <code>i &lt;= n</code>, and <code>i &lt; n</code>.</li>
-<li><strong>Run</strong> the loop body once symbolically:
-    <code>i = i + 1</code> becomes <code>i + 1</code>.</li>
-<li><strong>Prove</strong> each invariant again for the after-body value.</li>
+<li>Havoc every scalar variable the loop body assigns:
+    <code>i</code> becomes a fresh, unknown symbol such as <code>i!2</code>,
+    which forgets whatever value <code>i</code> had on entry so the check is about an arbitrary iteration.</li>
+<li>Assume the invariants and the loop condition, <code>0 &lt;= i</code>, <code>i &lt;= n</code>, and <code>i &lt; n</code>.</li>
+<li>Run the loop body once symbolically, so <code>i = i + 1</code> becomes <code>i + 1</code>.</li>
+<li>Prove each invariant again for the after-body value.</li>
 </ol>
 <p>For <code>count</code>, the two preservation obligations are:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>(0 &lt;= i and i &lt;= n and i &lt; n) =&gt; 0 &lt;= i + 1
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>(0 &lt;= i and i &lt;= n and i &lt; n) =&gt; i + 1 &lt;= n
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>(0 &lt;= i and i &lt;= n and i &lt; n) =&gt; 0 &lt;= i + 1
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>(0 &lt;= i and i &lt;= n and i &lt; n) =&gt; i + 1 &lt;= n
 </span></code></pre></div>
 <p>The second one uses <code>i &lt; n</code> to prove <code>i + 1 &lt;= n</code>.</p>
-<h2 id="exit-state">Exit state<a class="headerlink" href="#exit-state" title="Permanent link">&para;</a></h2>
-<p>After the loop, the prover must continue with a state that satisfies the
-invariant and the negated loop condition:</p>
-<ol>
-<li>Havoc the modified variables again.</li>
-<li>Assume the invariants.</li>
-<li>Assume <code>not condition</code>.</li>
-</ol>
-<p>For <code>count</code>, after the loop:</p>
-<ul>
-<li><code>i</code> becomes a fresh symbol such as <code>i!3</code>.</li>
-<li>The path gains <code>0 &lt;= i</code>, <code>i &lt;= n</code>, and <code>not (i &lt; n)</code>, so <code>i &gt;= n</code>.</li>
-<li>Together these force <code>i == n</code>.</li>
-<li>The following <code>return i</code> proves <code>ensures result == n</code>.</li>
-</ul>
-<p>The body's final value is deliberately <em>not</em> connected to the exit value; the
-invariant is the only information that survives.</p>
+<h3 id="exit-state">Exit State<a class="headerlink" href="#exit-state" title="Permanent link">&para;</a></h3>
+<p>After the loop,
+the prover must continue with a state that satisfies the invariant and the negated loop condition.
+It havocs the modified variables again,
+assumes the invariants,
+and assumes <code>not condition</code>.
+For <code>count</code>,
+after the loop, <code>i</code> becomes a fresh symbol such as <code>i!3</code>,
+and the path gains <code>0 &lt;= i</code>, <code>i &lt;= n</code>, and <code>not (i &lt; n)</code>, so <code>i &gt;= n</code>.
+Together these force <code>i == n</code>,
+and the following <code>return i</code> proves <code>ensures result == n</code>.
+The body's final value is deliberately <em>not</em> connected to the exit value;
+the invariant is the only information that survives.</p>
 <h2 id="termination-with-decreases">Termination with <code>decreases</code><a class="headerlink" href="#termination-with-decreases" title="Permanent link">&para;</a></h2>
-<p>A <code>decreases</code> clause proves that a loop terminates. It produces two
-obligations:</p>
-<h3 id="before-the-loop">Before the loop<a class="headerlink" href="#before-the-loop" title="Permanent link">&para;</a></h3>
-<ul>
-<li>The measure must be non-negative:</li>
-</ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>decreases &gt;= 0
+<p>A <code>decreases</code> clause proves that a loop terminates.
+It produces two obligations.</p>
+<h3 id="before-the-loop">Before the Loop<a class="headerlink" href="#before-the-loop" title="Permanent link">&para;</a></h3>
+<p>Before the loop, the measure must be non-negative:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>decreases &gt;= 0
 </span></code></pre></div>
-<h3 id="after-the-body">After the body<a class="headerlink" href="#after-the-body" title="Permanent link">&para;</a></h3>
-<ul>
-<li>The measure must strictly decrease:</li>
-</ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>new_decreases &lt; old_decreases
+<h3 id="after-the-body">After the Body<a class="headerlink" href="#after-the-body" title="Permanent link">&para;</a></h3>
+<p>After the body, the measure must strictly decrease:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>new_decreases &lt; old_decreases
 </span></code></pre></div>
-<p>For <code>count</code>, the measure is <code>n - i</code>:</p>
-<ul>
-<li>Entry: <code>n - 0 &gt;= 0</code>, proved from <code>requires n &gt;= 0</code>.</li>
-<li>After the body, with the havoced <code>i</code> and the invariant/condition facts
-    assumed: <code>n - (i + 1) &lt; n - i</code>, which simplifies to <code>-1 &lt; 0</code>.</li>
-</ul>
-<p>The strict-decrease check uses the same havoced <code>i</code> as the preservation check.</p>
-<p>A loop without <code>decreases</code> is still accepted; the verifier then proves partial
-correctness only. It cannot prove the loop terminates.</p>
-<h2 id="a-broken-loop-invariant">A broken loop invariant<a class="headerlink" href="#a-broken-loop-invariant" title="Permanent link">&para;</a></h2>
-<p>A loop invariant must hold before the first iteration <em>and</em> survive every
-execution of the loop body. The example below survives the first iteration but
-not the second.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>fn bad() -&gt; Bool
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>{
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>  let i: Int = 0;
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  while i &lt; 3
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    invariant i &lt;= 2
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>  {
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a>    i = i + 1;
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>  }
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a>  return true;
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a>}
+<p>For <code>count</code>, the measure is <code>n - i</code>.
+On entry, <code>n - 0 &gt;= 0</code>, proved from <code>requires n &gt;= 0</code>.
+After the body,
+with the havoced <code>i</code> and the invariant and condition facts assumed,
+<code>n - (i + 1) &lt; n - i</code> simplifies to <code>-1 &lt; 0</code>.
+The strict-decrease check uses the same havoced <code>i</code> as the preservation check.</p>
+<p>A loop without <code>decreases</code> is still accepted;
+the verifier then proves partial correctness only.
+It cannot prove the loop terminates.</p>
+<h2 id="a-broken-loop-invariant">A Broken Loop Invariant<a class="headerlink" href="#a-broken-loop-invariant" title="Permanent link">&para;</a></h2>
+<p>A loop invariant must hold before the first iteration
+<em>and</em> survive every execution of the loop body.
+The example below survives the first iteration but not the second.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>fn bad() -&gt; Bool
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>{
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  let i: Int = 0;
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>  while i &lt; 3
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>    invariant i &lt;= 2
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>  {
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>    i = i + 1;
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>  }
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a>  return true;
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>}
 </span></code></pre></div>
-<ul>
-<li>The initialization obligation is <code>0 &lt;= 2</code>, which holds.</li>
-<li>The preservation obligation is built exactly like the preservation step in
-    <code>count</code>:<ul>
-<li>Havoc <code>i</code> into an arbitrary fresh symbol.</li>
-<li>Assume the invariant <code>i &lt;= 2</code> and the loop condition <code>i &lt; 3</code>.</li>
-<li>Run the body <code>i = i + 1</code> once, giving the after-body value <code>i + 1</code>.</li>
-<li>Prove <code>i + 1 &lt;= 2</code>.</li>
-</ul>
-</li>
-</ul>
-<p>That gives the obligation:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>(i &lt;= 2 and i &lt; 3) =&gt; i + 1 &lt;= 2
+<p>The initialization obligation is <code>0 &lt;= 2</code>, which holds.
+The preservation obligation is built exactly like the preservation step in <code>count</code>:
+havoc <code>i</code> into an arbitrary fresh symbol,
+assume the invariant <code>i &lt;= 2</code> and the loop condition <code>i &lt; 3</code>,
+run the body <code>i = i + 1</code> once to get the after-body value <code>i + 1</code>,
+and prove <code>i + 1 &lt;= 2</code>.
+That gives the obligation:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>(i &lt;= 2 and i &lt; 3) =&gt; i + 1 &lt;= 2
 </span></code></pre></div>
-<ul>
-<li>Z3 finds a counterexample: <code>i = 2</code>.<ul>
-<li><code>2 &lt;= 2</code> is true, so the invariant holds <em>before</em> the iteration.</li>
-<li><code>2 &lt; 3</code> is true, so the loop condition says to run another iteration.</li>
-<li><code>2 + 1 &lt;= 2</code> is false, so the invariant is broken <em>after</em> the iteration.</li>
-</ul>
-</li>
-<li>The prover does not iterate the loop from <code>0</code> to <code>3</code>. The preservation check
-    symbolically executes the body once on an arbitrary <code>i</code>, and the
-    counterexample <code>i = 2</code> picks the arbitrary iteration where that one step
-    breaks the invariant.</li>
-<li>The correct upper bound is <code>i &lt;= 3</code>, because <code>i</code> reaches <code>3</code> before the loop
-    exits.</li>
-</ul>
-<h2 id="appendix-structure-of-prover_looppy">Appendix: structure of <code>prover_loop.py</code><a class="headerlink" href="#appendix-structure-of-prover_looppy" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>ScalarWriterCollector</code>: records the scalar names a loop body assigns.</li>
-<li><code>Prover</code>: subclasses the <code>contracts</code> prover and adds:<ul>
-<li><code>visit_StmtWhile</code>: dispatches a loop statement to <code>exec_while</code>.</li>
-<li><code>exec_while</code>: initialization, preservation, termination, and exit.</li>
-<li><code>_havoc_loop_vars</code>: replaces assigned scalars with fresh symbols.</li>
-<li><code>_fresh_from_term</code>: makes a fresh symbol of the same Z3 sort.</li>
-</ul>
-</li>
-<li>Module-level functions:<ul>
-<li><code>verify_program</code>: the entry point from the CLI.</li>
-<li>The Z3 check loop (<code>check_obligations</code>) is defined in
-    <code>frml/z3check.py</code> and inherited here.</li>
-</ul>
-</li>
-</ul>
+<p>Z3 finds a counterexample with <code>i = 2</code>.
+Since <code>2 &lt;= 2</code> is true,
+the invariant holds before the iteration,
+and since <code>2 &lt; 3</code> is true,
+the loop condition says to run another iteration,
+but <code>2 + 1 &lt;= 2</code> is false,
+so the invariant is broken after the iteration.
+The prover does not iterate the loop from <code>0</code> to <code>3</code>;
+the preservation check symbolically executes the body once on an arbitrary <code>i</code>,
+and the counterexample <code>i = 2</code> picks the arbitrary iteration
+where that one step breaks the invariant.
+The correct upper bound is <code>i &lt;= 3</code>, because <code>i</code> reaches <code>3</code> before the loop exits.</p>
 
 
 

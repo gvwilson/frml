@@ -1,18 +1,8 @@
-# The Contracts Level: Functions and Contracts
+# Contracts in Frml
 
-This tutorial explains how Frml checks `contracts`-level programs: everything in
-the [scalar level](tutorial_scalar.md), plus multiple functions,
-`requires`/`ensures` contracts, function calls, `old(...)`, recursion with
-`decreases`, and quantifiers. The implementation is in `frml/prover_contracts.py`,
-which subclasses the `scalar` prover (`frml/prover_scalar.py`).
-
-If you have not read the scalar tutorial, start there: this page assumes the
-data model, the `exec_stmt_seq`/`eval_expr` visitor loops, and the Z3 check loop
-are already familiar.
-
-## How `contracts` extends `scalar`
-
-The scalar prover owns the engine and leaves two hooks for higher levels:
+This tutorial explains how Frml checks programs with multiple functions.
+As a reminder,
+the scalar prover owns the engine and leaves two hooks for higher levels:
 
 ```python
 def verify_function(self, fn):
@@ -29,8 +19,8 @@ def verify_function(self, fn):
             self._check_ensures(fn, s, None)
 ```
 
-At the scalar level `_assume_spec` and `_check_ensures` do nothing. The `contracts`
-prover overrides them:
+`_assume_spec` and `_check_ensures` do nothing at the scalar level;
+the `contracts` prover overrides them:
 
 ```python
 class Prover(ScalarProver):
@@ -55,25 +45,19 @@ class Prover(ScalarProver):
 
 ## `requires` and `ensures`
 
--   Contracts are the source of most hypotheses and goals.
-
-### `requires` is an assumption
-
--   At function entry, every `requires` clause is evaluated.
--   The result is appended to the path.
--   Later obligations may assume it.
-
-### `ensures` is a goal
-
--   At every `return`, every `ensures` clause is evaluated.
--   The `result` placeholder is replaced by the returned expression.
--   The result becomes a goal, checked against the current path.
-
-### Multiple clauses
-
--   Multiple `requires` clauses are and'ed, one fact per clause in the path.
--   Multiple `ensures` clauses produce one obligation per clause.
--   Example:
+Contracts are the source of most hypotheses and goals.
+At function entry,
+every `requires` clause is evaluated,
+the result is appended to the path,
+and later obligations may assume it.
+At every `return`,
+every `ensures` clause is evaluated,
+the `result` placeholder is replaced by the returned expression,
+and the result becomes a goal checked against the current path.
+Multiple `requires` clauses are and'ed,
+one fact per clause in the path,
+and multiple `ensures` clauses produce one obligation per clause.
+For example:
 
 ```
 fn max(a: Int, b: Int) -> Int
@@ -89,12 +73,12 @@ fn max(a: Int, b: Int) -> Int
 }
 ```
 
--   The `if` produces two end states…
--   …and there are three `ensures` clauses…
--   …so there are six postcondition obligations (three per branch):
-    -   `if` branch goals: `a >= a`, `a >= b`, `a == a or a == b`.
-    -   `else` branch goals: `b >= a`, `b >= b`, `b == a or b == b`.
--   Each is proved with the appropriate branch condition in the path.
+The `if` produces two end states,
+and there are three `ensures` clauses,
+so there are six postcondition obligations, three per branch.
+The `if` branch goals are `a >= a`, `a >= b`, and `a == a or a == b`;
+the `else` branch goals are `b >= a`, `b >= b`, and `b == a or b == b`.
+Each is proved with the appropriate branch condition in the path.
 
 `check_postcondition` turns an `ensures` clause into one obligation:
 
@@ -104,9 +88,9 @@ def check_postcondition(self, ens, state, result):
     self._emit("postcondition", ens.render(), state.path, goal, ens.pos)
 ```
 
--   `result_term` supplies the term that `result` denotes inside the clause.
+`result_term` supplies the term that `result` denotes inside the clause.
 
-## A complete trace: `double`
+## A Complete Trace
 
 Let's trace a tiny function through the whole machine:
 
@@ -122,8 +106,6 @@ fn main() -> Int
   return double(4);
 }
 ```
-
-Step by step:
 
 1.  `verify_program` builds the `Prover` and calls `verify()`.
 1.  `verify()` sets `current_fn = double` and calls `verify_function(double)`.
@@ -155,11 +137,11 @@ Step by step:
 
 ## `old(...)`
 
--   `old(e)` means "the value of `e` at the moment the function was entered".
--   The prover snapshots parameters at entry into `old_vars`.
--   Inside an `ensures` clause, `old(x)` reads that snapshot, not the current
-    value.
--   Example:
+`old(e)` means "the value of `e` at the moment the function was entered".
+The prover snapshots parameters at entry into `old_vars`;
+inside an `ensures` clause,
+`old(x)` reads that snapshot rather than the current value.
+For example:
 
 ```
 fn bump(x: Int) -> Int
@@ -170,33 +152,30 @@ fn bump(x: Int) -> Int
 }
 ```
 
--   At entry, `x` is a fresh integer symbol `x!1`.
-    -   `old_vars["x"]` keeps that original `x!1`.
--   After the assignment, `state.vars["x"]` is the term `x!1 + 1`.
-    -   `x` in the postcondition reads the updated value.
-    -   `old(x)` reads the original `x!1`.
--   The emitted postcondition goal looks like:
+At entry,
+`x` is a fresh integer symbol `x!1`,
+and `old_vars["x"]` keeps that original `x!1`.
+After the assignment,
+`state.vars["x"]` is the term `x!1 + 1`,
+so `x` in the postcondition reads the updated value while `old(x)` reads the original `x!1`.
+The emitted postcondition goal looks like:
 
 ```
 x!1 + 1 == x!1 + 1
 ```
 
--   Both sides are the same term, so Z3 proves it.
+Both sides are the same term, so Z3 proves it.
 
-## Function calls
+## Function Calls
 
--   When one function calls another, the prover uses the callee's contract.
-
-### The `model_call` method
-
--   For a statement call `f(args)`:
-    -   Prove the callee's `requires` clauses under the caller's current path.
-    -   Assume the callee's `ensures` clauses.
-    -   Add those assumptions to the caller's path.
--   The caller never sees the callee's body.
--   It only sees the callee's contract.
-
-### Example
+When one function calls another, the prover uses the callee's contract.
+For a statement call `f(args)`,
+the prover proves the callee's `requires` clauses under the caller's current path,
+assumes the callee's `ensures` clauses,
+and adds those assumptions to the caller's path.
+The caller never sees the callee's body;
+it only sees the callee's contract.
+For example:
 
 ```
 fn inc(x: Int) -> Int
@@ -210,35 +189,29 @@ fn main() -> Int
 }
 ```
 
--   For the call `inc(41)`:
-    -   Emit a precondition obligation: `41 >= 0`.
-    -   Create a fresh result `inc_result!N`.
-    -   Assume `inc_result!N == 41 + 1`.
-    -   `main` returns that result, and the postcondition is proved.
+For the call `inc(41)`,
+the prover emits a precondition obligation `41 >= 0`,
+creates a fresh result `inc_result!N`,
+and assumes `inc_result!N == 41 + 1`.
+`main` returns that result, and the postcondition is proved.
 
 ## Recursion
 
--   Recursive functions need a `decreases` clause.
+Recursive functions need a `decreases` clause.
+At function entry,
+`_assume_spec` emits `decreases >= 0`.
+For `factorial`,
+that is `n >= 0`, proved from `requires n >= 0`.
+At a recursive call,
+the callee's `requires` clauses are proved at the call site.
+For `factorial(n - 1)`, the prover proves `n - 1 >= 0`.
 
-### At function entry
-
--   `_assume_spec` emits `decreases >= 0`.
--   For `factorial`, that is `n >= 0`, proved from `requires n >= 0`.
-
-### At a recursive call
-
--   The callee's `requires` clauses are proved at the call site.
--   For `factorial(n - 1)`, the prover proves `n - 1 >= 0`.
-
-### The strict-decrease check
-
--   `model_call` emits `decreases_at_call < decreases_at_entry` for a self-call.
--   This applies to statement calls.
--   For scalar self-calls inside expressions (such as the recursive call in
-    `factorial` below), the current implementation proves the callee's
-    precondition but does not emit the strict-decrease obligation.
-
-### The `factorial` example
+`model_call` emits `decreases_at_call < decreases_at_entry` for a self-call.
+This applies to statement calls;
+for scalar self-calls inside expressions,
+such as the recursive call in `factorial` below,
+the current implementation proves the callee's precondition
+but does not emit the strict-decrease obligation.
 
 ```
 fn factorial(n: Int) -> Int
@@ -254,46 +227,35 @@ fn factorial(n: Int) -> Int
 }
 ```
 
--   The prover emits four obligations:
-    -   `n >= 0` for the entry `decreases n >= 0`.
-    -   `1 >= 1` for the base-case postcondition.
-    -   `n - 1 >= 0` for the recursive call's precondition.
-    -   `n * factorial_result >= 1` for the recursive postcondition.
+The prover emits four obligations:
+`n >= 0` for the entry `decreases n >= 0`,
+`1 >= 1` for the base-case postcondition,
+`n - 1 >= 0` for the recursive call's precondition,
+and `n * factorial_result >= 1` for the recursive postcondition.
 
 ## Quantifiers
 
--   Frml supports `forall` and `exists` in specifications.
+Frml supports `forall` and `exists` in specifications:
 
 ```
 forall i: Int :: 0 <= i and i < 3 => i >= 0
 ```
 
--   The prover translates these to Z3 quantifiers.
-    -   `forall` becomes `z3.ForAll([var], body)`.
-    -   `exists` becomes `z3.Exists([var], body)`.
-    -   The quantified variable becomes a fresh symbol.
-    -   The body is evaluated with that variable added to the state.
+The prover translates these to Z3 quantifiers:
+`forall` becomes `z3.ForAll([var], body)`
+and `exists` becomes `z3.Exists([var], body)`.
+The quantified variable becomes a fresh symbol,
+and the body is evaluated with that variable added to the state.
+In the example above,
+the variable `i` becomes a fresh symbol added to the state,
+the body becomes the Z3 term `Implies(And(0 <= i, i < 3), i >= 0)`,
+and the whole quantifier becomes `z3.ForAll([i], body)`.
 
-### `forall` example
-
-```
-forall i: Int :: 0 <= i and i < 3 => i >= 0
-```
-
--   The variable `i` becomes a fresh symbol, added to the state.
--   The body becomes the Z3 term `Implies(And(0 <= i, i < 3), i >= 0)`.
--   The whole quantifier becomes `z3.ForAll([i], body)`.
-
-### `exists` example
-
-```
-exists i: Int :: 0 <= i and i < 3 and i == 2
-```
-
--   The variable `i` again becomes a fresh symbol.
--   The body becomes `And(0 <= i, i < 3, i == 2)`.
--   The whole quantifier becomes `z3.Exists([i], body)`.
-
+Similarly,
+if `exists` was used,
+the variable `i` would again become a fresh symbol,
+the body would become `And(0 <= i, i < 3, i == 2)`,
+and the whole quantifier would become `z3.Exists([i], body)`.
 Both forms can appear in an `ensures` clause:
 
 ```
@@ -305,3 +267,5 @@ fn g() -> Bool
   ensures result == (exists i: Int :: 0 <= i and i < 3 and i == 2)
 { return true; }
 ```
+
+[frml]: https://gvwilson.github.io/frml

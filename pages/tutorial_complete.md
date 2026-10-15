@@ -1,34 +1,111 @@
-# The Complete Level: The Full Language
+# Next Steps
 
-The `complete` level is Frml's default level.  It selects the full language:
-scalars, loops, fixed-size arrays, and the built-in functions.  The individual
-features are explained in the earlier tutorials:
+Frml's final language level, `complete`,
+doesn't add any new features.
+Instead,
+it serves as a placeholder in case we want to extend the language further.
+I'm not going to do this myself,
+but if you are a student (or a professor looking for projects for students)
+please [get in touch][email].
 
--   [scalar](tutorial_scalar.md): scalars, branching, `assert`, division.
--   [contracts](tutorial_contracts.md): contracts, function calls, recursion, quantifiers.
--   [loop](tutorial_loop.md): `while` loops and invariants.
--   [array](tutorial_array.md): fixed-size arrays.
--   [builtin](tutorial_builtin.md): I/O built-ins and `push`/`pop`.
+## Algebraic Data Types and Pattern Matching
 
-`complete` currently has the same features as the `builtin` level.  It is kept
-as the top of the level hierarchy so that new features can be added here
-without disturbing the staged type checkers and provers below it.
+Add `enum` sum types and a `match` expression
+to teach structural induction over data and Z3's datatype theory.
+A sample program would be:
 
-Two files implement the level:
+```
+enum Option<T> { None, Some(T) }
 
--   `frml/typechecker_complete.py` is a trivial subclass of the builtin type
-    checker.
--   `frml/prover_complete.py` is a trivial subclass of the builtin prover.  The
-    shared Z3 check loop lives in `frml/z3check.py`.
-
-Because `complete` is the default, no `--level` flag is needed:
-
-```bash
-frml check examples/complete/required.frml
+fn get_or(a: Option<Int>, d: Int) -> Int
+  ensures result == d or result != d
+{
+  match a {
+    None => d,
+    Some(v) => v,
+  }
+}
 ```
 
-This is equivalent to:
+Frml currently proves things about numbers and arrays
+but never about the shape of a value.
+Lists, options, and trees are where induction over data structures becomes real,
+and the classic proofs
+(list length, `append` associativity, `map` distributes over `append`)
+are exactly what separates "checked the arithmetic" from "verified a data structure".
+Z3 has a native datatype sort,
+so this is more a type-checker and visitor addition than new solver machinery.
+It would sit as a `datatype` level above `contracts`,
+and recursive types would reuse the existing `decreases` machinery.
 
-```bash
-frml check --level builtin examples/complete/required.frml
+## Explicit Frame Clauses (`modifies` / `reads`)
+
+Frml already infers `written_params`,
+but the language gives the programmer no way to state what a call may touch.
+An explicit, checked clause makes that contract visible:
+
 ```
+fn increment_first(a: Array<Int>)
+  modifies a
+  ensures a[0] == old(a[0]) + 1
+```
+
+This would teach the frame problem, modular verification, and information hiding.
+The pedagogical payoff is the frame problem:
+proving that a call does not change everything else.
+A student who writes `modifies a` and then has the verifier flag an unlisted write
+learns why modularity fails without framing,
+and why "what may this function change?" is a first-class specification question
+rather than an implementation detail.
+It also becomes the bridge to the hardest topics:
+aliasing and separation logic,
+which the current "arrays are references but aliasing is forbidden" design
+deliberately sidesteps.
+
+## Machine Integers (Bit Vectors) vs. Mathematical Integers
+
+Frml's `Int` is an unbounded mathematical integer,
+so `x + 1 > x` is always true.
+If we add a bounded type or a `--int-model bitvector` switch,
+that theorem quietly breaks:
+
+```
+fn add_one(x: Int32) -> Bool
+  ensures x + 1 > x   // false when x == Int32.max
+```
+
+This is arguably the most important caveat in applied verification:
+the model is not the machine.
+It teaches why SMT solvers are split into theories,
+why overflow is a real bug class,
+and why a verified program can still be wrong if the verification model diverges from the runtime.
+It also gives a natural way to discuss the tradeoff,
+since bit-vector reasoning is harder for the solver than integer arithmetic.
+
+## Ghost Code and Lemmas
+
+The final idea is to extend the language
+so that programmers can introduce names and functions that exist only in specifications:
+
+```
+ghost var count: Int = 0;
+
+lemma append_len(a: List<Int>, b: List<Int>)
+  ensures length(a ++ b) == length(a) + length(b);
+```
+
+These *ghost variables* are the classic trick for proving properties
+that the running program has no reason to record,
+and lemmas are how a verified fact gets packaged and reused across functions
+instead of being re-derived inline.
+Together they teach that a proof is a structure of its own
+that can be layered on top of,
+but kept separate from,
+the executable program,
+and they unlock the "mathematical library" style of verification
+that makes large programs tractable.
+This composes naturally with the first feature idea,
+since inductive lemmas over data types are the standard way to prove list properties.
+
+[email]: mailto:gvwilson@third-bit.com
+[frml]: https://gvwilson.github.io/frml

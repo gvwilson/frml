@@ -23,7 +23,7 @@
     
     
       
-        <title>The Array Level: Fixed-Size Arrays - frml</title>
+        <title>Arrays in Frml - frml</title>
       
     
     
@@ -67,7 +67,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#the-array-level-fixed-size-arrays" class="md-skip">
+        <a href="#arrays-in-frml" class="md-skip">
           Skip to content
         </a>
       
@@ -103,7 +103,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              The Array Level: Fixed-Size Arrays
+              Arrays in Frml
             
           </span>
         </div>
@@ -207,7 +207,7 @@
   <span class="md-ellipsis">
     
   
-  How the Frml Verifier Works
+  Introducing Frml
 
     
   </span>
@@ -233,7 +233,7 @@
   <span class="md-ellipsis">
     
   
-  The Scalar Level: Straight-Line and Branching Code
+  Scalar Code in Frml
 
     
   </span>
@@ -259,7 +259,7 @@
   <span class="md-ellipsis">
     
   
-  The Contracts Level: Functions and Contracts
+  Contracts in Frml
 
     
   </span>
@@ -285,7 +285,7 @@
   <span class="md-ellipsis">
     
   
-  The Loop Level: Scalar Loops
+  Loops in Frml
 
     
   </span>
@@ -320,7 +320,7 @@
   <span class="md-ellipsis">
     
   
-  The Array Level: Fixed-Size Arrays
+  Arrays in Frml
 
     
   </span>
@@ -337,7 +337,7 @@
   <span class="md-ellipsis">
     
   
-  The Array Level: Fixed-Size Arrays
+  Arrays in Frml
 
     
   </span>
@@ -363,33 +363,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-the-array-level-adds" class="md-nav__link">
+  <a href="#what-were-doing" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What the <code>array</code> level adds
+        What We're Doing
       </span>
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#type-checking-arrays" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Type checking arrays
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Type checking arrays">
+    <nav class="md-nav" aria-label="What We&#x27;re Doing">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#array-access" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array access
+        Array Access
       </span>
     </span>
   </a>
@@ -400,7 +389,7 @@
   <a href="#array-literals" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array literals
+        Array Literals
       </span>
     </span>
   </a>
@@ -411,7 +400,7 @@
   <a href="#array-assignment" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array assignment
+        Array Assignment
       </span>
     </span>
   </a>
@@ -433,7 +422,7 @@
   <a href="#array-returns" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array returns
+        Array Returns
       </span>
     </span>
   </a>
@@ -460,12 +449,12 @@
   <a href="#the-provers-array-model" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        The prover's array model
+        The Prover's Array Model
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The prover&#x27;s array model">
+    <nav class="md-nav" aria-label="The Prover&#x27;s Array Model">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -483,7 +472,7 @@
   <a href="#array-literals_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array literals
+        Array Literals
       </span>
     </span>
   </a>
@@ -494,7 +483,7 @@
   <a href="#access-and-assignment" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Access and assignment
+        Access and Assignment
       </span>
     </span>
   </a>
@@ -505,7 +494,7 @@
   <a href="#bounds-obligations" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Bounds obligations
+        Bounds Obligations
       </span>
     </span>
   </a>
@@ -516,7 +505,7 @@
   <a href="#array-equality" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array equality
+        Array Equality
       </span>
     </span>
   </a>
@@ -532,7 +521,7 @@
   <a href="#old-with-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>old(...)</code> with arrays
+        <code>old(...)</code> with Arrays
       </span>
     </span>
   </a>
@@ -543,7 +532,7 @@
   <a href="#loops-and-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Loops and arrays
+        Loops and Arrays
       </span>
     </span>
   </a>
@@ -554,19 +543,19 @@
   <a href="#function-calls-with-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Function calls with arrays
+        Function Calls with Arrays
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Function calls with arrays">
+    <nav class="md-nav" aria-label="Function Calls with Arrays">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#array-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array arguments
+        Array Arguments
       </span>
     </span>
   </a>
@@ -577,7 +566,7 @@
   <a href="#array-returns_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array returns
+        Array Returns
       </span>
     </span>
   </a>
@@ -593,46 +582,7 @@
   <a href="#quantifiers-over-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Quantifiers over arrays
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quantifiers over arrays">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#why-_quant_depth-exists" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Why <code>_quant_depth</code> exists
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#array-property-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Array property example
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix-structure-of-the-array-level" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Appendix: structure of the array level
+        Quantifiers Over Arrays
       </span>
     </span>
   </a>
@@ -661,7 +611,7 @@
   <span class="md-ellipsis">
     
   
-  The Builtin Level: I/O and Resizable Arrays
+  Built-in Functions in Frml
 
     
   </span>
@@ -687,7 +637,7 @@
   <span class="md-ellipsis">
     
   
-  The Complete Level: The Full Language
+  Next Steps
 
     
   </span>
@@ -818,33 +768,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#what-the-array-level-adds" class="md-nav__link">
+  <a href="#what-were-doing" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        What the <code>array</code> level adds
+        What We're Doing
       </span>
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#type-checking-arrays" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Type checking arrays
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Type checking arrays">
+    <nav class="md-nav" aria-label="What We&#x27;re Doing">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#array-access" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array access
+        Array Access
       </span>
     </span>
   </a>
@@ -855,7 +794,7 @@
   <a href="#array-literals" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array literals
+        Array Literals
       </span>
     </span>
   </a>
@@ -866,7 +805,7 @@
   <a href="#array-assignment" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array assignment
+        Array Assignment
       </span>
     </span>
   </a>
@@ -888,7 +827,7 @@
   <a href="#array-returns" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array returns
+        Array Returns
       </span>
     </span>
   </a>
@@ -915,12 +854,12 @@
   <a href="#the-provers-array-model" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        The prover's array model
+        The Prover's Array Model
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The prover&#x27;s array model">
+    <nav class="md-nav" aria-label="The Prover&#x27;s Array Model">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -938,7 +877,7 @@
   <a href="#array-literals_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array literals
+        Array Literals
       </span>
     </span>
   </a>
@@ -949,7 +888,7 @@
   <a href="#access-and-assignment" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Access and assignment
+        Access and Assignment
       </span>
     </span>
   </a>
@@ -960,7 +899,7 @@
   <a href="#bounds-obligations" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Bounds obligations
+        Bounds Obligations
       </span>
     </span>
   </a>
@@ -971,7 +910,7 @@
   <a href="#array-equality" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array equality
+        Array Equality
       </span>
     </span>
   </a>
@@ -987,7 +926,7 @@
   <a href="#old-with-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        <code>old(...)</code> with arrays
+        <code>old(...)</code> with Arrays
       </span>
     </span>
   </a>
@@ -998,7 +937,7 @@
   <a href="#loops-and-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Loops and arrays
+        Loops and Arrays
       </span>
     </span>
   </a>
@@ -1009,19 +948,19 @@
   <a href="#function-calls-with-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Function calls with arrays
+        Function Calls with Arrays
       </span>
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Function calls with arrays">
+    <nav class="md-nav" aria-label="Function Calls with Arrays">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
   <a href="#array-arguments" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array arguments
+        Array Arguments
       </span>
     </span>
   </a>
@@ -1032,7 +971,7 @@
   <a href="#array-returns_1" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Array returns
+        Array Returns
       </span>
     </span>
   </a>
@@ -1048,46 +987,7 @@
   <a href="#quantifiers-over-arrays" class="md-nav__link">
     <span class="md-ellipsis">
       <span class="md-typeset">
-        Quantifiers over arrays
-      </span>
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Quantifiers over arrays">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#why-_quant_depth-exists" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Why <code>_quant_depth</code> exists
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#array-property-example" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Array property example
-      </span>
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#appendix-structure-of-the-array-level" class="md-nav__link">
-    <span class="md-ellipsis">
-      <span class="md-typeset">
-        Appendix: structure of the array level
+        Quantifiers Over Arrays
       </span>
     </span>
   </a>
@@ -1109,33 +1009,10 @@
                 
                   
 
-<h1 id="the-array-level-fixed-size-arrays">The Array Level: Fixed-Size Arrays<a class="headerlink" href="#the-array-level-fixed-size-arrays" title="Permanent link">&para;</a></h1>
-<p>This tutorial explains how Frml checks and validates programs at the <code>array</code>
-level: everything from the <a href="../tutorial_loop/">loop level</a>, plus fixed-size
-arrays. The <code>array</code> level has no built-in functions, so arrays can only be
-created from array literals or array-returning function calls; <code>push</code> and
-<code>pop</code> are left to the <a href="../tutorial_builtin/">builtin level</a>.</p>
-<p>Two files implement the level:</p>
-<ul>
-<li><code>frml/typechecker_array.py</code> type-checks array syntax.</li>
-<li><code>frml/prover_array.py</code> generates verification conditions for fixed-size
-    arrays.</li>
-</ul>
-<p>Start with the <a href="../tutorial_intro/">intro</a>, the
-<a href="../tutorial_scalar/">scalar tutorial</a>, the
-<a href="../tutorial_contracts/">contracts tutorial</a>, and the
-<a href="../tutorial_loop/">loop tutorial</a> if you have not already read them; this page
-assumes the machinery described there.</p>
-<h2 id="what-the-array-level-adds">What the <code>array</code> level adds<a class="headerlink" href="#what-the-array-level-adds" title="Permanent link">&para;</a></h2>
-<ul>
-<li>The parser already knows how to build array types, literals, access,
-    <code>length(...)</code>, and array assignment.</li>
-<li>The level checker allows arrays but still rejects built-in functions.</li>
-<li>The array type checker adds the array visitors to the loop type checker.</li>
-<li>The array prover adds a symbolic array store and array-aware obligations to
-    the loop prover.</li>
-</ul>
-<p>A minimal array program:</p>
+<h1 id="arrays-in-frml">Arrays in Frml<a class="headerlink" href="#arrays-in-frml" title="Permanent link">&para;</a></h1>
+<p>This tutorial shows how Frml handles arrays.</p>
+<h2 id="what-were-doing">What We're Doing<a class="headerlink" href="#what-were-doing" title="Permanent link">&para;</a></h2>
+<p>A minimal array program is:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fn main() -&gt; Int
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>{
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  let a: Array&lt;Int&gt; = [2, 3, 5];
@@ -1143,319 +1020,239 @@ assumes the machinery described there.</p>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  return length(a);
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>}
 </span></code></pre></div>
-<p>Array-level programs are checked by selecting the level explicitly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>frml<span class="w"> </span>check<span class="w"> </span>--level<span class="w"> </span>array<span class="w"> </span>examples/complete/array_return.frml
+<p>The array type checker subclasses the loop type checker
+and adds visitors for the array syntax.
+Everything scalar and every <code>while</code> loop is checked exactly as before;
+the new visitors only handle array nodes.</p>
+<h3 id="array-access">Array Access<a class="headerlink" href="#array-access" title="Permanent link">&para;</a></h3>
+<p><code>visit_ExprArrayAccess</code> checks two things:
+the expression being indexed must have an array type,
+and the index must have type <code>Int</code>.
+It then returns the array's element type.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_ExprArrayAccess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">):</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>    <span class="n">arr</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">)</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>    <span class="n">FrmlTypeError</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>        <span class="ow">not</span> <span class="n">arr</span><span class="o">.</span><span class="n">is_array</span><span class="p">(),</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>        <span class="sa">f</span><span class="s2">"array access expects an array but found </span><span class="si">{</span><span class="n">arr</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>        <span class="n">expr</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>    <span class="p">)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>    <span class="n">idx</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">)</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>    <span class="n">FrmlTypeError</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>        <span class="n">idx</span> <span class="o">!=</span> <span class="n">INT</span><span class="p">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>        <span class="s2">"array index must have type Int"</span><span class="p">,</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>        <span class="n">expr</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>    <span class="p">)</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>    <span class="k">return</span> <span class="n">arr</span><span class="o">.</span><span class="n">elem</span>
 </span></code></pre></div>
-<p>The fixed-size array examples still live in <code>examples/complete/</code> for now; they
-do not use <code>push</code>/<code>pop</code> or I/O, so they also verify at the <code>array</code> level.</p>
-<h2 id="type-checking-arrays">Type checking arrays<a class="headerlink" href="#type-checking-arrays" title="Permanent link">&para;</a></h2>
-<p>The array type checker subclasses the loop type checker and adds visitors for
-the array syntax.  Everything scalar and every <code>while</code> loop is checked exactly
-as before; the new visitors only handle array nodes.</p>
-<h3 id="array-access">Array access<a class="headerlink" href="#array-access" title="Permanent link">&para;</a></h3>
-<p><code>visit_ExprArrayAccess</code> checks two things:</p>
-<ol>
-<li>The expression being indexed must have an array type.</li>
-<li>The index must have type <code>Int</code>.</li>
-</ol>
-<p>It then returns the array's element type.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_ExprArrayAccess</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">expr</span><span class="p">,</span> <span class="n">expected</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">):</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">arr</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">array</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">)</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>    <span class="n">FrmlTypeError</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>        <span class="ow">not</span> <span class="n">arr</span><span class="o">.</span><span class="n">is_array</span><span class="p">(),</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>        <span class="sa">f</span><span class="s2">"array access expects an array but found </span><span class="si">{</span><span class="n">arr</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>        <span class="n">expr</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>    <span class="p">)</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>    <span class="n">idx</span> <span class="o">=</span> <span class="n">expr</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">accept</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">allow_old</span><span class="p">,</span> <span class="n">result_type</span><span class="p">)</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>    <span class="n">FrmlTypeError</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>        <span class="n">idx</span> <span class="o">!=</span> <span class="n">INT</span><span class="p">,</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>        <span class="s2">"array index must have type Int"</span><span class="p">,</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a>        <span class="n">expr</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a>    <span class="p">)</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a>    <span class="k">return</span> <span class="n">arr</span><span class="o">.</span><span class="n">elem</span>
-</span></code></pre></div>
-<h3 id="array-literals">Array literals<a class="headerlink" href="#array-literals" title="Permanent link">&para;</a></h3>
-<p><code>visit_ExprArrayLiteral</code> requires every element to be a scalar (<code>Int</code>, <code>Bool</code>,
-or <code>String</code>) and all elements to have the same type.  It returns <code>Array&lt;T&gt;</code>
-for that element type.</p>
-<p>An empty literal <code>[]</code> has no elements from which to infer <code>T</code>, so it is only
-accepted when the expected type is already known from the surrounding <code>let</code>
-declaration, parameter type, or return type.</p>
-<h3 id="array-assignment">Array assignment<a class="headerlink" href="#array-assignment" title="Permanent link">&para;</a></h3>
-<p><code>visit_StmtArrayAssign</code> checks <code>a[i] = v</code>:</p>
-<ul>
-<li><code>a</code> must have an array type.</li>
-<li><code>i</code> must have type <code>Int</code>.</li>
-<li><code>v</code> must have the array's element type.</li>
-</ul>
+<h3 id="array-literals">Array Literals<a class="headerlink" href="#array-literals" title="Permanent link">&para;</a></h3>
+<p><code>visit_ExprArrayLiteral</code> requires every element to be a scalar (<code>Int</code>, <code>Bool</code>, or <code>String</code>)
+and all elements to have the same type.
+It returns <code>Array&lt;T&gt;</code> for that element type.
+An empty literal <code>[]</code> has no elements from which to infer <code>T</code>,
+so it is only accepted when the expected type is already known
+from the surrounding <code>let</code> declaration, parameter type, or return type.</p>
+<h3 id="array-assignment">Array Assignment<a class="headerlink" href="#array-assignment" title="Permanent link">&para;</a></h3>
+<p><code>visit_StmtArrayAssign</code> checks <code>a[i] = v</code>,
+requiring <code>a</code> to have an array type,
+<code>i</code> to have type <code>Int</code>,
+and <code>v</code> to have the array's element type.</p>
 <h3 id="array-declarations">Array declarations<a class="headerlink" href="#array-declarations" title="Permanent link">&para;</a></h3>
-<p>Scalar <code>let</code> declarations are inherited unchanged.  For an array declaration
-the checker requires the initializer to be either:</p>
-<ul>
-<li>an array literal, or</li>
-<li>a call to a function that returns an array.</li>
-</ul>
-<p>Array-to-array assignment such as <code>let b: Array&lt;Int&gt; = a;</code> is rejected.  Frml
-treats arrays as references, and allowing that form would create two names for
-one array; the language avoids that aliasing.</p>
-<h3 id="array-returns">Array returns<a class="headerlink" href="#array-returns" title="Permanent link">&para;</a></h3>
-<p>A function may return an array, but the checker rejects returning an array
-<em>parameter</em> directly.  Returning a literal, a function-local array, or a call
-that returns an array is fine.</p>
-<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_StmtReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    <span class="n">FrmlTypeError</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>        <span class="p">(</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>            <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>            <span class="ow">and</span> <span class="n">ret</span><span class="o">.</span><span class="n">is_array</span><span class="p">()</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>            <span class="ow">and</span> <span class="n">stmt</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">variable_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_params</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>        <span class="p">),</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>        <span class="s2">"cannot return an array parameter (arrays are references)"</span><span class="p">,</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a>        <span class="n">stmt</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>    <span class="p">)</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">visit_StmtReturn</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
+<p>Scalar <code>let</code> declarations are inherited unchanged.
+For an array declaration,
+the checker requires the initializer to be either an array literal
+or a call to a function that returns an array.
+Array-to-array assignment such as <code>let b: Array&lt;Int&gt; = a;</code> is rejected,
+because Frml treats arrays as references
+and allowing that form would create two names for one array;
+the language avoids that aliasing.</p>
+<h3 id="array-returns">Array Returns<a class="headerlink" href="#array-returns" title="Permanent link">&para;</a></h3>
+<p>A function may return an array,
+but the checker rejects returning an array <em>parameter</em> directly
+(again, to avoid aliasing issues).
+Returning a literal, a function-local array, or a call that returns an array is fine.</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">visit_StmtReturn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">):</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>    <span class="n">FrmlTypeError</span><span class="o">.</span><span class="n">fail</span><span class="p">(</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>        <span class="p">(</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>            <span class="n">ret</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>            <span class="ow">and</span> <span class="n">ret</span><span class="o">.</span><span class="n">is_array</span><span class="p">()</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>            <span class="ow">and</span> <span class="n">stmt</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">variable_name</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_params</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a>        <span class="p">),</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>        <span class="s2">"cannot return an array parameter (arrays are references)"</span><span class="p">,</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>        <span class="n">stmt</span><span class="o">.</span><span class="n">pos</span><span class="p">,</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>    <span class="p">)</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a>    <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">visit_StmtReturn</span><span class="p">(</span><span class="n">stmt</span><span class="p">,</span> <span class="n">ret</span><span class="p">)</span>
 </span></code></pre></div>
 <h3 id="length"><code>length(...)</code><a class="headerlink" href="#length" title="Permanent link">&para;</a></h3>
 <p><code>visit_ExprLength</code> requires its argument to be an array and returns <code>Int</code>.</p>
-<h2 id="the-provers-array-model">The prover's array model<a class="headerlink" href="#the-provers-array-model" title="Permanent link">&para;</a></h2>
+<h2 id="the-provers-array-model">The Prover's Array Model<a class="headerlink" href="#the-provers-array-model" title="Permanent link">&para;</a></h2>
 <p>Arrays need more machinery than integers.</p>
 <h3 id="representation">Representation<a class="headerlink" href="#representation" title="Permanent link">&para;</a></h3>
-<ul>
-<li>An array is a Z3 <code>Array(Int, elem)</code> plus a length.<ul>
-<li>The array maps integer indexes to element values.</li>
-<li>The length is a separate symbolic integer.</li>
-</ul>
-</li>
-<li>The prover stores an array as an <code>ArrayVal</code>, which pairs the Z3 array term
-    with its length.</li>
-<li><code>State.arrays</code> maps array variable names to <code>ArrayVal</code> values.</li>
-<li><code>State.old_arrays</code> is the snapshot of those values at function entry.</li>
-</ul>
-<h3 id="array-literals_1">Array literals<a class="headerlink" href="#array-literals_1" title="Permanent link">&para;</a></h3>
-<p><code>[3, 4]</code> becomes a chain of <code>Store</code> operations:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>Store(Store(fresh_array, 0, 3), 1, 4)
+<p>An array is a Z3 <code>Array(Int, elem)</code> plus a length.
+The array maps integer indexes to element values,
+and the length is a separate symbolic integer.
+The prover stores an array as an <code>ArrayVal</code>,
+which pairs the Z3 array term with its length.
+<code>State.arrays</code> maps array variable names to <code>ArrayVal</code> values,
+and <code>State.old_arrays</code> is the snapshot of those values at function entry.</p>
+<h3 id="array-literals_1">Array Literals<a class="headerlink" href="#array-literals_1" title="Permanent link">&para;</a></h3>
+<p>An array literal like <code>[3, 4]</code> becomes a chain of <code>Store</code> operations:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>Store(Store(fresh_array, 0, 3), 1, 4)
 </span></code></pre></div>
-<p>Its length is the literal <code>2</code>.  An empty literal produces a fresh array over
-the expected element sort with length <code>0</code>.</p>
-<h3 id="access-and-assignment">Access and assignment<a class="headerlink" href="#access-and-assignment" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>a[i]</code> becomes <code>z3.Select(arr.term, i)</code>.<ul>
-<li>It also emits a bounds obligation <code>0 &lt;= i and i &lt; length(a)</code>.</li>
-</ul>
-</li>
-<li><code>a[i] = v</code> becomes <code>z3.Store(arr.term, i, v)</code>, a new array.<ul>
-<li>It also emits a bounds obligation for <code>i</code>.</li>
-</ul>
-</li>
-</ul>
-<h3 id="bounds-obligations">Bounds obligations<a class="headerlink" href="#bounds-obligations" title="Permanent link">&para;</a></h3>
+<p>Its length is the literal <code>2</code>.
+An empty literal produces a fresh array over the expected element sort with length <code>0</code>.</p>
+<h3 id="access-and-assignment">Access and Assignment<a class="headerlink" href="#access-and-assignment" title="Permanent link">&para;</a></h3>
+<p><code>a[i]</code> becomes <code>z3.Select(arr.term, i)</code>,
+and it also emits a bounds obligation <code>0 &lt;= i and i &lt; length(a)</code>.
+<code>a[i] = v</code> becomes <code>z3.Store(arr.term, i, v)</code>,
+and it also emits a bounds obligation for <code>i</code>.</p>
+<h3 id="bounds-obligations">Bounds Obligations<a class="headerlink" href="#bounds-obligations" title="Permanent link">&para;</a></h3>
 <p>Every array read and write produces:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>hypotheses:  current path
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>goal:        0 &lt;= i and i &lt; length(a)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>hypotheses:  current path
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>goal:        0 &lt;= i and i &lt; length(a)
 </span></code></pre></div>
-<p>Example from <code>increment_first</code>:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)
+<p>For example, from <code>increment_first</code>:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>goal:  And(0 &gt;= 0, 0 &lt; a_len!2)
 </span></code></pre></div>
-<h3 id="array-equality">Array equality<a class="headerlink" href="#array-equality" title="Permanent link">&para;</a></h3>
-<p>Frml <code>a == b</code> on two arrays is not a single Z3 equality:</p>
-<ul>
-<li>The lengths must be equal.</li>
-<li>Every element in range must be equal.</li>
-</ul>
-<p>The prover builds:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>length(a) == length(b)
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>and
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
+<h3 id="array-equality">Array Equality<a class="headerlink" href="#array-equality" title="Permanent link">&para;</a></h3>
+<p>Frml <code>a == b</code> on two arrays is not a single Z3 equality:
+the lengths must be equal,
+and every element in range must be equal.
+The prover builds:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>length(a) == length(b)
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>and
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>forall i: 0 &lt;= i and i &lt; length(a) =&gt; a[i] == b[i]
 </span></code></pre></div>
-<p>This is why array equality is defined by a quantified formula.</p>
-<h2 id="old-with-arrays"><code>old(...)</code> with arrays<a class="headerlink" href="#old-with-arrays" title="Permanent link">&para;</a></h2>
-<p><code>old(e)</code> means "the value of <code>e</code> at the moment the function was entered".  The
-prover snapshots parameters at entry into <code>old_vars</code> and <code>old_arrays</code>.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>fn increment_first(a: Array&lt;Int&gt;)
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>  requires length(a) &gt; 0
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>  ensures a[0] == old(a[0]) + 1
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>{
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>  a[0] = a[0] + 1;
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>}
+<h2 id="old-with-arrays"><code>old(...)</code> with Arrays<a class="headerlink" href="#old-with-arrays" title="Permanent link">&para;</a></h2>
+<p><code>old(e)</code> means "the value of <code>e</code> at the moment the function was entered".
+The prover snapshots parameters at entry into <code>old_vars</code> and <code>old_arrays</code>.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>fn increment_first(a: Array&lt;Int&gt;)
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>  requires length(a) &gt; 0
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>  ensures a[0] == old(a[0]) + 1
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>{
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>  a[0] = a[0] + 1;
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>}
 </span></code></pre></div>
-<ul>
-<li>At entry, <code>a</code> is a fresh array symbol <code>a!1</code> with some length.<ul>
-<li><code>old_arrays["a"]</code> keeps that original <code>a!1</code>.</li>
-</ul>
-</li>
-<li>After the assignment, <code>state.arrays["a"]</code> is the updated array.<ul>
-<li><code>a[0]</code> in the postcondition reads the updated array.</li>
-<li><code>old(a[0])</code> reads the original <code>a!1</code>.</li>
-</ul>
-</li>
-<li>The emitted postcondition goal looks like:</li>
-</ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
+<p>At entry, <code>a</code> is a fresh array symbol <code>a!1</code> with some length,
+and <code>old_arrays["a"]</code> keeps that original <code>a!1</code>.
+After the assignment,
+<code>state.arrays["a"]</code> is the updated array,
+so <code>a[0]</code> in the postcondition reads the updated array
+while <code>old(a[0])</code> reads the original <code>a!1</code>.
+The emitted postcondition goal looks like:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>Store(a!1, 0, a!1[0] + 1)[0] == a!1[0] + 1
 </span></code></pre></div>
-<ul>
-<li>Both sides simplify to the same value, so Z3 proves it.</li>
-</ul>
-<h2 id="loops-and-arrays">Loops and arrays<a class="headerlink" href="#loops-and-arrays" title="Permanent link">&para;</a></h2>
-<p>The array level inherits loop verification from the loop level.  The only
-difference is that havoc must also account for arrays.</p>
-<ul>
-<li>Havoc is how the prover forgets what a loop did to a variable.</li>
-<li>An assigned scalar becomes a fresh symbol of the same sort.</li>
-<li>An assigned array becomes a fresh array over the same index and element
-    sorts, keeping its length.</li>
-<li>At the <code>array</code> level, lengths never change inside a loop because there is no
-    <code>push</code> or <code>pop</code>.</li>
-</ul>
-<p>For a loop body that writes <code>a[i]</code>, the prover havocs the <em>contents</em> of <code>a</code>
-while preserving <code>length(a)</code>.  This keeps the induction sound: the inductive
-step does not silently assume which elements were already updated.</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>while i &lt; length(a)
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  invariant forall j: Int :: 0 &lt;= j and j &lt; i =&gt; a[j] &gt;= 0
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>{
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>  a[i] = a[i] + 1;
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  i = i + 1;
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>}
+<p>Both sides simplify to the same value, so Z3 proves it.</p>
+<h2 id="loops-and-arrays">Loops and Arrays<a class="headerlink" href="#loops-and-arrays" title="Permanent link">&para;</a></h2>
+<p>The array level inherits loop verification from the loop level.
+The only difference is that havoc must also account for arrays.
+(As a reminder,
+this is how the prover forgets what a loop did to a variable.)
+An assigned scalar becomes a fresh symbol of the same sort,
+and an assigned array becomes a fresh array over the same index and element sorts,
+keeping its length.
+At the <code>array</code> language level,
+lengths never change inside a loop because there is no <code>push</code> or <code>pop</code> (yet).</p>
+<p>For a loop body that writes <code>a[i]</code>,
+the prover havocs the <em>contents</em> of <code>a</code> while preserving <code>length(a)</code>.
+This keeps the induction sound:
+the inductive step does not silently assume which elements were already updated.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>while i &lt; length(a)
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>  invariant forall j: Int :: 0 &lt;= j and j &lt; i =&gt; a[j] &gt;= 0
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>{
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>  a[i] = a[i] + 1;
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>  i = i + 1;
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>}
 </span></code></pre></div>
-<ul>
-<li>After havoc, <code>a</code> is a fresh array with the same length.</li>
-<li>The invariant is the only bridge from before the loop to after it.</li>
-</ul>
-<h2 id="function-calls-with-arrays">Function calls with arrays<a class="headerlink" href="#function-calls-with-arrays" title="Permanent link">&para;</a></h2>
+<p>After havoc,
+<code>a</code> is a fresh array with the same length,
+and the invariant is the only bridge from before the loop to after it.</p>
+<h2 id="function-calls-with-arrays">Function Calls with Arrays<a class="headerlink" href="#function-calls-with-arrays" title="Permanent link">&para;</a></h2>
 <p>When one function calls another, the prover uses the callee's contract.</p>
-<h3 id="array-arguments">Array arguments<a class="headerlink" href="#array-arguments" title="Permanent link">&para;</a></h3>
-<p>A callee may mutate an array argument:</p>
-<ul>
-<li><code>written_params</code> tracks which array parameters a function writes.</li>
-<li>A written array gets a fresh post-array.</li>
-<li>A read-only array keeps the caller's array unchanged.</li>
-<li>After the call, the caller's array argument is updated to the callee's
-    post-array.</li>
-</ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>fn increment_first(a: Array&lt;Int&gt;)
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  requires length(a) &gt; 0
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  ensures a[0] == old(a[0]) + 1
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>{
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>  a[0] = a[0] + 1;
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>}
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>fn main() -&gt; Int
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>{
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>  let xs: Array&lt;Int&gt; = [5];
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>  increment_first(xs);
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>  if xs[0] == 6 { return 0; } else { return 1; }
-</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>}
+<h3 id="array-arguments">Array Arguments<a class="headerlink" href="#array-arguments" title="Permanent link">&para;</a></h3>
+<p>A callee may mutate an array argument.
+<code>written_params</code> tracks which array parameters a function writes.
+A written array gets a fresh post-array,
+while a read-only array keeps the caller's array unchanged.
+After the call,
+the caller's array argument is updated to the callee's post-array:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>fn increment_first(a: Array&lt;Int&gt;)
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>  requires length(a) &gt; 0
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>  ensures a[0] == old(a[0]) + 1
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>{
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>  a[0] = a[0] + 1;
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>}
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>fn main() -&gt; Int
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>{
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>  let xs: Array&lt;Int&gt; = [5];
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>  increment_first(xs);
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>  if xs[0] == 6 { return 0; } else { return 1; }
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>}
 </span></code></pre></div>
-<ul>
-<li><code>increment_first</code> writes <code>a[0]</code>, so <code>a</code> is in <code>written_params</code>.</li>
-<li>At the call <code>increment_first(xs)</code>:<ul>
-<li>The precondition <code>length(a) &gt; 0</code> becomes <code>length(xs) &gt; 0</code>, which Z3
-    proves from <code>xs = [5]</code> (length <code>1</code>).</li>
-<li>The prover creates a fresh post-array <code>a_post!N</code> with the same length.</li>
-<li>It assumes the postcondition <code>a_post!N[0] == xs[0] + 1</code>.</li>
-<li>It rebinds <code>xs</code> to <code>a_post!N</code>.</li>
-</ul>
-</li>
-<li>The later check <code>xs[0] == 6</code> uses that assumed relationship, so it holds.</li>
-</ul>
-<h3 id="array-returns_1">Array returns<a class="headerlink" href="#array-returns_1" title="Permanent link">&para;</a></h3>
-<p>A function may return an array, but only a <em>fresh</em> one:</p>
-<ul>
-<li>an array literal,</li>
-<li>a call to another array-returning function, or</li>
-<li>a function-local array variable.</li>
-</ul>
-<p>Returning an array parameter is rejected by the type checker, as described
-above.</p>
-<p>At a call site, the returned array is a fresh <code>ArrayVal</code> with an unknown
-<code>length &gt;= 0</code>, exactly like any other result.  The callee's <code>ensures</code> are
-assumed, and the well-formedness obligations inside them (array bounds,
-non-zero divisors) are suppressed:</p>
-<ul>
-<li>They are part of what is being assumed, not something the caller proves.</li>
-</ul>
-<p>For example:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>fn first_primes() -&gt; Array&lt;Int&gt;
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>  ensures length(result) == 4
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>  ensures result[0] == 2
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a>  ensures result[3] == 7
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>{
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>  return [2, 3, 5, 7];
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>}
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>fn main() -&gt; Int
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>{
-</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a>  let primes: Array&lt;Int&gt; = first_primes();
-</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>  assert primes[3] == 7;
-</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a>  return 0;
-</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a>}
+<p><code>increment_first</code> writes <code>a[0]</code>, so <code>a</code> is in <code>written_params</code>.
+At the call <code>increment_first(xs)</code>,
+the precondition <code>length(a) &gt; 0</code> becomes <code>length(xs) &gt; 0</code>,
+which Z3 proves from <code>xs = [5]</code> (length <code>1</code>).
+The prover creates a fresh post-array <code>a_post!N</code> with the same length,
+assumes the postcondition <code>a_post!N[0] == xs[0] + 1</code>,
+and rebinds <code>xs</code> to <code>a_post!N</code>.
+The later check <code>xs[0] == 6</code> uses that assumed relationship, so it holds.</p>
+<h3 id="array-returns_1">Array Returns<a class="headerlink" href="#array-returns_1" title="Permanent link">&para;</a></h3>
+<p>A function may return an array, but as noted earlier,
+it may only return a <em>fresh</em> one,
+i.e.,
+an array literal,
+a call to another array-returning function,
+or a function-local array variable.</p>
+<p>At a call site,
+the returned array is a fresh <code>ArrayVal</code> with an unknown <code>length &gt;= 0</code>,
+exactly like any other result.
+The callee's <code>ensures</code> are assumed,
+and the well-formedness obligations inside them
+like array bounds and non-zero divisors are suppressed,
+because they are part of what is being assumed
+rather than something the caller proves.
+For example:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>fn first_primes() -&gt; Array&lt;Int&gt;
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  ensures length(result) == 4
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>  ensures result[0] == 2
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>  ensures result[3] == 7
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a>{
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a>  return [2, 3, 5, 7];
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a>}
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>fn main() -&gt; Int
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a>{
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a>  let primes: Array&lt;Int&gt; = first_primes();
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a>  assert primes[3] == 7;
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a>  return 0;
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a>}
 </span></code></pre></div>
-<ul>
-<li>At the call, <code>primes</code> becomes a fresh array whose length is constrained by
-    <code>ensures length(result) == 4</code>.</li>
-<li>The later <code>primes[3]</code> is therefore in bounds, and its value is <code>7</code> by the
-    second <code>ensures</code>.</li>
-</ul>
-<h2 id="quantifiers-over-arrays">Quantifiers over arrays<a class="headerlink" href="#quantifiers-over-arrays" title="Permanent link">&para;</a></h2>
-<h3 id="why-_quant_depth-exists">Why <code>_quant_depth</code> exists<a class="headerlink" href="#why-_quant_depth-exists" title="Permanent link">&para;</a></h3>
-<ul>
-<li>Consider evaluating the body <code>0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0</code>
-    inside <code>forall i: Int :: ...</code>.</li>
-<li>Normally, <code>a[i]</code> emits a bounds obligation <code>0 &lt;= i and i &lt; length(a)</code>,
-    because an out-of-bounds array read is a proof obligation at that program
-    point.</li>
-<li>Inside a quantifier there is no single program point: <code>i</code> is a bound
-    variable that ranges over <em>all</em> integers, including ones for which
-    <code>0 &lt;= i and i &lt; length(a)</code> is false.</li>
-<li>Emitting the bounds obligation there would ask Z3 to prove
-    <code>0 &lt;= i and i &lt; length(a)</code> for an unconstrained <code>i</code>, which is false, so the
-    verifier would wrongly reject the formula.</li>
-<li>The bounds are instead part of the quantified formula's own hypothesis: the
-    implication only requires <code>a[i]</code> to be well-defined when its left side is
-    true.</li>
-<li>The prover therefore increments <code>_quant_depth</code> while it evaluates a
-    quantified body.  Array accesses and divisions inside that body skip their
-    bounds/division obligations while <code>_quant_depth &gt; 0</code>.</li>
-<li>The quantified body is still built as a Z3 term, and Z3 reasons about the
-    whole <code>ForAll</code>/<code>Exists</code> formula directly.</li>
-</ul>
-<h3 id="array-property-example">Array property example<a class="headerlink" href="#array-property-example" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ensures
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>  result ==
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>    (forall i: Int ::
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>      0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0)
-</span></code></pre></div>
-<ul>
-<li>The <code>ensures</code> goal is a Z3 term:</li>
-</ul>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>result == ForAll(i, Implies(And(0 &lt;= i, i &lt; len), a[i] &gt;= 0))
-</span></code></pre></div>
-<ul>
-<li>Z3 knows how to decide quantified integer formulas like this one.</li>
-</ul>
-<h2 id="appendix-structure-of-the-array-level">Appendix: structure of the array level<a class="headerlink" href="#appendix-structure-of-the-array-level" title="Permanent link">&para;</a></h2>
-<ul>
-<li><code>typechecker_array.py</code> subclasses the loop type checker and adds:<ul>
-<li><code>visit_StmtArrayAssign</code>: array element assignment.</li>
-<li><code>visit_StmtLet</code>: array declarations from literals or array calls.</li>
-<li><code>visit_StmtReturn</code>: rejects returning array parameters.</li>
-<li><code>visit_ExprArrayAccess</code>: array reads.</li>
-<li><code>visit_ExprArrayLiteral</code>: array literals.</li>
-<li><code>visit_ExprLength</code>: <code>length(...)</code>.</li>
-<li><code>_is_array_valued_call</code>: recognizes calls that return arrays.</li>
-</ul>
-</li>
-<li><code>prover_array.py</code> subclasses the loop prover and adds the array machinery.
-    It rejects built-ins if they are encountered directly, though the level
-    checker normally prevents them from reaching the prover.  The array
-    machinery it adds includes:<ul>
-<li><code>ArrayVal</code>: an array term plus its length, stored in <code>State.arrays</code>.</li>
-<li><code>State.old_arrays</code>: the snapshot of arrays at function entry.</li>
-<li><code>exec_while</code>: loop verification with array-aware havoc.</li>
-<li><code>written_params</code>: tracks which array parameters a function writes.</li>
-</ul>
-</li>
-<li>The Z3 check loop (<code>check_obligations</code>) is defined in
-    <code>frml/z3check.py</code> and inherited here.</li>
-</ul>
+<p>At the call,
+<code>primes</code> becomes a fresh array
+whose length is constrained by <code>ensures length(result) == 4</code>.
+The later <code>primes[3]</code> is therefore in bounds,
+and its value is <code>7</code> by the second <code>ensures</code>.</p>
+<h2 id="quantifiers-over-arrays">Quantifiers Over Arrays<a class="headerlink" href="#quantifiers-over-arrays" title="Permanent link">&para;</a></h2>
+<p>Consider evaluating the body <code>0 &lt;= i and i &lt; length(a) =&gt; a[i] &gt;= 0</code>
+inside <code>forall i: Int :: ...</code>.
+<code>a[i]</code> normally emits a bounds obligation <code>0 &lt;= i and i &lt; length(a)</code>
+because an out-of-bounds array read is a proof obligation at that program point.
+Inside a quantifier there is no single program point:
+<code>i</code> is a bound variable that ranges over <em>all</em> integers,
+including ones for which <code>0 &lt;= i and i &lt; length(a)</code> is false.
+Emitting the bounds obligation there would ask Z3 to prove <code>0 &lt;= i and i &lt; length(a)</code>
+for an unconstrained <code>i</code>,
+which is false,
+so the verifier would wrongly reject the formula.</p>
+<p>Instead,
+the bounds are part of the quantified formula's own hypothesis,
+since the implication only requires <code>a[i]</code> to be well-defined when its left side is true.
+The prover therefore increments <code>_quant_depth</code> while it evaluates a quantified body,
+and array accesses and divisions inside that body
+skip their bounds and division obligations while <code>_quant_depth &gt; 0</code>.
+The quantified body is still built as a Z3 term,
+and Z3 reasons about the whole <code>ForAll</code>/<code>Exists</code> formula directly.</p>
 
 
 

@@ -1,66 +1,51 @@
-# The Scalar Level: Straight-Line and Branching Code
+# Scalar Code in Frml
 
-This tutorial explains how Frml checks `scalar`-level programs: straight-line
-and branching code over scalar values (`Int`, `Bool`, `String`), with no
-function calls, contracts, loops, or quantifiers. The engine is in
-`frml/prover_scalar.py`; the shared records (`State`, `Obligation`,
-`ProverResult`) live in `frml/prover_types.py`, model rendering in
-`frml/z3render.py`, and the Z3 check loop in `frml/z3check.py`.
+This tutorial explains how Frml checks `scalar`-level programs
+that have straight-line and branching code over scalar values
+with no function calls, contracts, loops, or quantifiers.
 
-## The prover's data model
+## The Prover's Data Model
 
--   The prover tracks a program point with a `State` object.
-    -   `State.vars`: symbolic values of scalar variables.
-    -   `State.path`: every fact assumed to hold so far.
--   The prover never stores concrete numbers in variables: it stores formulas
-    about numbers.
--   A scalar variable holds a Z3 term, not a concrete number.
-    -   `x` might hold the symbolic integer `x!1`, not the number 5.
-    -   `x!1` means "the first fresh symbol named `x`" (see below).
--   An `Obligation` records one claim to prove.
-    -   Its `kind` can be `assert` or `division` at this level.
-    -   `description`: human readable text of the claim.
-    -   `hyp`: the list of hypothesis terms.
-    -   `goal`: the goal term.
-    -   `pos`: the source position of the claim, shown in `--trace` output.
+The prover tracks a program point with a `State` object.
+`State.vars` holds the symbolic values of scalar variables,
+and `State.path` holds every fact assumed to hold so far.
+The prover never stores concrete numbers in variables;
+it stores [Z3][z3] formulas about numbers.
+For example,
+`x` might hold the symbolic integer `x!1` rather than the number 5,
+where `x!1` means "the first fresh symbol named `x`".
 
-## Fresh names
+An `Obligation` records one claim to prove.
+Its `kind` can be `assert` or `division` at this level,
+its `description` is the human readable text of the claim,
+`hyp` is the list of hypothesis terms,
+`goal` is the goal term,
+and `pos` is the source position of the claim
+(shown in `--trace` output).
 
--   The prover keeps a counter and calls `_fresh(name)`.
--   Each call returns `name!N` with an increasing `N`.
-    -   `x!1`, `x!2`, `x!3` are different symbols even though they all relate to
-        the source variable `x`.
--   Why this matters:
-    -   When `x` is reassigned, the old `x!1` is not overwritten.
-    -   The new value becomes a new symbol such as `x!5`.
-    -   This keeps the symbolic execution correct.
--   Example:
+## Fresh Names
+
+The prover keeps a counter and calls `_fresh(name)`
+to get `name!N` with an increasing `N`,
+so `x!1`, `x!2`, and `x!3` are different symbols
+even though they all relate to the source variable `x`.
+This matters because when `x` is reassigned,
+the old `x!1` is not overwritten;
+the new value becomes a new symbol such as `x!5`,
+which keeps the symbolic execution correct.
+For example, after the statement:
 
 ```
 x = x + 1;
 ```
 
--   After this statement, the state maps `x` to the term `x!1 + 1`, not to a number.
+the state maps `x` to the term `x!1 + 1`, not to a number.
 
-## The driver: who calls what
-
-The CLI's `check` command eventually calls the module-level entry point:
-
-```python
-def verify_program(program, timeout_ms=10000, trace=False):
-    prover = ScalarProver(program)
-    results = prover.verify()
-    outcomes = []
-    for r in results:
-        outcomes.extend(check_obligations(r.obligations, timeout_ms, trace=trace))
-    return results, outcomes
-```
+## Operation
 
 The prover works in two phases:
-
-1.  Generate: walk the AST and collect `Obligation` objects.
-1.  Check: hand each obligation to Z3 and turn the answers into outcomes.
-
+it generates obligations by walking the AST and collecting `Obligation` objects,
+then checks them by handing each obligation to Z3 and turning the answers into outcomes.
 `verify()` is the generation phase for the whole program:
 
 ```python
@@ -75,10 +60,8 @@ def verify(self):
     return results
 ```
 
--   `verify` verifies one function at a time, in source order.
--   `self.obligations` is reset per function, so obligations stay grouped by
-    function.
-
+`verify` verifies one function at a time in source order;
+`self.obligations` is reset per function so obligations stay grouped by function.
 `verify_function()` handles one function:
 
 ```python
@@ -107,14 +90,16 @@ def verify_function(self, fn):
             self._check_ensures(fn, s, None)
 ```
 
--   `_assume_spec` and `_check_ensures` do nothing at this level because there
-    are no `requires`, `ensures`, or `decreases` clauses, so the entry path is
-    empty and the body's fall-through is simply checked.
--   `exec_stmt_seq` returns the states of paths that fell off the end of the body.
-    A `return` produces no end state (see below), so if a value-returning
-    function has any end state, some path never returned, which is an error.
+`_assume_spec` and `_check_ensures` do nothing at this language level
+because there are no `requires`, `ensures`, or `decreases` clauses,
+so the entry path is empty and the body's fall-through is simply checked.
+`exec_stmt_seq` returns the states of paths that fell off the end of the body.
+A `return` produces no end state (see below),
+so if a value-returning function has any end state,
+some path never returned,
+which is an error.
 
-## The statement loop
+## Statements
 
 Statements are handled by three related methods:
 
@@ -145,14 +130,12 @@ def exec_stmt(self, stmt, state):
     return stmt.accept(self, state)
 ```
 
-`exec_stmt_seq` handles the statement list:
-
--   `states` is the set of live paths, starting with the single entry state.
--   Each statement maps every live state to zero or more successor states
-    (see below).
--   `exec_stmt` calls `stmt.accept(self, state)`, which dispatches to
-    `visit_StmtAssign`, `visit_StmtIf`, `visit_StmtLet`, and so on.
--   "Zero or more" matters because of `return`:
+In `exec_stmt_seq`, `states` is the set of live paths,
+starting with the single entry state,
+and each statement maps every live state to zero or more successor states (see below).
+`exec_stmt` calls `stmt.accept(self, state)`,
+which dispatches to `visit_StmtAssign`, `visit_StmtIf`, `visit_StmtLet`, and so on.
+The "zero or more" matters because of `return`:
 
 ```python
 def visit_StmtReturn(self, stmt, state):
@@ -161,16 +144,19 @@ def visit_StmtReturn(self, stmt, state):
     return []
 ```
 
-A `return` returns the empty list. `new_states.extend([])` adds nothing, so that
-path is dropped from `states`: execution stops there, exactly as it does at run
-time. This is also what makes the `verify_function` fall-through check work:
-only paths that reach the end of the body survive in `end_states`.
+A `return` returns the empty list.
+`new_states.extend([])` adds nothing,
+so that path is dropped from `states`;
+execution stops there, exactly as it does at run time.
+This is also what makes the `verify_function` fall-through check work,
+since only paths that reach the end of the body survive in `end_states`.
 
-`exec_block` is `exec_stmt_seq` plus scoping. After a nested block (an `if` body)
-runs, any variable introduced inside it is deleted from the resulting states,
+`exec_block` is `exec_stmt_seq` plus scoping.
+After a nested block (i.e., an `if` body) runs,
+any variables introduced inside it are deleted from the resulting states,
 so local declarations do not leak outward.
 
-## The expression loop
+## Expressions
 
 Expressions use the same visitor pattern as statements:
 
@@ -179,14 +165,16 @@ def eval_expr(self, expr, state, *, use_old=False, result_term=None):
     return expr.accept(self, state, use_old=use_old, result_term=result_term)
 ```
 
-`expr.accept(...)` calls `visit_ExprBinary`, `visit_ExprVar`, and so on.  Each
-visitor returns a Z3 term. `eval_expr` never actually computes anything; it
-translates a Frml expression into the Z3 formula that describes it, using the
-current symbolic state.
+`expr.accept(...)` calls `visit_ExprBinary`, `visit_ExprVar`, and so on.
+Each visitor returns a Z3 term.
+`eval_expr` never actually computes anything;
+as noted above,
+it translates a Frml expression into the Z3 formula that describes it
+using the current symbolic state.
 
-## A complete trace: `ex01`
+## A Complete Trace
 
-Let's trace a tiny function through the whole machine:
+Let's trace a complete verification:
 
 ```
 fn main() -> Int
@@ -196,8 +184,6 @@ fn main() -> Int
   return 0;
 }
 ```
-
-Step by step:
 
 1.  `verify_program` builds the `ScalarProver` and calls `verify()`.
 1.  `verify()` sets `current_fn = main` and calls `verify_function(main)`.
@@ -234,41 +220,27 @@ VERIFIED
 
 ## Translating expressions to Z3
 
-The `eval_expr` method maps each Frml expression node to a Z3 term.
+`eval_expr` maps each Frml expression node to a Z3 term.
 
-### Literals
+-   Literals:
+    `42` becomes `z3.IntVal(42)`,
+    `true` becomes `z3.BoolVal(True)`,
+    and `"hi"` becomes `z3.StringVal("hi")`.
+-   Variables:
+    the variable `x` becomes the term currently stored in `state.vars["x"]`.
+-   Operators:
+    `a and b` becomes `z3.And(a, b)` and so on for other unary and binary operators.
 
--   `42` becomes `z3.IntVal(42)`.
--   `true` becomes `z3.BoolVal(True)`.
--   `"hi"` becomes `z3.StringVal("hi")`.
-
-### Variables
-
--   `x` becomes the term currently stored in `state.vars["x"]`.
-
-### Operators
-
--   `a and b` becomes `z3.And(a, b)`.
--   `a or b` becomes `z3.Or(a, b)`.
--   `a => b` becomes `z3.Implies(a, b)`.
--   `!a` becomes `z3.Not(a)`.
--   `a + b`, `a - b`, `a * b` become the matching Z3 operations.
--   `<`, `<=`, `>`, `>=` become Z3 comparison terms.
--   `a == b` and `a != b` become equality and its negation.
-
-## Division and modulo add an obligation
-
--   Division by zero is undefined.
--   The verifier turns it into another proof obligation.
--   When the prover evaluates `a / b` or `a % b`, it first emits:
+Division by zero is undefined,
+the verifier turns it into another proof obligation.
+n the prover evaluates `a / b` or `a % b`, it first emits:
 
 ```
 hypotheses:  current path
 goal:        b != 0
 ```
 
--   Then it returns the Z3 division or modulo term.
--   Example:
+and then returns the Z3 division or modulo term. For example:
 
 ```
 fn main() -> Int
@@ -282,21 +254,19 @@ fn main() -> Int
 }
 ```
 
--   The `if y != 0` guard puts `y != 0` on the path before the division.
--   The division emits `y != 0`, which the path already contains, so Z3 proves
-    it immediately.
--   `uv run frml check --trace examples/scalar/ex04_if_division.frml` shows both
-    the `division` and `assert` obligations verified.
+The `if y != 0` guard puts `y != 0` on the path before the division. The
+division emits `y != 0`, which the path already contains, so Z3 proves it
+immediately.
 
-## Branching with `if`
+## Branching
 
--   A conditional statement forks the symbolic execution.
--   The condition is evaluated once.
--   The `then` branch continues with the condition added to the path.
--   The `else` branch continues with `not condition` added to the path.
-    -   If there is no `else`, the fall-through branch still gets `not condition`.
--   The prover tracks a *list* of states, one per path through the code.
+A conditional statement forks the symbolic execution.
+The condition is evaluated once,
+then the `then` branch continues with the condition added to the path,
+while the `else` branch continues with `not condition` added to the path.
+(If there is no `else`, the fall-through branch still gets `not condition`.)
 
+The prover tracks a *list* of states, one per path through the code.
 Here is the code that does the forking:
 
 ```python
@@ -317,37 +287,26 @@ def visit_StmtIf(self, stmt, state):
     return ends
 ```
 
--   `state.copy()` duplicates the state so the two branches do not share a path
-    list.
--   The `then` branch appends the condition; the `else` branch appends its
-    negation.
--   `exec_block` runs each branch and returns its end states, which are
-    concatenated.
--   With no `else`, the fall-through branch is just the state with `not cond`
-    appended, and no statements to run.
--   `visit_StmtIf` returns the union of the two branches' end states — this is
-    exactly how one state becomes two inside `exec_stmt_seq`.
-
 ## `assert`
 
--   An `assert` statement produces a goal from the current path.
+An `assert` statement produces a goal from the current path:
 
 ```
 assert 1 < 2;
 ```
 
--   Evaluate the condition.
--   Emit an obligation with the current path as hypotheses and the condition as goal.
--   If Z3 proves it, execution continues with the fact now guaranteed.
+The prover evaluates the condition, emits an obligation with the current path
+as hypotheses and the condition as goal, and if Z3 proves it, execution
+continues with the fact now guaranteed.
 
 > The prover does not add the assertion to the path after checking
 > because `assert` is a check, not an assumption.
 > The programmer asserts what should already be true,
 > so the verifier must prove it from what came before.
 
-## The Z3 check loop
+## The Z3 Check Loop
 
--   The `check_obligations` function is where Z3 is actually called.
+`check_obligations` is where Z3 is actually called:
 
 ```python
 solver = z3.Solver()
@@ -369,56 +328,15 @@ for ob in obligations:
     solver.pop()
 ```
 
--   Each obligation gets a fresh solver context via `push` and `pop`.
--   The empty hypothesis list becomes `True`.
-    -   With no hypotheses, the claim is `goal` alone, that is `True => goal`.
-    -   The code writes `z3.BoolVal(True)` so `z3.And(*ob.hyp)` always has a
-        value; Z3's `And()` is not defined over an empty argument list.
-    -   Logically, `True => goal` is equivalent to `goal`, which is exactly what
-        an obligation with no assumptions means.
--   Z3 is asked to satisfy `not (hyp => goal)`.
--   `unsat` means the claim holds.
--   `sat` means a counterexample exists.
--   Anything else is `unknown`.
+Each obligation gets a fresh solver context via `push` and `pop`.
+The empty hypothesis list becomes `True`.
+With no hypotheses, the claim is `goal` alone, i.e. `True => goal`.
+The code writes `z3.BoolVal(True)` so `z3.And(*ob.hyp)` always has a value,
+because Z3's `And()` is not defined over an empty argument list.
+Z3 is asked to satisfy `not (hyp => goal)`.
+`unsat` means the claim holds,
+`sat` means a counterexample exists,
+and anything else is `unknown`.
 
-## The three outcomes
-
-### `VERIFIED`
-
--   Z3 found no counterexample.
--   The claim is valid.
--   Every obligation in the program reached this result.
-
-### `FAILED`
-
--   Z3 found a counterexample model.
--   The claim is false for some inputs.
--   The CLI prints the obligation kind and description.
--   Example:
-
-```
-fn main() -> Int
-{
-  let x: Int = 3;
-  assert x < 0;
-  return 0;
-}
-```
-
--   The obligation goal is `3 < 0`, which Z3 refutes, so `FAILED`.
--   `uv run frml check examples/scalar/ex03_assert_failure.frml` prints `FAILED`.
--   `frml check --example` adds the concrete counterexample values to this output.
-
-### `UNKNOWN`
-
--   Z3 timed out or gave up.
--   The verifier does not pretend the claim is proved.
--   The program is not silently accepted.
--   The verifier never reports `VERIFIED` for a program it could not prove.
-
-## Next
-
-The `scalar` level has no way to package and reuse a proof: every function is
-verified in isolation, and nothing can call anything else. The [contracts
-level](tutorial_contracts.md) adds contracts and function calls on top of this
-engine.
+[frml]: https://gvwilson.github.io/frml
+[z3]: https://github.com/Z3Prover/z3
